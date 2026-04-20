@@ -17,8 +17,9 @@ SVG files being developed are displayed by 380-030.html which refreshes every 15
 - By default the image is centered horizontally and vertically on the page and scaled to fill an 8 by 10 inch print rectangle
 - Auto-scale is computed after all elements are parsed: the bounding box of all placed elements is calculated, then a uniform scale factor is derived so the drawing fits within 768×960 SVG units (8×10 inches at 96dpi). Scale = min(768 / total_width_ft, 960 / total_height_ft).
 - **Canvas origin** is the top-left of the first user-defined element's bounding box, fixed for the lifetime of the drawing. All absolute ("A=") offsets are measured from this point.
-- User-defined elements are numbered for reference. Numbers are displayed in a small font above horizontal elements and to the left of vertical elements. Only geometry elements are numbered (line, rect, wall, door, window, arc) — not labels or directives.
-- Digital dimensions are displayed below or to the right of user-defined elements, or with a callout line if they would overlap other elements.
+- User-defined elements are numbered for reference. Numbers are displayed in **red** in a small font above horizontal elements and to the left of vertical elements. Only geometry elements are numbered (line, rect, wall, door, window, arc) — not labels or directives. Element ID display can be toggled with `elementid on/off`.
+- Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`.
+- Invisible elements (`0px` line weight) receive no annotations.
 - Labels always render horizontally (readable) regardless of the current drawing direction.
 
 ## SVG XML structure
@@ -42,8 +43,13 @@ SVG files being developed are displayed by 380-030.html which refreshes every 15
 ### Directives (non-drawing lines)
 ```
 direction <degrees>    # set drawing direction: 0=up, 90=right, 180=down, 270=left
+elementid on|off       # show/hide element reference numbers (default: on)
+dimensions on|off      # show/hide dimension labels (default: on)
+include <filename>     # insert contents of another DSL file at this position
 ```
-Default direction is 90 (rightward).
+Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
+
+`include` filenames may be quoted or bare. Relative paths are resolved from the directory of the including file. Circular includes are detected and reported as an error.
 
 ### Measurements
 - `12` = 12 feet
@@ -51,6 +57,7 @@ Default direction is 90 (rightward).
 - `12'6"` = 12 feet 6 inches
 - `6"` = 6 inches (= 0.5 feet)
 - `2px` = line weight in SVG user units (96dpi screen pixels); for line weight only
+- `0px` = invisible element (cursor still advances; no geometry or annotations rendered)
 
 ### Drawing Coordinate System
 Compass degrees map to SVG delta vectors (Y increases downward in SVG):
@@ -70,7 +77,7 @@ Optional tokens after length/width (order-independent within their type):
 - `<n>px` — line weight override (SVG user units)
 - `<h>,<v>` (first coord pair) — **Begin Point**: (h,v) offset from element top-left where this element connects to the previous element's End Point. Default: center of element's trailing side.
 - `<h>,<v>` (second coord pair) — **End Point**: (h,v) offset from element top-left where the next element connects. Default: center of element's leading side.
-- `A=<h>,<v>` — absolute placement: (h,v) from canvas origin to this element's top-left. Does **not** move the drawing cursor.
+- `A=<h>,<v>` — absolute placement: (h,v) from canvas origin to this element's top-left. The cursor is updated to the element's end point, so the next element continues from there.
 - `"text"` — inline annotation string
 
 ### Element Types
@@ -92,7 +99,7 @@ Beginning at the canvas origin, elements are drawn one after the other in the cu
 ### Element Placement
 - `A=<h>,<v>` is the horizontal and vertical distance from the canvas origin to the top-left corner of the element.
 - If no offset is specified, the new element begins where the previous one ended.
-- Absolute placement (`A=`) does not move the drawing cursor.
+- After any element (absolute or not), the cursor is set to that element's end point.
 
 ### Example DSL file
 ```

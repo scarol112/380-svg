@@ -1,5 +1,6 @@
+from pathlib import Path
 from .ast import (
-    ASTNode, DirectionDirective,
+    ASTNode, DirectionDirective, DisplayDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -10,7 +11,23 @@ class ParseError(Exception):
     pass
 
 
-def parse_file(text: str) -> list[ASTNode]:
+def parse_file(
+    text: str,
+    source_path: Path | None = None,
+    _seen: frozenset[Path] | None = None,
+) -> list[ASTNode]:
+    """Parse DSL text into an AST node list.
+
+    source_path: path of the file being parsed, used to resolve relative includes.
+    _seen: set of absolute paths already open in the current include chain
+           (used to detect circular includes).
+    """
+    if _seen is None:
+        _seen = frozenset()
+    if source_path is not None:
+        source_path = source_path.resolve()
+        _seen = _seen | {source_path}
+
     nodes: list[ASTNode] = []
     for lineno, raw_line in enumerate(text.splitlines(), start=1):
         line = raw_line.split("#")[0].strip()
@@ -19,10 +36,45 @@ def parse_file(text: str) -> list[ASTNode]:
         tokens = tokenize(line, lineno)
         if not tokens:
             continue
+
+        if tokens[0].value.lower() == "include":
+            included = _resolve_include(tokens, lineno, source_path, _seen)
+            nodes.extend(included)
+            continue
+
         node = _parse_line(tokens, lineno)
         if node is not None:
             nodes.append(node)
     return nodes
+
+
+def _resolve_include(
+    tokens: list[Token],
+    lineno: int,
+    source_path: Path | None,
+    _seen: frozenset[Path],
+) -> list[ASTNode]:
+    if len(tokens) < 2:
+        raise ParseError(f"Line {lineno}: include requires a filename")
+
+    # Filename may be quoted or bare
+    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    inc_path = Path(raw)
+
+    # Resolve relative to the including file's directory, or cwd if from stdin
+    if not inc_path.is_absolute():
+        base = source_path.parent if source_path else Path.cwd()
+        inc_path = (base / inc_path).resolve()
+    else:
+        inc_path = inc_path.resolve()
+
+    if inc_path in _seen:
+        raise ParseError(f"Line {lineno}: circular include detected: {inc_path}")
+
+    if not inc_path.exists():
+        raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
+
+    return parse_file(inc_path.read_text(), source_path=inc_path, _seen=_seen)
 
 
 def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
@@ -31,6 +83,10 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
 
     if keyword == "direction":
         return _parse_direction(rest, lineno)
+    if keyword == "elementid":
+        return _parse_display(rest, lineno, "elementid")
+    if keyword == "dimensions":
+        return _parse_display(rest, lineno, "dimensions")
     if keyword == "line":
         return _parse_line_elem(rest, lineno)
     if keyword == "rect":
@@ -52,6 +108,15 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
 
 
 # ── directives ────────────────────────────────────────────────────────────────
+
+def _parse_display(tokens: list[Token], lineno: int, target: str) -> DisplayDirective:
+    if not tokens:
+        raise ParseError(f"Line {lineno}: {target} requires 'on' or 'off'")
+    val = tokens[0].value.lower()
+    if val not in ("on", "off"):
+        raise ParseError(f"Line {lineno}: {target} requires 'on' or 'off', got {val!r}")
+    return DisplayDirective(target=target, enabled=(val == "on"), source_line=lineno)
+
 
 def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:
     if not tokens:

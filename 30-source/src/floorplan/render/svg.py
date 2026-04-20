@@ -7,16 +7,13 @@ The scale transform is applied as a pre-computation rather than an SVG
 import math
 from ..model import PlacedElement
 from ..layout.cursor import direction_vector
-from .dimensions import element_number_svg, dimension_label_svg
+from .dimensions import element_number_svg, dimension_label_svg, AnnotationRegistry
 from .symbols import defs_svg, door_svg, window_svg
 
 PAGE_W = 1056  # 11in @ 96dpi
 PAGE_H = 816   # 8.5in @ 96dpi
 
-DEFAULT_STROKE = 1.0   # SVG pixels
-LABEL_FONT = 10        # SVG pixels
-DIM_FONT = 8           # SVG pixels
-NUM_FONT = 7           # SVG pixels
+LABEL_FONT = 10  # room label inside rect
 
 
 def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
@@ -29,15 +26,31 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
     lines.append(defs_svg())
     lines.append('  <g id="drawing">')
 
+    # Pass 1: geometry
     for elem in elements:
+        if elem.lw == 0.0:
+            continue  # 0px = invisible
         geom = _render_element(elem, scale, tx, ty)
         if geom:
             lines.append(f"    {geom}")
 
+    # Pass 2: annotations — pre-register solid geometry so text avoids drawn lines.
+    # Rect interiors are open space; only register stroke-based elements.
+    registry = AnnotationRegistry()
+    _STROKE_KINDS = {"line", "wall", "door", "window", "arrow", "arc"}
     for elem in elements:
-        if elem.number is not None:
-            lines.append(f"    {element_number_svg(elem, scale, tx, ty)}")
-            lines.append(f"    {dimension_label_svg(elem, scale, tx, ty)}")
+        if elem.lw > 0 and elem.kind in _STROKE_KINDS:
+            bbox = _element_bbox_px(elem, scale, tx, ty)
+            if bbox:
+                registry.register_box(*bbox)
+
+    for elem in elements:
+        if elem.lw == 0.0:
+            continue  # invisible elements get no annotations either
+        if elem.number is not None and elem.show_id:
+            lines.append(f"    {element_number_svg(elem, scale, tx, ty, registry)}")
+        if elem.number is not None and elem.show_dims:
+            lines.append(f"    {dimension_label_svg(elem, scale, tx, ty, registry)}")
         if elem.kind == "rect" and elem.label:
             lines.append(f"    {_label_for_rect(elem, scale, tx, ty)}")
         if elem.kind == "label":
@@ -52,8 +65,29 @@ def _px(val: float, scale: float, offset: float) -> float:
     return val * scale + offset
 
 
-def _pt(elem: PlacedElement, scale: float, tx: float, ty: float) -> tuple[float, float]:
-    return _px(elem.x, scale, tx), _px(elem.y, scale, ty)
+def _element_bbox_px(
+    elem: PlacedElement, scale: float, tx: float, ty: float
+) -> tuple[float, float, float, float] | None:
+    """Return (x1, y1, x2, y2) SVG-pixel bounding box for a geometry element."""
+    dx, dy = direction_vector(elem.direction)
+    pdx, pdy = direction_vector((elem.direction + 90) % 360)
+    x0 = _px(elem.x, scale, tx)
+    y0 = _px(elem.y, scale, ty)
+    lf = elem.length * scale
+    wf = elem.width * scale  # may be 0 for lines/arrows
+
+    # Build four corners: start, end-of-length, width-offset, both
+    pts_x = [x0, x0 + dx * lf, x0 + pdx * wf, x0 + dx * lf + pdx * wf]
+    pts_y = [y0, y0 + dy * lf, y0 + pdy * wf, y0 + dy * lf + pdy * wf]
+
+    # For doors also include the arc extent (radius = door width in both directions)
+    if elem.kind == "door":
+        r = elem.length * scale  # door width is stored in length
+        pts_x += [x0 - r, x0 + r]
+        pts_y += [y0 - r, y0 + r]
+
+    pad = max(elem.lw, 1.0)
+    return min(pts_x) - pad, min(pts_y) - pad, max(pts_x) + pad, max(pts_y) + pad
 
 
 def _render_element(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
@@ -75,10 +109,6 @@ def _render_element(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
     return ""
 
 
-def _stroke(elem: PlacedElement) -> float:
-    return elem.lw
-
-
 def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     dx, dy = direction_vector(elem.direction)
     x1 = _px(elem.x, scale, tx)
@@ -87,29 +117,29 @@ def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{_stroke(elem)}"/>'
+        f'stroke="black" stroke-width="{elem.lw}"/>'
     )
 
 
 def _rect_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     d = elem.direction % 360
-    lf = elem.length * scale   # length in px
-    wf = elem.width * scale    # width in px
+    lf = elem.length * scale
+    wf = elem.width * scale
     ox = _px(elem.x, scale, tx)
     oy = _px(elem.y, scale, ty)
 
-    if d == 90:    # right: top-left is origin
+    if d == 90:
         rx, ry, rw, rh = ox, oy, lf, wf
-    elif d == 270:  # left: element grows leftward, width goes downward
+    elif d == 270:
         rx, ry, rw, rh = ox - lf, oy - wf, lf, wf
-    elif d == 0:   # up: length goes up, width goes right
+    elif d == 0:
         rx, ry, rw, rh = ox - wf / 2, oy - lf, wf, lf
-    else:           # 180 down
+    else:
         rx, ry, rw, rh = ox - wf / 2, oy, wf, lf
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="none" stroke="black" stroke-width="{_stroke(elem)}"/>'
+        f'fill="none" stroke="black" stroke-width="{elem.lw}"/>'
     )
 
 
@@ -131,7 +161,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="#333" stroke="black" stroke-width="{_stroke(elem)}"/>'
+        f'fill="#333" stroke="black" stroke-width="{elem.lw}"/>'
     )
 
 
@@ -148,7 +178,7 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     large = 1 if sweep_deg > 180 else 0
     return (
         f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
-        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{_stroke(elem)}"/>'
+        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"/>'
     )
 
 
@@ -160,7 +190,7 @@ def _arrow_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{_stroke(elem)}" marker-end="url(#arrowhead)"/>'
+        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"/>'
     )
 
 

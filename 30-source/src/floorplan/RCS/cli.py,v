@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.20.17.16.50;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@Add include directive with relative path resolution and circular include detection
 @
 text
 @import argparse
@@ -42,12 +47,14 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.input:
-        text = Path(args.input).read_text()
+        source_path = Path(args.input)
+        text = source_path.read_text()
     else:
+        source_path = None
         text = sys.stdin.read()
 
     try:
-        nodes = parse_file(text)
+        nodes = parse_file(text, source_path=source_path)
     except ParseError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -67,4 +74,19 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d21 2
+a22 1
+        text = Path(args.input).read_text()
+d24 1
+d28 1
+a28 1
+        nodes = parse_file(text)
 @

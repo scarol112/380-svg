@@ -18,12 +18,14 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.input:
-        text = Path(args.input).read_text()
+        source_path = Path(args.input)
+        text = source_path.read_text()
     else:
+        source_path = None
         text = sys.stdin.read()
 
     try:
-        nodes = parse_file(text)
+        nodes = parse_file(text, source_path=source_path)
     except ParseError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)

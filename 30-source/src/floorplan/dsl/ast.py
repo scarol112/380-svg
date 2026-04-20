@@ -83,8 +83,16 @@ class LabelElem:
     source_line: int = 0
 
 
+@dataclass
+class DisplayDirective:
+    target: str   # "elementid" or "dimensions"
+    enabled: bool
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
+    | DisplayDirective
     | LineElem
     | RectElem
     | WallElem

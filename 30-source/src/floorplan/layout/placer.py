@@ -1,13 +1,16 @@
 from ..dsl.ast import (
-    ASTNode, DirectionDirective,
+    ASTNode, DirectionDirective, DisplayDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
 from ..model import PlacedElement
-from .cursor import DrawingCursor
+from .cursor import DrawingCursor, direction_vector
 
 DEFAULT_LW = 1.0
-_GEOMETRY_KINDS = {"line", "rect", "wall", "door", "window", "arc", "arrow"}
+
+
+def _lw(val: float | None) -> float:
+    return DEFAULT_LW if val is None else val
 
 
 class ElementPlacer:
@@ -17,6 +20,8 @@ class ElementPlacer:
         self._elem_counter = 0
         self._canvas_origin_set = False
         self._canvas_origin: tuple[float, float] = (0.0, 0.0)
+        self._show_id: bool = True
+        self._show_dims: bool = True
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -27,6 +32,11 @@ class ElementPlacer:
         match node:
             case DirectionDirective():
                 self._cursor.direction = node.degrees
+            case DisplayDirective():
+                if node.target == "elementid":
+                    self._show_id = node.enabled
+                else:
+                    self._show_dims = node.enabled
             case LineElem():
                 self._place_line(node)
             case RectElem():
@@ -51,7 +61,6 @@ class ElementPlacer:
         return self._elem_counter
 
     def _resolve_position(self, absolute: tuple[float, float] | None) -> tuple[float, float]:
-        """Return (x, y) in feet from canvas origin for this element's top-left."""
         if absolute is not None:
             ox, oy = self._canvas_origin
             return ox + absolute[0], oy + absolute[1]
@@ -62,119 +71,112 @@ class ElementPlacer:
             self._canvas_origin = (x, y)
             self._canvas_origin_set = True
 
+    def _move_cursor_to_end(self, x: float, y: float, length: float) -> None:
+        dx, dy = direction_vector(self._cursor.direction)
+        self._cursor.x = x + dx * length
+        self._cursor.y = y + dy * length
+
+    def _flags(self) -> dict:
+        return {"show_id": self._show_id, "show_dims": self._show_dims}
+
     # ── element placers ───────────────────────────────────────────────────────
 
     def _place_line(self, elem: LineElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.length)
+            lw=_lw(elem.lw), label=None,
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.length)
 
     def _place_rect(self, elem: RectElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=elem.label,
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.length)
+            lw=_lw(elem.lw), label=elem.label,
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.length)
 
     def _place_wall(self, elem: WallElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
+            lw=_lw(elem.lw), label=None,
             extra={"thickness": elem.thickness},
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.length)
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.length)
 
     def _place_door(self, elem: DoorElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
+            lw=_lw(elem.lw), label=None,
             extra={"swing": elem.swing},
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.width)
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.width)
 
     def _place_window(self, elem: WindowElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
+            lw=_lw(elem.lw), label=None,
             extra={"depth": elem.depth},
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.width)
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.width)
 
     def _place_arc(self, elem: ArcElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
+            lw=_lw(elem.lw), label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.radius * 2)
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.radius * 2)
 
     def _place_arrow(self, elem: ArrowElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=elem.lw or DEFAULT_LW, label=None,
-            source_line=elem.source_line,
-        )
-        self._elements.append(pe)
-        if elem.absolute is None:
-            self._cursor.advance(elem.length)
+            lw=_lw(elem.lw), label=None,
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._move_cursor_to_end(x, y, elem.length)
 
     def _place_label(self, elem: LabelElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        pe = PlacedElement(
+        self._elements.append(PlacedElement(
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
             lw=DEFAULT_LW, label=elem.text,
             extra={"align": elem.align},
             source_line=elem.source_line,
-        )
-        self._elements.append(pe)
+        ))

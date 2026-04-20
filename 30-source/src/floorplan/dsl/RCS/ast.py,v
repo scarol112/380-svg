@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.20.15.45.22;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@Add display directives, red IDs, bigger fonts, overlap avoidance, 0px invisible
 @
 text
 @from dataclasses import dataclass, field
@@ -107,8 +112,16 @@ class LabelElem:
     source_line: int = 0
 
 
+@@dataclass
+class DisplayDirective:
+    target: str   # "elementid" or "dimensions"
+    enabled: bool
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
+    | DisplayDirective
     | LineElem
     | RectElem
     | WallElem
@@ -118,4 +131,14 @@ ASTNode = (
     | ArrowElem
     | LabelElem
 )
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d86 7
+d95 1
 @
