@@ -1,3 +1,4 @@
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.6 $ $Date: 2026/04/20 19:28:49 $ -->
 # App working title: svg
 
 ## Project tools
@@ -10,7 +11,7 @@ assets/380-031.css - css for 380-030.html
 assets/380-032.js - javascript for 380-030.html
 
 ## Display
-SVG files being developed are displayed by 380-030.html which refreshes every 15 seconds to show recent changes to the underlying file.
+SVG files being developed are displayed by 380-030.html which refreshes every 6 seconds to show recent changes to the underlying file.
 
 ## SVG structure
 - Default file layout for print is letter-size paper, landscape orientation
@@ -18,7 +19,7 @@ SVG files being developed are displayed by 380-030.html which refreshes every 15
 - Auto-scale is computed after all elements are parsed: the bounding box of all placed elements is calculated, then a uniform scale factor is derived so the drawing fits within 768×960 SVG units (8×10 inches at 96dpi). Scale = min(768 / total_width_ft, 960 / total_height_ft).
 - **Canvas origin** is the top-left of the first user-defined element's bounding box, fixed for the lifetime of the drawing. All absolute ("A=") offsets are measured from this point.
 - User-defined elements are numbered for reference. Numbers are displayed in **red** in a small font above horizontal elements and to the left of vertical elements. Only geometry elements are numbered (line, rect, wall, door, window, arc) — not labels or directives. Element ID display can be toggled with `elementid on/off`.
-- Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`.
+- Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`. For `window` elements the annotation shows the opening width only (not wall depth).
 - Invisible elements (`0px` line weight) receive no annotations.
 - Labels always render horizontally (readable) regardless of the current drawing direction.
 
@@ -83,23 +84,36 @@ Optional tokens after length/width (order-independent within their type):
 ### Element Types
 
 ```
-line <length> [<lw>px]
-rect <length> <width> [<lw>px] ["label"]
-wall <length> [<thickness>]          # default thickness = 6"
-door <width> [left|right|in|out]     # default swing = right
-window <width> [<depth>]             # default depth = 6"
-arc <radius> <sweep-degrees> [<lw>px]
-arrow <length> [<lw>px]
-label "text" [left|center|right]     # default align = left
+line <length> [<lw>px] [<dash>]
+rect <length> <width> [<lw>px] [<dash>] ["label"]
+wall <length> [<thickness>] [<lw>px] [<dash>]   # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>]      # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>]
+arrow <length> [<lw>px] [<dash>]
+label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 
+### Dash styles
+
+`<dash>` is one of: `dashed`, `shortdash`, `dotted`, `center`, `hidden`.
+Omitting a dash keyword renders a solid stroke (default).
+
+| Keyword | `stroke-dasharray` | Use |
+|---|---|---|
+| `dashed` | `8,4` | General dashed line |
+| `shortdash` | `4,4` | Short dashes |
+| `dotted` | `2,2` | Dotted line |
+| `center` | `12,3,2,3` | Center line |
+| `hidden` | `4,2` | Hidden / behind-wall line |
+
 ### Drawing Sequence
-Beginning at the canvas origin, elements are drawn one after the other in the current drawing direction, with the Begin Point of the new element adjacent to the End Point of the previous element. An element with `A=` is placed absolutely and does not advance the cursor.
+Beginning at the canvas origin, elements are drawn one after the other in the current drawing direction, with the Begin Point of the new element adjacent to the End Point of the previous element. An element with `A=` is placed absolutely; the cursor still advances to its end point.
 
 ### Element Placement
 - `A=<h>,<v>` is the horizontal and vertical distance from the canvas origin to the top-left corner of the element.
 - If no offset is specified, the new element begins where the previous one ended.
-- After any element (absolute or not), the cursor is set to that element's end point.
+- After any element (absolute or not), the cursor advances to that element's end point. The next element continues from there regardless of whether `A=` was used.
 
 ### Example DSL file
 ```

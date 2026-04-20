@@ -11,6 +11,7 @@ class PlacedElement:
     width: float       # feet, perpendicular (0 for lines/arrows)
     direction: float   # drawing direction at time of placement (degrees)
     lw: float          # SVG line weight (user units); 0 = invisible
+    dash: str | None   # dashed | shortdash | dotted | center | hidden; None = solid
     label: str | None
     extra: dict = field(default_factory=dict)  # element-specific extras (swing, align, etc.)
     show_id: bool = True

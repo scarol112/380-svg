@@ -1,10 +1,20 @@
-head	1.3;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.3; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.04.20.19.17.20;	author scarol;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2026.04.20.18.25.30;	author scarol;	state Exp;
+branches;
+next	1.3;
 
 1.3
 date	2026.04.20.16.28.05;	author scarol;	state Exp;
@@ -27,9 +37,9 @@ desc
 @
 
 
-1.3
+1.5
 log
-@Fix dimension placement outside elements; register stroke geometry for overlap avoidance; fix diagonal nudge; +20% font sizes
+@sub-foot dimensions show inches only (e.g. 6" not 0'6")
 @
 text
 @from ..model import PlacedElement
@@ -46,6 +56,8 @@ _LINE_HEIGHT_RATIO = 1.4
 def _fmt_feet(ft: float) -> str:
     total_inches = round(ft * 12)
     feet, inches = divmod(total_inches, 12)
+    if feet == 0:
+        return f'{inches}"'
     if inches == 0:
         return f"{feet}'"
     return f"{feet}'{inches}\""
@@ -149,7 +161,7 @@ def dimension_label_svg(
     base_x = outer_x + perp_dx * OFFSET_PX
     base_y = outer_y + perp_dy * OFFSET_PX
 
-    if elem.width > 0:
+    if elem.width > 0 and elem.kind != "window":
         dim_text = f"{_fmt_feet(elem.length)} \u00d7 {_fmt_feet(elem.width)}"
     else:
         dim_text = _fmt_feet(elem.length)
@@ -161,6 +173,26 @@ def dimension_label_svg(
         f'font-size="{DIM_FONT}" font-family="sans-serif" fill="#555" '
         f'text-anchor="middle">{dim_text}</text>'
     )
+@
+
+
+1.4
+log
+@window dims show length only; label font size param; refresh rate 6s
+@
+text
+@d15 2
+@
+
+
+1.3
+log
+@Fix dimension placement outside elements; register stroke geometry for overlap avoidance; fix diagonal nudge; +20% font sizes
+@
+text
+@d118 1
+a118 1
+    if elem.width > 0:
 @
 
 

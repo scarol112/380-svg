@@ -9,11 +9,13 @@ from ..model import PlacedElement
 from ..layout.cursor import direction_vector
 from .dimensions import element_number_svg, dimension_label_svg, AnnotationRegistry
 from .symbols import defs_svg, door_svg, window_svg
+from .styles import DASH_PATTERNS, dash_attr as _dash_attr
 
 PAGE_W = 1056  # 11in @ 96dpi
 PAGE_H = 816   # 8.5in @ 96dpi
 
 LABEL_FONT = 10  # room label inside rect
+
 
 
 def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
@@ -117,7 +119,7 @@ def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}"/>'
+        f'stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -139,7 +141,7 @@ def _rect_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="none" stroke="black" stroke-width="{elem.lw}"/>'
+        f'fill="none" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -161,7 +163,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="#333" stroke="black" stroke-width="{elem.lw}"/>'
+        f'fill="#333" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -178,7 +180,8 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     large = 1 if sweep_deg > 180 else 0
     return (
         f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
-        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"/>'
+        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"'
+        f'{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -190,18 +193,20 @@ def _arrow_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"/>'
+        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
+        f'{_dash_attr(elem.dash)}/>'
     )
 
 
 def _label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     anchor_map = {"left": "start", "center": "middle", "right": "end"}
     anchor = anchor_map.get(elem.extra.get("align", "left"), "start")
+    font_size = elem.extra.get("font_size", LABEL_FONT)
     x = _px(elem.x, scale, tx)
     y = _px(elem.y, scale, ty)
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" '
-        f'font-size="{LABEL_FONT}" font-family="sans-serif" text-anchor="{anchor}">'
+        f'font-size="{font_size}" font-family="sans-serif" text-anchor="{anchor}">'
         f'{elem.label}</text>'
     )
 

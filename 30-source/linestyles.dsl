@@ -1,0 +1,30 @@
+# Line style demonstration
+
+direction 90
+
+elementid off
+dimensions off
+
+# solid (default)
+label "solid" left A=0,0
+line 12 A=4,0.2
+
+# dashed
+label "dashed" left A=0,1.5
+line 12 dashed A=4,1.7
+
+# shortdash
+label "shortdash" left A=0,3
+line 12 shortdash A=4,3.2
+
+# dotted
+label "dotted" left A=0,4.5
+line 12 dotted A=4,4.7
+
+# center
+label "center" left A=0,6
+line 12 center A=4,6.2
+
+# hidden
+label "hidden" left A=0,7.5
+line 12 hidden A=4,7.7

@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.20.18.25.30;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@window dims show length only; label font size param; refresh rate 6s
 @
 text
 @<!DOCTYPE html>
@@ -31,7 +36,7 @@ text
 </head>
 <body>
   <div id="toolbar">
-    <span id="status">Auto-refreshing every 15s</span>
+    <span id="status">Auto-refreshing every 6s</span>
     <button id="btn-refresh" onclick="loadSvg()">Refresh now</button>
     <label>
       SVG file:
@@ -44,4 +49,15 @@ text
   <script src="380-032.js"></script>
 </body>
 </html>
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d10 1
+a10 1
+    <span id="status">Auto-refreshing every 15s</span>
 @

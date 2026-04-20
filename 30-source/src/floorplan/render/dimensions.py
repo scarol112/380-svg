@@ -12,6 +12,8 @@ _LINE_HEIGHT_RATIO = 1.4
 def _fmt_feet(ft: float) -> str:
     total_inches = round(ft * 12)
     feet, inches = divmod(total_inches, 12)
+    if feet == 0:
+        return f'{inches}"'
     if inches == 0:
         return f"{feet}'"
     return f"{feet}'{inches}\""
@@ -115,7 +117,7 @@ def dimension_label_svg(
     base_x = outer_x + perp_dx * OFFSET_PX
     base_y = outer_y + perp_dy * OFFSET_PX
 
-    if elem.width > 0:
+    if elem.width > 0 and elem.kind != "window":
         dim_text = f"{_fmt_feet(elem.length)} \u00d7 {_fmt_feet(elem.width)}"
     else:
         dim_text = _fmt_feet(elem.length)

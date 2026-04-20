@@ -11,6 +11,7 @@ class DirectionDirective:
 class LineElem:
     length: float  # feet
     lw: float | None = None  # SVG user units; None = default
+    dash: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
@@ -22,6 +23,7 @@ class RectElem:
     length: float  # feet, in drawing direction
     width: float   # feet, perpendicular to drawing direction
     lw: float | None = None
+    dash: str | None = None
     label: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
@@ -34,6 +36,7 @@ class WallElem:
     length: float  # feet
     thickness: float = 0.5  # feet (default 6")
     lw: float | None = None
+    dash: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
@@ -45,6 +48,7 @@ class DoorElem:
     width: float  # feet (clear opening)
     swing: str = "right"  # left | right | in | out
     lw: float | None = None
+    dash: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -54,6 +58,7 @@ class WindowElem:
     width: float  # feet
     depth: float = 0.5  # feet (default 6")
     lw: float | None = None
+    dash: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -63,6 +68,7 @@ class ArcElem:
     radius: float  # feet
     sweep: float   # degrees
     lw: float | None = None
+    dash: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -71,6 +77,7 @@ class ArcElem:
 class ArrowElem:
     length: float  # feet
     lw: float | None = None
+    dash: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -79,6 +86,7 @@ class ArrowElem:
 class LabelElem:
     text: str
     align: str = "left"  # left | center | right
+    font_size: float | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 

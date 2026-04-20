@@ -1,3 +1,4 @@
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.4 $ $Date: 2026/04/20 19:28:49 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -26,7 +27,7 @@ cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
 ### Viewing the output
 
 Open `assets/380-030.html` in a browser. It displays the SVG and refreshes
-automatically every 15 seconds. Use the path field in the toolbar to point it
+automatically every 6 seconds. Use the path field in the toolbar to point it
 at your output file if it is not at the default `../output.svg`.
 
 ---
@@ -126,7 +127,8 @@ dimensions on
 
 Any element can be placed at a fixed position by appending `A=<h>,<v>`, where
 `h` and `v` are feet from the canvas origin to the element's top-left corner.
-An absolutely placed element does **not** move the cursor.
+The cursor advances to the element's end point after placement, so the next
+element continues from there (same as non-absolute placement).
 
 ```
 door 3 right A=2,10      # place door at (2ft, 10ft) from origin
@@ -218,6 +220,9 @@ window <width> [<depth>] [<lw>px] [A=<h>,<v>]
 - `width` — opening width
 - `depth` — wall thickness (default 6 inches)
 
+The dimension annotation shows the opening width only; wall depth is not
+included in the label.
+
 ```
 window 4
 window 3 8"
@@ -262,14 +267,16 @@ A text annotation. Does not advance the cursor. Labels always render
 horizontally regardless of the current drawing direction.
 
 ```
-label "text" [left|center|right] [A=<h>,<v>]
+label "text" [left|center|right] [<size>] [A=<h>,<v>]
 ```
 
 - alignment — `left` (default), `center`, or `right`
+- `<size>` — font size in SVG pixels (default 10)
 
 ```
 label "North" center A=10,0
 label "see detail A" left A=5,20
+label "SCALE 1:48" center 14 A=5,25
 ```
 
 ---
@@ -279,7 +286,20 @@ label "see detail A" left A=5,20
 | Option | Description |
 |---|---|
 | `<n>px` | Line weight in SVG pixels. Default is 1px. |
+| `dashed` | Long dashes (8,4) |
+| `shortdash` | Short dashes (4,4) |
+| `dotted` | Dots (2,2) |
+| `center` | Center line — long dash, short dash (12,3,2,3) |
+| `hidden` | Hidden line — short dashes (4,2) |
 | `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
+
+Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
+
+```
+line 12 dashed
+rect 10 8 hidden "Future Addition"
+wall 6 dotted
+```
 
 ---
 

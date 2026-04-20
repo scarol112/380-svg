@@ -1,10 +1,20 @@
-head	1.2;
+head	1.4;
 access;
 symbols;
 locks
-	scarol:1.2; strict;
+	scarol:1.4; strict;
 comment	@# @;
 
+
+1.4
+date	2026.04.20.19.28.49;	author scarol;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2026.04.20.18.25.30;	author scarol;	state Exp;
+branches;
+next	1.2;
 
 1.2
 date	2026.04.20.15.45.22;	author scarol;	state Exp;
@@ -22,9 +32,9 @@ desc
 @
 
 
-1.2
+1.4
 log
-@Add display directives, red IDs, bigger fonts, overlap avoidance, 0px invisible
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
 @
 text
 @from ..dsl.ast import (
@@ -117,7 +127,7 @@ class ElementPlacer:
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -129,7 +139,7 @@ class ElementPlacer:
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=elem.label,
+            lw=_lw(elem.lw), dash=elem.dash, label=elem.label,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -141,7 +151,7 @@ class ElementPlacer:
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"thickness": elem.thickness},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -154,7 +164,7 @@ class ElementPlacer:
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"swing": elem.swing},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -167,7 +177,7 @@ class ElementPlacer:
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"depth": elem.depth},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -180,7 +190,7 @@ class ElementPlacer:
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -193,7 +203,7 @@ class ElementPlacer:
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -201,14 +211,61 @@ class ElementPlacer:
     def _place_label(self, elem: LabelElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
+        extra: dict = {"align": elem.align}
+        if elem.font_size is not None:
+            extra["font_size"] = elem.font_size
         self._elements.append(PlacedElement(
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, label=elem.text,
-            extra={"align": elem.align},
+            lw=DEFAULT_LW, dash=None, label=elem.text,
+            extra=extra,
             source_line=elem.source_line,
         ))
+@
+
+
+1.3
+log
+@window dims show length only; label font size param; refresh rate 6s
+@
+text
+@d91 1
+a91 1
+            lw=_lw(elem.lw), label=None,
+d103 1
+a103 1
+            lw=_lw(elem.lw), label=elem.label,
+d115 1
+a115 1
+            lw=_lw(elem.lw), label=None,
+d128 1
+a128 1
+            lw=_lw(elem.lw), label=None,
+d141 1
+a141 1
+            lw=_lw(elem.lw), label=None,
+d154 1
+a154 1
+            lw=_lw(elem.lw), label=None,
+d167 1
+a167 1
+            lw=_lw(elem.lw), label=None,
+d182 1
+a182 1
+            lw=DEFAULT_LW, label=elem.text,
+@
+
+
+1.2
+log
+@Add display directives, red IDs, bigger fonts, overlap avoidance, 0px invisible
+@
+text
+@d175 3
+d183 1
+a183 1
+            extra={"align": elem.align},
 @
 
 

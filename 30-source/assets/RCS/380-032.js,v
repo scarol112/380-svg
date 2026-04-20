@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.20.18.25.30;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,12 +22,12 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@window dims show length only; label font size param; refresh rate 6s
 @
 text
-@const REFRESH_MS = 15000;
+@const REFRESH_MS = 6000;
 
 function loadSvg() {
   const path = document.getElementById("svg-path").value.trim();
@@ -35,4 +40,15 @@ function loadSvg() {
 
 loadSvg();
 setInterval(loadSvg, REFRESH_MS);
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d1 1
+a1 1
+const REFRESH_MS = 15000;
 @

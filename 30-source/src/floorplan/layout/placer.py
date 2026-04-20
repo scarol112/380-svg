@@ -88,7 +88,7 @@ class ElementPlacer:
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -100,7 +100,7 @@ class ElementPlacer:
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=elem.label,
+            lw=_lw(elem.lw), dash=elem.dash, label=elem.label,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -112,7 +112,7 @@ class ElementPlacer:
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"thickness": elem.thickness},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -125,7 +125,7 @@ class ElementPlacer:
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"swing": elem.swing},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -138,7 +138,7 @@ class ElementPlacer:
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"depth": elem.depth},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -151,7 +151,7 @@ class ElementPlacer:
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -164,7 +164,7 @@ class ElementPlacer:
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), label=None,
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -172,11 +172,14 @@ class ElementPlacer:
     def _place_label(self, elem: LabelElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
+        extra: dict = {"align": elem.align}
+        if elem.font_size is not None:
+            extra["font_size"] = elem.font_size
         self._elements.append(PlacedElement(
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, label=elem.text,
-            extra={"align": elem.align},
+            lw=DEFAULT_LW, dash=None, label=elem.text,
+            extra=extra,
             source_line=elem.source_line,
         ))
