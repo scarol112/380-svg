@@ -1,0 +1,25 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@@

@@ -1,0 +1,47 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Floor Plan Viewer</title>
+  <link rel="stylesheet" href="380-031.css">
+</head>
+<body>
+  <div id="toolbar">
+    <span id="status">Auto-refreshing every 15s</span>
+    <button id="btn-refresh" onclick="loadSvg()">Refresh now</button>
+    <label>
+      SVG file:
+      <input id="svg-path" type="text" value="../output.svg" size="40">
+    </label>
+  </div>
+  <div id="viewer">
+    <img id="svg-img" alt="Floor plan">
+  </div>
+  <script src="380-032.js"></script>
+</body>
+</html>
+@

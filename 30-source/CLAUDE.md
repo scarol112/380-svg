@@ -1,0 +1,41 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Environment
+You are working in Ubuntu 24.04 in the Windows Subsystem for Linux (WSL), on a Windows 10 machine. Use the Windows browser to display HTML files and SVGs, not Ubuntu's.
+
+Project uses uv for dependency management
+
+## Fundamental instructions for Claude
+- When user prompts always ask any clarifying questions you find necessary.
+- Each change is checdked into RCS and also committed to the github repo. 
+- When coding, always test the code with the new changes and, with user's permission, check in changed files to RCS with a ci -l command.
+- User will will prompt when it's time to commit and push chnages to Github, and to close issues.
+- When closing github issues, always inclde a description of what was changed
+
+## Project Purpose
+
+**380-svg** is a project to generate SVG floor plans from text descriptions. The user describes rooms, dimensions, shared walls, and door/window placements, and Claude produces SVG output directly.
+
+## Architecture Decision
+
+SVG was chosen as the output format because:
+- Floor plans decompose into rectangles, lines, arcs (door swings), and text labels — all native SVG primitives
+- Renders in any browser with no tooling required
+- Claude can generate SVG directly without a build pipeline
+
+## Repository Layout
+
+This repo uses a numbered-directory convention:
+- `30-source/` — source code (current directory)
+- `src/` — implementation goes here (currently empty)
+- `docs/` — documentation (currently empty)
+
+The broader project root (`/srv/380-svg/`) contains sibling directories for research (`10-`), design (`20-`), tests (`50-`), etc.
+
+## Status
+
+Early stage — no implementation exists yet. The `src/` directory is empty. No build system, test runner, or linter is configured.
+
+## Design decisions are documented in docs/design.md - update that file whenh new features or designh decisions are made.

@@ -1,16 +1,7 @@
-*380-svg 20260414 with Claude*
-
-**can you generate SVG files?**
-
-● Yes. What do you have in mind?
-
-**❯ I'd like to describe a floor plan to you and have you generate an SVG of the plan. Are there domain-specific languages for architectural drawings?**
-
-<hr/>
-
 # Floor Plan SVG Generation
+Domain-specific languages for architectural drawings
 
-### Domain-specific languages for architectural drawings
+## Initial research with Claude
 
 Several DSLs exist:
 

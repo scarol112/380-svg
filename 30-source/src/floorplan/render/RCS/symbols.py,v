@@ -1,0 +1,100 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@from ..model import PlacedElement
+from ..layout.cursor import direction_vector
+
+DEFAULT_STROKE = 1.0
+
+
+def defs_svg() -> str:
+    return """  <defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="4"
+            refX="6" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="black"/>
+    </marker>
+  </defs>"""
+
+
+def _px(val: float, scale: float, offset: float) -> float:
+    return val * scale + offset
+
+
+def door_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Door slab line + quarter-circle arc swing."""
+    w = elem.length * scale  # door width in screen pixels
+    dx, dy = direction_vector(elem.direction)
+
+    hinge_x = _px(elem.x, scale, tx)
+    hinge_y = _px(elem.y, scale, ty)
+
+    swing = elem.extra.get("swing", "right")
+    if swing == "right":
+        perp_dx, perp_dy = direction_vector((elem.direction + 90) % 360)
+    else:
+        perp_dx, perp_dy = direction_vector((elem.direction - 90) % 360)
+
+    slab_end_x = hinge_x + dx * w
+    slab_end_y = hinge_y + dy * w
+    arc_end_x  = hinge_x + perp_dx * w
+    arc_end_y  = hinge_y + perp_dy * w
+
+    sweep_flag = 1 if swing == "right" else 0
+    lw = elem.lw
+
+    return (
+        f'<line x1="{hinge_x:.1f}" y1="{hinge_y:.1f}" '
+        f'x2="{slab_end_x:.1f}" y2="{slab_end_y:.1f}" '
+        f'stroke="black" stroke-width="{lw}"/>\n'
+        f'    <path d="M {slab_end_x:.1f},{slab_end_y:.1f} '
+        f'A {w:.1f},{w:.1f} 0 0,{sweep_flag} {arc_end_x:.1f},{arc_end_y:.1f}" '
+        f'fill="none" stroke="black" stroke-width="{lw}" stroke-dasharray="4,3"/>'
+    )
+
+
+def window_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Two parallel lines across a wall opening."""
+    w = elem.length * scale
+    depth = elem.width * scale
+    dx, dy = direction_vector(elem.direction)
+    perp_dx, perp_dy = direction_vector((elem.direction + 90) % 360)
+
+    x0 = _px(elem.x, scale, tx)
+    y0 = _px(elem.y, scale, ty)
+    x1 = x0 + dx * w
+    y1 = y0 + dy * w
+
+    off = depth / 4
+    lw = elem.lw
+    lines = []
+    for sign in (-1, 1):
+        ox = perp_dx * off * sign
+        oy = perp_dy * off * sign
+        lines.append(
+            f'<line x1="{x0+ox:.1f}" y1="{y0+oy:.1f}" '
+            f'x2="{x1+ox:.1f}" y2="{y1+oy:.1f}" '
+            f'stroke="black" stroke-width="{lw}"/>'
+        )
+    return "\n    ".join(lines)
+@

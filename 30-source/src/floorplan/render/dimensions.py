@@ -1,0 +1,49 @@
+from ..model import PlacedElement
+from ..layout.cursor import direction_vector
+
+NUM_FONT = 7
+DIM_FONT = 8
+OFFSET_PX = 10  # pixels offset from element edge
+
+
+def _fmt_feet(ft: float) -> str:
+    total_inches = round(ft * 12)
+    feet, inches = divmod(total_inches, 12)
+    if inches == 0:
+        return f"{feet}'"
+    return f"{feet}'{inches}\""
+
+
+def _px(val: float, scale: float, offset: float) -> float:
+    return val * scale + offset
+
+
+def element_number_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    # Place number at element start, offset perpendicular toward top/left
+    perp_dx, perp_dy = direction_vector((elem.direction - 90) % 360)
+    nx = _px(elem.x, scale, tx) + perp_dx * OFFSET_PX
+    ny = _px(elem.y, scale, ty) + perp_dy * OFFSET_PX
+    return (
+        f'<text x="{nx:.1f}" y="{ny:.1f}" '
+        f'font-size="{NUM_FONT}" font-family="sans-serif" fill="#888" '
+        f'text-anchor="middle">{elem.number}</text>'
+    )
+
+
+def dimension_label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    dx, dy = direction_vector(elem.direction)
+    perp_dx, perp_dy = direction_vector((elem.direction + 90) % 360)
+
+    mid_x = _px(elem.x + dx * elem.length / 2, scale, tx) + perp_dx * OFFSET_PX
+    mid_y = _px(elem.y + dy * elem.length / 2, scale, ty) + perp_dy * OFFSET_PX
+
+    if elem.width > 0:
+        dim_text = f"{_fmt_feet(elem.length)} \u00d7 {_fmt_feet(elem.width)}"
+    else:
+        dim_text = _fmt_feet(elem.length)
+
+    return (
+        f'<text x="{mid_x:.1f}" y="{mid_y:.1f}" '
+        f'font-size="{DIM_FONT}" font-family="sans-serif" fill="#555" '
+        f'text-anchor="middle">{dim_text}</text>'
+    )

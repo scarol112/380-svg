@@ -1,0 +1,38 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@#!/usr/bin/env bash
+# Usage: 380-010.sh <input.dsl> [<output.svg>]
+set -euo pipefail
+INPUT="${1:-}"
+OUTPUT="${2:-output.svg}"
+
+if [[ -z "$INPUT" ]]; then
+    echo "Usage: $0 <input.dsl> [<output.svg>]" >&2
+    exit 1
+fi
+
+cd "$(dirname "$0")/.."
+uv run python -m floorplan.cli "$INPUT" -o "$OUTPUT"
+@

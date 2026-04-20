@@ -1,0 +1,42 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@[project]
+name = "floorplan"
+version = "0.1.0"
+description = "Generate SVG floor plans from text descriptions"
+readme = "README.md"
+authors = [
+    { name = "Steve Carol", email = "sg.carol@@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[project.scripts]
+floorplan = "floorplan.cli:main"
+@

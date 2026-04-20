@@ -1,0 +1,35 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.20.13.58.52;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial check-in
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@# Simple floor plan test — two rooms
+direction 90
+rect 12 10 "Living Room"
+rect 10 10 "Bedroom"
+
+# Door in living room bottom wall
+door 3 right A=2,10
+
+# Window on bedroom right wall
+window 4 A=22,3
+@
