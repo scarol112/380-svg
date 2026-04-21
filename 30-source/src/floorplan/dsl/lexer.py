@@ -17,6 +17,7 @@ _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
+_COLOR_ELEM  = re.compile(r'C=(?:"([^"]*)"|(\w+))', re.IGNORECASE)
 
 
 def tokenize(raw: str, lineno: int) -> list[Token]:
@@ -31,6 +32,13 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
         m = _ABSOLUTE.match(raw, i)
         if m:
             tokens.append(Token("ABSOLUTE", m.group(), lineno))
+            i = m.end()
+            continue
+
+        m = _COLOR_ELEM.match(raw, i)
+        if m:
+            color_val = m.group(1) if m.group(1) is not None else m.group(2)
+            tokens.append(Token("COLOR_ELEM", color_val, lineno))
             i = m.end()
             continue
 

@@ -158,7 +158,7 @@ _DASH_STYLES = {"dashed", "shortdash", "dotted", "center", "hidden"}
 
 def _extract_common(tokens: list[Token], lineno: int) -> dict:
     """Pull lw, dash, coords (begin/end), absolute, quoted label from a token list."""
-    result: dict = {"lw": None, "dash": None, "begin": None, "end": None, "absolute": None, "label": None}
+    result: dict = {"lw": None, "dash": None, "color": None, "begin": None, "end": None, "absolute": None, "label": None}
     coords_found: list[tuple[float, float]] = []
 
     for tok in tokens:
@@ -166,6 +166,8 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
             result["lw"] = float(tok.value)
         elif tok.kind == "WORD" and tok.value.lower() in _DASH_STYLES:
             result["dash"] = tok.value.lower()
+        elif tok.kind == "COLOR_ELEM":
+            result["color"] = tok.value
         elif tok.kind == "ABSOLUTE":
             result["absolute"] = parse_absolute(tok)
         elif tok.kind == "COORD":
@@ -199,15 +201,15 @@ def _leading_measurements(tokens: list[Token], count: int, lineno: int) -> list[
 def _parse_line_elem(tokens: list[Token], lineno: int) -> LineElem:
     (length,) = _leading_measurements(tokens, 1, lineno)
     c = _extract_common(tokens, lineno)
-    return LineElem(length=length, lw=c["lw"], dash=c["dash"], begin=c["begin"], end=c["end"],
-                    absolute=c["absolute"], source_line=lineno)
+    return LineElem(length=length, lw=c["lw"], dash=c["dash"], color=c["color"],
+                    begin=c["begin"], end=c["end"], absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
     length, width = _leading_measurements(tokens, 2, lineno)
     c = _extract_common(tokens, lineno)
-    return RectElem(length=length, width=width, lw=c["lw"], dash=c["dash"], label=c["label"],
-                    begin=c["begin"], end=c["end"], absolute=c["absolute"],
+    return RectElem(length=length, width=width, lw=c["lw"], dash=c["dash"], color=c["color"],
+                    label=c["label"], begin=c["begin"], end=c["end"], absolute=c["absolute"],
                     source_line=lineno)
 
 
@@ -221,8 +223,8 @@ def _parse_wall(tokens: list[Token], lineno: int) -> WallElem:
     thickness = all_dims[1] if len(all_dims) > 1 else 0.5
     c = _extract_common(tokens, lineno)
     return WallElem(length=length, thickness=thickness, lw=c["lw"], dash=c["dash"],
-                    begin=c["begin"], end=c["end"], absolute=c["absolute"],
-                    source_line=lineno)
+                    color=c["color"], begin=c["begin"], end=c["end"],
+                    absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
@@ -233,7 +235,7 @@ def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
             swing = tok.value.lower()
     c = _extract_common(tokens, lineno)
     return DoorElem(width=width, swing=swing, lw=c["lw"], dash=c["dash"],
-                    absolute=c["absolute"], source_line=lineno)
+                    color=c["color"], absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
@@ -243,21 +245,21 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
     depth = dims[1] if len(dims) > 1 else 0.5
     c = _extract_common(tokens, lineno)
     return WindowElem(width=width, depth=depth, lw=c["lw"], dash=c["dash"],
-                      absolute=c["absolute"], source_line=lineno)
+                      color=c["color"], absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     radius, sweep = _leading_measurements(tokens, 2, lineno)
     c = _extract_common(tokens, lineno)
     return ArcElem(radius=radius, sweep=sweep, lw=c["lw"], dash=c["dash"],
-                   absolute=c["absolute"], source_line=lineno)
+                   color=c["color"], absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     (length,) = _leading_measurements(tokens, 1, lineno)
     c = _extract_common(tokens, lineno)
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
-                     absolute=c["absolute"], source_line=lineno)
+                     color=c["color"], absolute=c["absolute"], source_line=lineno)
 
 
 def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:

@@ -80,7 +80,10 @@ class ElementPlacer:
         self._cursor.y = y + dy * length
 
     def _flags(self) -> dict:
-        return {"show_id": self._show_id, "show_dims": self._show_dims, "color": self._color}
+        return {"show_id": self._show_id, "show_dims": self._show_dims}
+
+    def _resolve_color(self, elem_color: str | None) -> str:
+        return elem_color if elem_color is not None else self._color
 
     # ── element placers ───────────────────────────────────────────────────────
 
@@ -91,7 +94,7 @@ class ElementPlacer:
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -103,7 +106,7 @@ class ElementPlacer:
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=elem.label,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=elem.label,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -115,7 +118,7 @@ class ElementPlacer:
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"thickness": elem.thickness},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -128,7 +131,7 @@ class ElementPlacer:
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"swing": elem.swing},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -141,7 +144,7 @@ class ElementPlacer:
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"depth": elem.depth},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -154,7 +157,7 @@ class ElementPlacer:
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -167,7 +170,7 @@ class ElementPlacer:
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)

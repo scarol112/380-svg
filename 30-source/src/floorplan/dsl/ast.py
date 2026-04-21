@@ -12,6 +12,7 @@ class LineElem:
     length: float  # feet
     lw: float | None = None  # SVG user units; None = default
     dash: str | None = None
+    color: str | None = None  # overrides color directive for this element
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
@@ -24,6 +25,7 @@ class RectElem:
     width: float   # feet, perpendicular to drawing direction
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     label: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
@@ -37,6 +39,7 @@ class WallElem:
     thickness: float = 0.5  # feet (default 6")
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
@@ -49,6 +52,7 @@ class DoorElem:
     swing: str = "right"  # left | right | in | out
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -59,6 +63,7 @@ class WindowElem:
     depth: float = 0.5  # feet (default 6")
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -69,6 +74,7 @@ class ArcElem:
     sweep: float   # degrees
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -78,6 +84,7 @@ class ArrowElem:
     length: float  # feet
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 

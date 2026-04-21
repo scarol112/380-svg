@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.04.21.15.38.38;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.04.21.15.27.45;	author scarol;	state Exp;
@@ -37,9 +42,9 @@ desc
 @
 
 
-1.5
+1.6
 log
-@color directive: set stroke color for subsequent elements
+@C= per-element color override; quote-aware comment strip for hex colors
 @
 text
 @from ..dsl.ast import (
@@ -124,7 +129,10 @@ class ElementPlacer:
         self._cursor.y = y + dy * length
 
     def _flags(self) -> dict:
-        return {"show_id": self._show_id, "show_dims": self._show_dims, "color": self._color}
+        return {"show_id": self._show_id, "show_dims": self._show_dims}
+
+    def _resolve_color(self, elem_color: str | None) -> str:
+        return elem_color if elem_color is not None else self._color
 
     # ── element placers ───────────────────────────────────────────────────────
 
@@ -135,7 +143,7 @@ class ElementPlacer:
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -147,7 +155,7 @@ class ElementPlacer:
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=elem.label,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=elem.label,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -159,7 +167,7 @@ class ElementPlacer:
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"thickness": elem.thickness},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -172,7 +180,7 @@ class ElementPlacer:
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"swing": elem.swing},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -185,7 +193,7 @@ class ElementPlacer:
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"depth": elem.depth},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -198,7 +206,7 @@ class ElementPlacer:
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
             **self._flags(), source_line=elem.source_line,
         ))
@@ -211,7 +219,7 @@ class ElementPlacer:
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
-            lw=_lw(elem.lw), dash=elem.dash, label=None,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
@@ -230,6 +238,38 @@ class ElementPlacer:
             extra=extra,
             source_line=elem.source_line,
         ))
+@
+
+
+1.5
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d83 4
+a86 1
+        return {"show_id": self._show_id, "show_dims": self._show_dims, "color": self._color}
+d97 1
+a97 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
+d109 1
+a109 1
+            lw=_lw(elem.lw), dash=elem.dash, label=elem.label,
+d121 1
+a121 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
+d134 1
+a134 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
+d147 1
+a147 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
+d160 1
+a160 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
+d173 1
+a173 1
+            lw=_lw(elem.lw), dash=elem.dash, label=None,
 @
 
 

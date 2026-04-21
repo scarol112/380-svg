@@ -1,10 +1,20 @@
-head	1.7;
+head	1.9;
 access;
 symbols;
 locks
-	scarol:1.7; strict;
+	scarol:1.9; strict;
 comment	@# @;
 
+
+1.9
+date	2026.04.21.15.40.29;	author scarol;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2026.04.21.15.38.38;	author scarol;	state Exp;
+branches;
+next	1.7;
 
 1.7
 date	2026.04.21.15.27.45;	author scarol;	state Exp;
@@ -47,12 +57,12 @@ desc
 @
 
 
-1.7
+1.9
 log
-@color directive: set stroke color for subsequent elements
+@add C= to element syntax listings and common options table; remove orphaned example block
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.6 $ $Date: 2026/04/20 19:28:49 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.8 $ $Date: 2026/04/21 15:38:38 $ -->
 # App working title: svg
 
 ## Project tools
@@ -107,6 +117,8 @@ Default direction is 90 (rightward). All display directives take effect immediat
 
 `color` accepts any CSS color: named colors (`red`, `blue`, `green`, …) or quoted values for hex and rgb notation (`"#ff0000"`, `"rgb(0,128,0)"`). Use `color black` to reset. Color applies to strokes only; wall fill color is always dark grey.
 
+Per-element color: append `C=<value>` to any geometry element to override the current directive color for that one element only. Same value syntax as the `color` directive.
+
 `include` filenames may be quoted or bare. Relative paths are resolved from the directory of the including file. Circular includes are detected and reported as an error.
 
 ### Measurements
@@ -128,11 +140,13 @@ All internal geometry is stored in feet (float). The SVG renderer multiplies by 
 
 ### Element syntax (positional)
 ```
-<type> <length> [<width>] [<lw>px] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
+<type> <length> [<width>] [<lw>px] [<dash>] [C=<color>] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
 ```
 
 Optional tokens after length/width (order-independent within their type):
 - `<n>px` — line weight override (SVG user units)
+- `<dash>` — dash style keyword (see Dash styles)
+- `C=<color>` — per-element stroke color override; same values as `color` directive
 - `<h>,<v>` (first coord pair) — **Begin Point**: (h,v) offset from element top-left where this element connects to the previous element's End Point. Default: center of element's trailing side.
 - `<h>,<v>` (second coord pair) — **End Point**: (h,v) offset from element top-left where the next element connects. Default: center of element's leading side.
 - `A=<h>,<v>` — absolute placement: (h,v) from canvas origin to this element's top-left. The cursor is updated to the element's end point, so the next element continues from there.
@@ -141,13 +155,13 @@ Optional tokens after length/width (order-independent within their type):
 ### Element Types
 
 ```
-line <length> [<lw>px] [<dash>]
-rect <length> <width> [<lw>px] [<dash>] ["label"]
-wall <length> [<thickness>] [<lw>px] [<dash>]   # default thickness = 6"
-door <width> [left|right|in|out] [<lw>px] [<dash>]  # default swing = right
-window <width> [<depth>] [<lw>px] [<dash>]      # default depth = 6"
-arc <radius> <sweep-degrees> [<lw>px] [<dash>]
-arrow <length> [<lw>px] [<dash>]
+line <length> [<lw>px] [<dash>] [C=<color>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>]   # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
+arrow <length> [<lw>px] [<dash>] [C=<color>]
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 
@@ -180,6 +194,42 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.8
+log
+@C= per-element color override; quote-aware comment strip for hex colors
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:27:45 $ -->
+d79 1
+a79 1
+<type> <length> [<width>] [<lw>px] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
+d84 2
+d94 7
+a100 7
+line <length> [<lw>px] [<dash>]
+rect <length> <width> [<lw>px] [<dash>] ["label"]
+wall <length> [<thickness>] [<lw>px] [<dash>]   # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>]      # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>]
+arrow <length> [<lw>px] [<dash>]
+@
+
+
+1.7
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.6 $ $Date: 2026/04/20 19:28:49 $ -->
+d55 2
 @
 
 

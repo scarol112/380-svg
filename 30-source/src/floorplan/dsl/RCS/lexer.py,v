@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.21.15.38.38;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@C= per-element color override; quote-aware comment strip for hex colors
 @
 text
 @import re
@@ -41,6 +46,7 @@ _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
+_COLOR_ELEM  = re.compile(r'C=(?:"([^"]*)"|(\w+))', re.IGNORECASE)
 
 
 def tokenize(raw: str, lineno: int) -> list[Token]:
@@ -55,6 +61,13 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
         m = _ABSOLUTE.match(raw, i)
         if m:
             tokens.append(Token("ABSOLUTE", m.group(), lineno))
+            i = m.end()
+            continue
+
+        m = _COLOR_ELEM.match(raw, i)
+        if m:
+            color_val = m.group(1) if m.group(1) is not None else m.group(2)
+            tokens.append(Token("COLOR_ELEM", color_val, lineno))
             i = m.end()
             continue
 
@@ -142,4 +155,14 @@ def parse_absolute(token: Token) -> tuple[float, float]:
     if not m:
         raise ValueError(f"Not an absolute offset: {token.value!r}")
     return float(m.group(1)), float(m.group(2))
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d20 1
+d35 7
 @

@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.04.21.15.38.38;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.04.21.15.27.45;	author scarol;	state Exp;
@@ -37,9 +42,9 @@ desc
 @
 
 
-1.5
+1.6
 log
-@color directive: set stroke color for subsequent elements
+@C= per-element color override; quote-aware comment strip for hex colors
 @
 text
 @from dataclasses import dataclass, field
@@ -56,6 +61,7 @@ class LineElem:
     length: float  # feet
     lw: float | None = None  # SVG user units; None = default
     dash: str | None = None
+    color: str | None = None  # overrides color directive for this element
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
@@ -68,6 +74,7 @@ class RectElem:
     width: float   # feet, perpendicular to drawing direction
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     label: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
@@ -81,6 +88,7 @@ class WallElem:
     thickness: float = 0.5  # feet (default 6")
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
@@ -93,6 +101,7 @@ class DoorElem:
     swing: str = "right"  # left | right | in | out
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -103,6 +112,7 @@ class WindowElem:
     depth: float = 0.5  # feet (default 6")
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -113,6 +123,7 @@ class ArcElem:
     sweep: float   # degrees
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -122,6 +133,7 @@ class ArrowElem:
     length: float  # feet
     lw: float | None = None
     dash: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     source_line: int = 0
 
@@ -161,6 +173,21 @@ ASTNode = (
     | ArrowElem
     | LabelElem
 )
+@
+
+
+1.5
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d15 1
+d28 1
+d42 1
+d55 1
+d66 1
+d77 1
+d87 1
 @
 
 

@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:27:45 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.9 $ $Date: 2026/04/21 15:40:29 $ -->
 # App working title: svg
 
 ## Project tools
@@ -53,6 +53,8 @@ Default direction is 90 (rightward). All display directives take effect immediat
 
 `color` accepts any CSS color: named colors (`red`, `blue`, `green`, …) or quoted values for hex and rgb notation (`"#ff0000"`, `"rgb(0,128,0)"`). Use `color black` to reset. Color applies to strokes only; wall fill color is always dark grey.
 
+Per-element color: append `C=<value>` to any geometry element to override the current directive color for that one element only. Same value syntax as the `color` directive.
+
 `include` filenames may be quoted or bare. Relative paths are resolved from the directory of the including file. Circular includes are detected and reported as an error.
 
 ### Measurements
@@ -74,11 +76,13 @@ All internal geometry is stored in feet (float). The SVG renderer multiplies by 
 
 ### Element syntax (positional)
 ```
-<type> <length> [<width>] [<lw>px] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
+<type> <length> [<width>] [<lw>px] [<dash>] [C=<color>] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
 ```
 
 Optional tokens after length/width (order-independent within their type):
 - `<n>px` — line weight override (SVG user units)
+- `<dash>` — dash style keyword (see Dash styles)
+- `C=<color>` — per-element stroke color override; same values as `color` directive
 - `<h>,<v>` (first coord pair) — **Begin Point**: (h,v) offset from element top-left where this element connects to the previous element's End Point. Default: center of element's trailing side.
 - `<h>,<v>` (second coord pair) — **End Point**: (h,v) offset from element top-left where the next element connects. Default: center of element's leading side.
 - `A=<h>,<v>` — absolute placement: (h,v) from canvas origin to this element's top-left. The cursor is updated to the element's end point, so the next element continues from there.
@@ -87,13 +91,13 @@ Optional tokens after length/width (order-independent within their type):
 ### Element Types
 
 ```
-line <length> [<lw>px] [<dash>]
-rect <length> <width> [<lw>px] [<dash>] ["label"]
-wall <length> [<thickness>] [<lw>px] [<dash>]   # default thickness = 6"
-door <width> [left|right|in|out] [<lw>px] [<dash>]  # default swing = right
-window <width> [<depth>] [<lw>px] [<dash>]      # default depth = 6"
-arc <radius> <sweep-degrees> [<lw>px] [<dash>]
-arrow <length> [<lw>px] [<dash>]
+line <length> [<lw>px] [<dash>] [C=<color>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>]   # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
+arrow <length> [<lw>px] [<dash>] [C=<color>]
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 

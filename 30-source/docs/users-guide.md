@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.5 $ $Date: 2026/04/21 15:27:45 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:40:29 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -136,15 +136,15 @@ door 3 right A=2,8
 color black
 ```
 
+To change the color of a single element without affecting subsequent elements, use `C=<value>` on that element:
+
 ```
-# show rooms without cluttering annotations on narrow walls
-rect 12 10 "Living Room"
-elementid off
-dimensions off
-wall 12
-elementid on
-dimensions on
+rect 10 8 C=red "Bedroom"
+door 3 right C="#aa00aa" A=2,8
+line 12 C=blue dashed
 ```
+
+`C=` uses the same color values as the `color` directive. It overrides the current directive color for that one element only.
 
 ### Absolute placement
 
@@ -166,7 +166,7 @@ door 3 right A=2,10      # place door at (2ft, 10ft) from origin
 A straight line segment in the current direction.
 
 ```
-line <length> [<lw>px] [A=<h>,<v>]
+line <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 ```
@@ -182,7 +182,7 @@ An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
 perpendicular to it.
 
 ```
-rect <length> <width> [<lw>px] ["label"] [A=<h>,<v>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
 ```
 
 ```
@@ -201,7 +201,7 @@ A filled (solid) rectangle representing a structural wall. Default thickness
 is 6 inches.
 
 ```
-wall <length> [<thickness>] [<lw>px] [A=<h>,<v>]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 ```
@@ -217,7 +217,7 @@ A door symbol: a solid line for the door slab and a dashed quarter-circle arc
 showing the swing path. The hinge is at the element's start point.
 
 ```
-door <width> [left|right|in|out] [<lw>px] [A=<h>,<v>]
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 - `width` — clear opening width
@@ -237,7 +237,7 @@ door 3 right A=2,10
 Two parallel lines across a wall opening.
 
 ```
-window <width> [<depth>] [<lw>px] [A=<h>,<v>]
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 - `width` — opening width
@@ -259,7 +259,7 @@ window 4 A=22,3
 A general-purpose arc, drawn clockwise from the element's start point.
 
 ```
-arc <radius> <sweep-degrees> [<lw>px] [A=<h>,<v>]
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 ```
@@ -274,7 +274,7 @@ arc 5 180          # semicircle, 5ft radius
 A line with an arrowhead at the end.
 
 ```
-arrow <length> [<lw>px] [A=<h>,<v>]
+arrow <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 ```
@@ -314,6 +314,7 @@ label "SCALE 1:48" center 14 A=5,25
 | `dotted` | Dots (2,2) |
 | `center` | Center line — long dash, short dash (12,3,2,3) |
 | `hidden` | Hidden line — short dashes (4,2) |
+| `C=<color>` | Per-element stroke color override. Named (`C=red`) or quoted CSS (`C="#ff0000"`). Does not affect subsequent elements. |
 | `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
 
 Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
