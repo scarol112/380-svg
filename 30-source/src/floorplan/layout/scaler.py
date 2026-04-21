@@ -1,9 +1,9 @@
 from ..model import PlacedElement
 from .cursor import direction_vector
 
-# Print area: 8×10 inches at 96 SVG units/inch
-PRINT_W_PX = 768.0   # 8 inches
-PRINT_H_PX = 960.0   # 10 inches
+# Print area: full page (11×8.5in landscape) at 96 SVG units/inch, with 0.5in margin
+PRINT_W_PX = 1056.0  # 11 inches
+PRINT_H_PX = 816.0   # 8.5 inches
 MARGIN_PX  = 48.0    # 0.5-inch margin on each side
 
 
