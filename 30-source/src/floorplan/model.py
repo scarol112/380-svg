@@ -12,6 +12,7 @@ class PlacedElement:
     direction: float   # drawing direction at time of placement (degrees)
     lw: float          # SVG line weight (user units); 0 = invisible
     dash: str | None   # dashed | shortdash | dotted | center | hidden; None = solid
+    color: str         # CSS stroke color; default "black"
     label: str | None
     extra: dict = field(default_factory=dict)  # element-specific extras (swing, align, etc.)
     show_id: bool = True

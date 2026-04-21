@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -32,13 +37,13 @@ desc
 @
 
 
-1.4
+1.5
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
 @from ..dsl.ast import (
-    ASTNode, DirectionDirective, DisplayDirective,
+    ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -61,6 +66,7 @@ class ElementPlacer:
         self._canvas_origin: tuple[float, float] = (0.0, 0.0)
         self._show_id: bool = True
         self._show_dims: bool = True
+        self._color: str = "black"
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -76,6 +82,8 @@ class ElementPlacer:
                     self._show_id = node.enabled
                 else:
                     self._show_dims = node.enabled
+            case ColorDirective():
+                self._color = node.color
             case LineElem():
                 self._place_line(node)
             case RectElem():
@@ -116,7 +124,7 @@ class ElementPlacer:
         self._cursor.y = y + dy * length
 
     def _flags(self) -> dict:
-        return {"show_id": self._show_id, "show_dims": self._show_dims}
+        return {"show_id": self._show_id, "show_dims": self._show_dims, "color": self._color}
 
     # ── element placers ───────────────────────────────────────────────────────
 
@@ -218,10 +226,29 @@ class ElementPlacer:
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, dash=None, label=elem.text,
+            lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
             extra=extra,
             source_line=elem.source_line,
         ))
+@
+
+
+1.4
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d2 1
+a2 1
+    ASTNode, DirectionDirective, DisplayDirective,
+d25 1
+d41 2
+d83 1
+a83 1
+        return {"show_id": self._show_id, "show_dims": self._show_dims}
+d185 1
+a185 1
+            lw=DEFAULT_LW, dash=None, label=elem.text,
 @
 
 

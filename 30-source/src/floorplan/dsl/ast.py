@@ -98,9 +98,16 @@ class DisplayDirective:
     source_line: int = 0
 
 
+@dataclass
+class ColorDirective:
+    color: str     # CSS color value; "black" = reset to default
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
     | DisplayDirective
+    | ColorDirective
     | LineElem
     | RectElem
     | WallElem

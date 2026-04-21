@@ -44,10 +44,10 @@ def door_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     return (
         f'<line x1="{hinge_x:.1f}" y1="{hinge_y:.1f}" '
         f'x2="{slab_end_x:.1f}" y2="{slab_end_y:.1f}" '
-        f'stroke="black" stroke-width="{lw}"{da}/>\n'
+        f'stroke="{elem.color}" stroke-width="{lw}"{da}/>\n'
         f'    <path d="M {slab_end_x:.1f},{slab_end_y:.1f} '
         f'A {w:.1f},{w:.1f} 0 0,{sweep_flag} {arc_end_x:.1f},{arc_end_y:.1f}" '
-        f'fill="none" stroke="black" stroke-width="{lw}" stroke-dasharray="4,3"{da}/>'
+        f'fill="none" stroke="{elem.color}" stroke-width="{lw}" stroke-dasharray="4,3"{da}/>'
     )
 
 
@@ -73,6 +73,6 @@ def window_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
         lines.append(
             f'<line x1="{x0+ox:.1f}" y1="{y0+oy:.1f}" '
             f'x2="{x1+ox:.1f}" y2="{y1+oy:.1f}" '
-            f'stroke="black" stroke-width="{lw}"{da}/>'
+            f'stroke="{elem.color}" stroke-width="{lw}"{da}/>'
         )
     return "\n    ".join(lines)

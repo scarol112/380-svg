@@ -1,5 +1,5 @@
 from ..dsl.ast import (
-    ASTNode, DirectionDirective, DisplayDirective,
+    ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -22,6 +22,7 @@ class ElementPlacer:
         self._canvas_origin: tuple[float, float] = (0.0, 0.0)
         self._show_id: bool = True
         self._show_dims: bool = True
+        self._color: str = "black"
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -37,6 +38,8 @@ class ElementPlacer:
                     self._show_id = node.enabled
                 else:
                     self._show_dims = node.enabled
+            case ColorDirective():
+                self._color = node.color
             case LineElem():
                 self._place_line(node)
             case RectElem():
@@ -77,7 +80,7 @@ class ElementPlacer:
         self._cursor.y = y + dy * length
 
     def _flags(self) -> dict:
-        return {"show_id": self._show_id, "show_dims": self._show_dims}
+        return {"show_id": self._show_id, "show_dims": self._show_dims, "color": self._color}
 
     # ── element placers ───────────────────────────────────────────────────────
 
@@ -179,7 +182,7 @@ class ElementPlacer:
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, dash=None, label=elem.text,
+            lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
             extra=extra,
             source_line=elem.source_line,
         ))

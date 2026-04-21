@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.4 $ $Date: 2026/04/20 19:28:49 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.5 $ $Date: 2026/04/21 15:27:45 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -112,6 +112,29 @@ dimensions on|off
 Toggle element reference numbers and dimension labels independently. Both are
 `on` by default. The directive takes effect for all elements that follow it;
 elements placed before the directive are unaffected.
+
+### Color
+
+```
+color <value>
+```
+
+Sets the stroke color for all subsequent elements. Default is `black`.
+
+- Named colors: `color red`, `color blue`, `color green`, …
+- Hex colors (must be quoted): `color "#ff0000"`
+- RGB (must be quoted): `color "rgb(0,128,0)"`
+- Reset to default: `color black`
+
+Color applies to strokes only. Wall fill is always dark grey regardless of color.
+
+```
+color red
+rect 10 8 "Bedroom"
+color blue
+door 3 right A=2,8
+color black
+```
 
 ```
 # show rooms without cluttering annotations on narrow walls

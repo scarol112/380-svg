@@ -119,7 +119,7 @@ def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -141,7 +141,7 @@ def _rect_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="none" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -163,7 +163,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="#333" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'fill="#333" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -180,7 +180,7 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     large = 1 if sweep_deg > 180 else 0
     return (
         f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
-        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"'
+        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"'
         f'{_dash_attr(elem.dash)}/>'
     )
 
@@ -193,7 +193,7 @@ def _arrow_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
+        f'stroke="{elem.color}" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
         f'{_dash_attr(elem.dash)}/>'
     )
 

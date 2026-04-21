@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -32,9 +37,9 @@ desc
 @
 
 
-1.4
+1.5
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
 @from dataclasses import dataclass, field
@@ -137,9 +142,16 @@ class DisplayDirective:
     source_line: int = 0
 
 
+@@dataclass
+class ColorDirective:
+    color: str     # CSS color value; "black" = reset to default
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
     | DisplayDirective
+    | ColorDirective
     | LineElem
     | RectElem
     | WallElem
@@ -149,6 +161,16 @@ ASTNode = (
     | ArrowElem
     | LabelElem
 )
+@
+
+
+1.4
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d101 6
+d110 1
 @
 
 

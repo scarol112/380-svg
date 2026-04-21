@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -37,14 +42,14 @@ desc
 @
 
 
-1.5
+1.6
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
 @from pathlib import Path
 from .ast import (
-    ASTNode, DirectionDirective, DisplayDirective,
+    ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -53,6 +58,17 @@ from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolu
 
 class ParseError(Exception):
     pass
+
+
+def _strip_comment(raw: str) -> str:
+    """Strip trailing # comment, ignoring # inside double-quoted strings."""
+    in_quote = False
+    for i, ch in enumerate(raw):
+        if ch == '"':
+            in_quote = not in_quote
+        elif ch == '#' and not in_quote:
+            return raw[:i].strip()
+    return raw.strip()
 
 
 def parse_file(
@@ -74,7 +90,7 @@ def parse_file(
 
     nodes: list[ASTNode] = []
     for lineno, raw_line in enumerate(text.splitlines(), start=1):
-        line = raw_line.split("#")[0].strip()
+        line = _strip_comment(raw_line)
         if not line:
             continue
         tokens = tokenize(line, lineno)
@@ -127,6 +143,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
 
     if keyword == "direction":
         return _parse_direction(rest, lineno)
+    if keyword == "color":
+        return _parse_color(rest, lineno)
     if keyword == "elementid":
         return _parse_display(rest, lineno, "elementid")
     if keyword == "dimensions":
@@ -160,6 +178,19 @@ def _parse_display(tokens: list[Token], lineno: int, target: str) -> DisplayDire
     if val not in ("on", "off"):
         raise ParseError(f"Line {lineno}: {target} requires 'on' or 'off', got {val!r}")
     return DisplayDirective(target=target, enabled=(val == "on"), source_line=lineno)
+
+
+def _parse_color(tokens: list[Token], lineno: int) -> ColorDirective:
+    if not tokens:
+        raise ParseError(f"Line {lineno}: color requires a value")
+    tok = tokens[0]
+    if tok.kind == "QUOTED":
+        color = tok.value
+    elif tok.kind == "WORD":
+        color = tok.value.lower()
+    else:
+        raise ParseError(f"Line {lineno}: color requires a named color or quoted CSS value")
+    return ColorDirective(color=color, source_line=lineno)
 
 
 def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:
@@ -297,6 +328,23 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
         if tokens and tokens[0].kind == "WORD":
             text = tokens[0].value
     return LabelElem(text=text, align=align, font_size=font_size, absolute=absolute, source_line=lineno)
+@
+
+
+1.5
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d3 1
+a3 1
+    ASTNode, DirectionDirective, DisplayDirective,
+d14 11
+d44 1
+a44 1
+        line = raw_line.split("#")[0].strip()
+d97 2
+d132 13
 @
 
 

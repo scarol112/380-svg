@@ -1,6 +1,6 @@
 from pathlib import Path
 from .ast import (
-    ASTNode, DirectionDirective, DisplayDirective,
+    ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -9,6 +9,17 @@ from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolu
 
 class ParseError(Exception):
     pass
+
+
+def _strip_comment(raw: str) -> str:
+    """Strip trailing # comment, ignoring # inside double-quoted strings."""
+    in_quote = False
+    for i, ch in enumerate(raw):
+        if ch == '"':
+            in_quote = not in_quote
+        elif ch == '#' and not in_quote:
+            return raw[:i].strip()
+    return raw.strip()
 
 
 def parse_file(
@@ -30,7 +41,7 @@ def parse_file(
 
     nodes: list[ASTNode] = []
     for lineno, raw_line in enumerate(text.splitlines(), start=1):
-        line = raw_line.split("#")[0].strip()
+        line = _strip_comment(raw_line)
         if not line:
             continue
         tokens = tokenize(line, lineno)
@@ -83,6 +94,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
 
     if keyword == "direction":
         return _parse_direction(rest, lineno)
+    if keyword == "color":
+        return _parse_color(rest, lineno)
     if keyword == "elementid":
         return _parse_display(rest, lineno, "elementid")
     if keyword == "dimensions":
@@ -116,6 +129,19 @@ def _parse_display(tokens: list[Token], lineno: int, target: str) -> DisplayDire
     if val not in ("on", "off"):
         raise ParseError(f"Line {lineno}: {target} requires 'on' or 'off', got {val!r}")
     return DisplayDirective(target=target, enabled=(val == "on"), source_line=lineno)
+
+
+def _parse_color(tokens: list[Token], lineno: int) -> ColorDirective:
+    if not tokens:
+        raise ParseError(f"Line {lineno}: color requires a value")
+    tok = tokens[0]
+    if tok.kind == "QUOTED":
+        color = tok.value
+    elif tok.kind == "WORD":
+        color = tok.value.lower()
+    else:
+        raise ParseError(f"Line {lineno}: color requires a named color or quoted CSS value")
+    return ColorDirective(color=color, source_line=lineno)
 
 
 def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:

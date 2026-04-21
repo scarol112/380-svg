@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -37,9 +42,9 @@ desc
 @
 
 
-1.5
+1.6
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
 @"""SVG renderer.
@@ -163,7 +168,7 @@ def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -185,7 +190,7 @@ def _rect_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="none" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -207,7 +212,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="#333" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'fill="#333" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -224,7 +229,7 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     large = 1 if sweep_deg > 180 else 0
     return (
         f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
-        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"'
+        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"'
         f'{_dash_attr(elem.dash)}/>'
     )
 
@@ -237,7 +242,7 @@ def _arrow_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     y2 = _px(elem.y + dy * elem.length, scale, ty)
     return (
         f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
+        f'stroke="{elem.color}" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
         f'{_dash_attr(elem.dash)}/>'
     )
 
@@ -274,6 +279,29 @@ def _label_for_rect(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
         f'font-size="{LABEL_FONT}" font-family="sans-serif" text-anchor="middle" '
         f'dominant-baseline="middle">{elem.label}</text>'
     )
+@
+
+
+1.5
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d122 1
+a122 1
+        f'stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+d144 1
+a144 1
+        f'fill="none" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+d166 1
+a166 1
+        f'fill="#333" stroke="black" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+d183 1
+a183 1
+        f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="black" stroke-width="{elem.lw}"'
+d196 1
+a196 1
+        f'stroke="black" stroke-width="{elem.lw}" marker-end="url(#arrowhead)"'
 @
 
 

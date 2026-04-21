@@ -1,10 +1,15 @@
-head	1.3;
+head	1.4;
 access;
 symbols;
 locks
-	scarol:1.3; strict;
+	scarol:1.4; strict;
 comment	@# @;
 
+
+1.4
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.3;
 
 1.3
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -27,9 +32,9 @@ desc
 @
 
 
-1.3
+1.4
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
 @from dataclasses import dataclass, field
@@ -46,11 +51,21 @@ class PlacedElement:
     direction: float   # drawing direction at time of placement (degrees)
     lw: float          # SVG line weight (user units); 0 = invisible
     dash: str | None   # dashed | shortdash | dotted | center | hidden; None = solid
+    color: str         # CSS stroke color; default "black"
     label: str | None
     extra: dict = field(default_factory=dict)  # element-specific extras (swing, align, etc.)
     show_id: bool = True
     show_dims: bool = True
     source_line: int = 0
+@
+
+
+1.3
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d15 1
 @
 
 

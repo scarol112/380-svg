@@ -1,10 +1,15 @@
-head	1.6;
+head	1.7;
 access;
 symbols;
 locks
-	scarol:1.6; strict;
+	scarol:1.7; strict;
 comment	@# @;
 
+
+1.7
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.6;
 
 1.6
 date	2026.04.20.19.28.49;	author scarol;	state Exp;
@@ -42,12 +47,12 @@ desc
 @
 
 
-1.6
+1.7
 log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@color directive: set stroke color for subsequent elements
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.5 $ $Date: 2026/04/20 18:34:40 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.6 $ $Date: 2026/04/20 19:28:49 $ -->
 # App working title: svg
 
 ## Project tools
@@ -95,9 +100,12 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 direction <degrees>    # set drawing direction: 0=up, 90=right, 180=down, 270=left
 elementid on|off       # show/hide element reference numbers (default: on)
 dimensions on|off      # show/hide dimension labels (default: on)
+color <value>          # set stroke color for subsequent elements (default: black)
 include <filename>     # insert contents of another DSL file at this position
 ```
 Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
+
+`color` accepts any CSS color: named colors (`red`, `blue`, `green`, …) or quoted values for hex and rgb notation (`"#ff0000"`, `"rgb(0,128,0)"`). Use `color black` to reset. Color applies to strokes only; wall fill color is always dark grey.
 
 `include` filenames may be quoted or bare. Relative paths are resolved from the directory of the including file. Circular includes are detected and reported as an error.
 
@@ -172,6 +180,19 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.6
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.5 $ $Date: 2026/04/20 18:34:40 $ -->
+d49 1
+d53 2
 @
 
 
