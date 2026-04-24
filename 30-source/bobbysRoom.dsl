@@ -1,6 +1,6 @@
 # Bobby's Room
 elementid off
-
+showcornerxy on
 # entry wall
 line 9'1"
 line 27.6" 0px
@@ -40,10 +40,14 @@ line 0 0px A=2.25,0
 direction 180
 line 5 shortdash
 line 0 0px A=0,-0.2
-#include rulerh.dsl
-#include rulerv.dsl
-#
+
+# Annotations
 dimensions off
+showcornerxy off
+
+line 0 0px A=0,10
+include rulerh.dsl
+
 direction 0
 arrow 3px 1.5' A=10.5,1
 direction 45

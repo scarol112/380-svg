@@ -1,4 +1,5 @@
 elementid off
+showcornerxy on
 # kitchen wall
 line 8'8"
 line 32" 0px
@@ -54,8 +55,13 @@ line 51"
 window 34"
 line 51"
 
-
+# Annotations
 dimensions off
+showcornerxy off
+
+line 0 0px A=0,12.5
+include rulerh.dsl
+
 direction 0
 arrow 3px 1.5' A=10,1
 direction 45

@@ -1,27 +1,28 @@
 elementid off
 dimensions off
+showcornerxy off
 direction 90
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px
+line 0.5
+line 0.5 4px

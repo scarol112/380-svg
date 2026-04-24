@@ -1,10 +1,10 @@
 elementid off
-
+showcornerxy on
 # Entry wall
 # closet
 line 2
 direction 180
-wall 2'9" 3"
+wall 2'9" 3" C=green
 line 4 0px
 wall 1'6" 3"
 Direction 270
@@ -43,7 +43,13 @@ line 47.5"
 window 79"
 line 18"
 
+# Annotations
 dimensions off
+showcornerxy off
+
+line 0 0px A=0,9
+include rulerh.dsl
+
 direction 0
 arrow 1.5 2px A=5,1
 label 16 "hallway" A=4.6,-1
