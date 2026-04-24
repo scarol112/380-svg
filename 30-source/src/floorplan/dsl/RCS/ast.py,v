@@ -1,10 +1,15 @@
-head	1.6;
+head	1.7;
 access;
 symbols;
 locks
-	scarol:1.6; strict;
+	scarol:1.7; strict;
 comment	@# @;
 
+
+1.7
+date	2026.04.24.12.30.06;	author scarol;	state Exp;
+branches;
+next	1.6;
 
 1.6
 date	2026.04.21.15.38.38;	author scarol;	state Exp;
@@ -42,9 +47,9 @@ desc
 @
 
 
-1.6
+1.7
 log
-@C= per-element color override; quote-aware comment strip for hex colors
+@Add showcornerxy directive (issue #15)
 @
 text
 @from dataclasses import dataclass, field
@@ -160,10 +165,17 @@ class ColorDirective:
     source_line: int = 0
 
 
+@@dataclass
+class ShowCornerXYDirective:
+    enabled: bool
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
     | DisplayDirective
     | ColorDirective
+    | ShowCornerXYDirective
     | LineElem
     | RectElem
     | WallElem
@@ -173,6 +185,16 @@ ASTNode = (
     | ArrowElem
     | LabelElem
 )
+@
+
+
+1.6
+log
+@C= per-element color override; quote-aware comment strip for hex colors
+@
+text
+@d114 6
+d124 1
 @
 
 

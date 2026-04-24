@@ -1,0 +1,50 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.21.19.50.01;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@initial Checkin
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@line 0 0px A=0,0
+direction 0
+include ruler.dsl
+direction 45
+line 0 0px A=0,0
+include ruler.dsl
+direction 90
+line 0 0px A=0,0
+include ruler.dsl
+direction 135
+line 0 0px A=0,0
+include ruler.dsl
+direction 180
+line 0 0px A=0,0
+include ruler.dsl
+direction 225
+line 0 0px A=0,0
+include ruler.dsl
+direction 270
+line 0 0px A=0,0
+include ruler.dsl
+direction 315
+line 0 0px A=0,0
+include ruler.dsl
+line 0 0px A=0,0
+@

@@ -1,10 +1,15 @@
-head	1.6;
+head	1.7;
 access;
 symbols;
 locks
-	scarol:1.6; strict;
+	scarol:1.7; strict;
 comment	@# @;
 
+
+1.7
+date	2026.04.24.12.30.25;	author scarol;	state Exp;
+branches;
+next	1.6;
 
 1.6
 date	2026.04.21.15.27.45;	author scarol;	state Exp;
@@ -42,9 +47,9 @@ desc
 @
 
 
-1.6
+1.7
 log
-@color directive: set stroke color for subsequent elements
+@Render showcornerxy markers with leader lines and overlap avoidance (issue #15)
 @
 text
 @"""SVG renderer.
@@ -65,6 +70,116 @@ PAGE_H = 816   # 8.5in @@ 96dpi
 
 LABEL_FONT = 10  # room label inside rect
 
+_CORNER_FONT = 9
+_CORNER_LEAD_GAP = 5    # px gap from corner point to leader start
+_CORNER_LEAD_LEN = 14   # px leader line length
+_CORNER_TEXT_GAP = 3    # px gap from leader end to text start
+
+# (dx, dy, text-anchor) for NE, NW, SE, SW — try in this order
+_DIAGONALS: list[tuple[float, float, str]] = [
+    (+0.7071, -0.7071, "start"),  # NE (preferred)
+    (-0.7071, -0.7071, "end"),    # NW
+    (+0.7071, +0.7071, "start"),  # SE
+    (-0.7071, +0.7071, "end"),    # SW
+]
+
+
+
+_LABEL_CHAR_W = 0.55
+_LABEL_LINE_H = 1.4
+
+
+def _free_label_bbox(
+    elem: PlacedElement, scale: float, tx: float, ty: float
+) -> tuple[float, float, float, float]:
+    font_size = elem.extra.get("font_size", LABEL_FONT)
+    x = _px(elem.x, scale, tx)
+    y = _px(elem.y, scale, ty)
+    w = len(elem.label or "") * font_size * _LABEL_CHAR_W
+    h = font_size * _LABEL_LINE_H
+    align = elem.extra.get("align", "left")
+    if align == "center":
+        return x - w / 2, y - h, x + w / 2, y
+    if align == "right":
+        return x - w, y - h, x, y
+    return x, y - h, x + w, y  # left
+
+
+def _rect_label_bbox(
+    elem: PlacedElement, scale: float, tx: float, ty: float
+) -> tuple[float, float, float, float]:
+    d = elem.direction % 360
+    if d == 90:
+        cx = _px(elem.x + elem.length / 2, scale, tx)
+        cy = _px(elem.y + elem.width / 2, scale, ty)
+    elif d == 270:
+        cx = _px(elem.x - elem.length / 2, scale, tx)
+        cy = _px(elem.y - elem.width / 2, scale, ty)
+    elif d == 0:
+        cx = _px(elem.x, scale, tx)
+        cy = _px(elem.y - elem.length / 2, scale, ty)
+    else:
+        cx = _px(elem.x, scale, tx)
+        cy = _px(elem.y + elem.length / 2, scale, ty)
+    w = len(elem.label or "") * LABEL_FONT * _LABEL_CHAR_W
+    h = LABEL_FONT * _LABEL_LINE_H
+    return cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
+
+
+def _corner_leader_pos(
+    cx: float, cy: float, ldx: float, ldy: float
+) -> tuple[float, float, float, float, float, float]:
+    """Return (lx1, ly1, lx2, ly2, tax, tay) for a corner leader in direction (ldx, ldy)."""
+    lx1 = cx + ldx * _CORNER_LEAD_GAP
+    ly1 = cy + ldy * _CORNER_LEAD_GAP
+    lx2 = cx + ldx * (_CORNER_LEAD_GAP + _CORNER_LEAD_LEN)
+    ly2 = cy + ldy * (_CORNER_LEAD_GAP + _CORNER_LEAD_LEN)
+    tax = lx2 + ldx * _CORNER_TEXT_GAP
+    tay = ly2 + ldy * _CORNER_TEXT_GAP
+    return lx1, ly1, lx2, ly2, tax, tay
+
+
+def _corner_text_bbox(
+    tax: float, tay: float, text: str, anchor: str
+) -> tuple[float, float, float, float]:
+    w = len(text) * _CORNER_FONT * 0.55
+    h = _CORNER_FONT * 1.4
+    x1 = tax if anchor == "start" else tax - w
+    return x1, tay - h, x1 + w, tay
+
+
+def _cornerxy_svg(
+    elem: PlacedElement, scale: float, tx: float, ty: float, registry: AnnotationRegistry
+) -> str:
+    cx = _px(elem.x, scale, tx)
+    cy = _px(elem.y, scale, ty)
+    text = elem.label or ""
+
+    # Pick first diagonal whose text bbox is clear of registered geometry/annotations
+    chosen = _DIAGONALS[0]
+    for ldx, ldy, anchor in _DIAGONALS:
+        _, _, _, _, tax, tay = _corner_leader_pos(cx, cy, ldx, ldy)
+        bbox = _corner_text_bbox(tax, tay, text, anchor)
+        if not registry._overlaps(*bbox):
+            registry.register_box(*bbox)
+            chosen = (ldx, ldy, anchor)
+            break
+    else:
+        # All directions overlapped; fall back to NE and register anyway
+        ldx, ldy, anchor = _DIAGONALS[0]
+        _, _, _, _, tax, tay = _corner_leader_pos(cx, cy, ldx, ldy)
+        registry.register_box(*_corner_text_bbox(tax, tay, text, anchor))
+        chosen = (ldx, ldy, anchor)
+
+    ldx, ldy, anchor = chosen
+    lx1, ly1, lx2, ly2, tax, tay = _corner_leader_pos(cx, cy, ldx, ldy)
+    return (
+        f'<line x1="{lx1:.1f}" y1="{ly1:.1f}" x2="{lx2:.1f}" y2="{ly2:.1f}" '
+        f'stroke="#888" stroke-width="0.8"/>\n    '
+        f'<text x="{tax:.1f}" y="{tay:.1f}" '
+        f'font-size="{_CORNER_FONT}" font-family="sans-serif" fill="#888" '
+        f'text-anchor="{anchor}">{text}</text>'
+    )
 
 
 def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
@@ -104,8 +219,15 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
             lines.append(f"    {dimension_label_svg(elem, scale, tx, ty, registry)}")
         if elem.kind == "rect" and elem.label:
             lines.append(f"    {_label_for_rect(elem, scale, tx, ty)}")
+            registry.register_box(*_rect_label_bbox(elem, scale, tx, ty))
         if elem.kind == "label":
             lines.append(f"    {_label_svg(elem, scale, tx, ty)}")
+            registry.register_box(*_free_label_bbox(elem, scale, tx, ty))
+
+    # Corner markers last so they avoid all geometry and prior annotations
+    for elem in elements:
+        if elem.kind == "cornerxy":
+            lines.append(f"    {_cornerxy_svg(elem, scale, tx, ty, registry)}")
 
     lines.append("  </g>")
     lines.append("</svg>")
@@ -279,6 +401,17 @@ def _label_for_rect(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
         f'font-size="{LABEL_FONT}" font-family="sans-serif" text-anchor="middle" '
         f'dominant-baseline="middle">{elem.label}</text>'
     )
+@
+
+
+1.6
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d19 110
+d168 1
+d171 6
 @
 
 
