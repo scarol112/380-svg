@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:40:29 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.8 $ $Date: 2026/04/24 14:27:32 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -107,11 +107,42 @@ include fixtures.dsl
 ```
 elementid on|off
 dimensions on|off
+showcornerxy on|off
 ```
 
-Toggle element reference numbers and dimension labels independently. Both are
-`on` by default. The directive takes effect for all elements that follow it;
-elements placed before the directive are unaffected.
+Toggle element reference numbers, dimension labels, and corner coordinate
+markers independently. `elementid` and `dimensions` are `on` by default;
+`showcornerxy` is `off` by default. Each directive takes effect immediately
+and applies to elements that follow it; elements placed before the directive
+are unaffected.
+
+#### `showcornerxy`
+
+When `on`, a coordinate marker is added at each point where the drawing
+direction changes. The marker shows the cursor position in decimal feet at
+the moment of the turn.
+
+Each marker consists of a short grey leader line drawn at 45° from the corner
+point (with a small gap at each end so it does not touch the point or the
+text), followed by the coordinates — for example `10.5, -8`.
+
+The leader direction is automatically chosen from NE, NW, SE, or SW to avoid
+overlapping other drawn elements and labels. When `showcornerxy` is active,
+the drawing is scaled down as needed so all markers fit within the page margins.
+
+```
+showcornerxy on
+direction 90
+line 10             # cursor moves to (10, 0)
+direction 0         # corner marker appears at (10, 0) labelled "10, 0"
+line 8              # cursor moves to (10, -8)
+direction 270       # corner marker appears at (10, -8) labelled "10, -8"
+showcornerxy off
+direction 180       # no marker — showcornerxy is off
+```
+
+`showcornerxy` is useful during drawing development to verify that walls meet
+at the correct coordinates.
 
 ### Color
 

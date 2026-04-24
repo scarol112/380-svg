@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.9 $ $Date: 2026/04/21 15:40:29 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.10 $ $Date: 2026/04/24 14:27:32 $ -->
 # App working title: svg
 
 ## Project tools
@@ -22,6 +22,7 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`. For `window` elements the annotation shows the opening width only (not wall depth).
 - Invisible elements (`0px` line weight) receive no annotations.
 - Labels always render horizontally (readable) regardless of the current drawing direction.
+- **Corner coordinate markers** (`showcornerxy on`): at each `direction` change (only when the angle actually changes), a small annotation is emitted at the cursor's current position showing the corner's coordinates in decimal feet. Each marker is a short leader line (5 px gap from the point, 14 px line, 3 px gap to text) rendered in grey. The leader direction is chosen from NE/NW/SE/SW (preferred NE) to avoid overlapping registered geometry, dimension labels, and `label` elements. The bounding-box scaler iterates to account for the pixel extents of all corner annotations so none are clipped at the page margins.
 
 ## SVG XML structure
 ```xml
@@ -43,11 +44,12 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 
 ### Directives (non-drawing lines)
 ```
-direction <degrees>    # set drawing direction: 0=up, 90=right, 180=down, 270=left
-elementid on|off       # show/hide element reference numbers (default: on)
-dimensions on|off      # show/hide dimension labels (default: on)
-color <value>          # set stroke color for subsequent elements (default: black)
-include <filename>     # insert contents of another DSL file at this position
+direction <degrees>      # set drawing direction: 0=up, 90=right, 180=down, 270=left
+elementid on|off         # show/hide element reference numbers (default: on)
+dimensions on|off        # show/hide dimension labels (default: on)
+showcornerxy on|off      # show/hide corner coordinate markers (default: off)
+color <value>            # set stroke color for subsequent elements (default: black)
+include <filename>       # insert contents of another DSL file at this position
 ```
 Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
 
