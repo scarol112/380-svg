@@ -111,10 +111,17 @@ class ColorDirective:
     source_line: int = 0
 
 
+@dataclass
+class ShowCornerXYDirective:
+    enabled: bool
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
     | DisplayDirective
     | ColorDirective
+    | ShowCornerXYDirective
     | LineElem
     | RectElem
     | WallElem

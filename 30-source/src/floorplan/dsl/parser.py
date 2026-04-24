@@ -1,6 +1,7 @@
 from pathlib import Path
 from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
+    ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -96,6 +97,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_direction(rest, lineno)
     if keyword == "color":
         return _parse_color(rest, lineno)
+    if keyword == "showcornerxy":
+        return _parse_showcornerxy(rest, lineno)
     if keyword == "elementid":
         return _parse_display(rest, lineno, "elementid")
     if keyword == "dimensions":
@@ -121,6 +124,15 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
 
 
 # ── directives ────────────────────────────────────────────────────────────────
+
+def _parse_showcornerxy(tokens: list[Token], lineno: int) -> ShowCornerXYDirective:
+    if not tokens:
+        raise ParseError(f"Line {lineno}: showcornerxy requires 'on' or 'off'")
+    val = tokens[0].value.lower()
+    if val not in ("on", "off"):
+        raise ParseError(f"Line {lineno}: showcornerxy requires 'on' or 'off', got {val!r}")
+    return ShowCornerXYDirective(enabled=(val == "on"), source_line=lineno)
+
 
 def _parse_display(tokens: list[Token], lineno: int, target: str) -> DisplayDirective:
     if not tokens:

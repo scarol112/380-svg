@@ -6,6 +6,13 @@ PRINT_W_PX = 1056.0  # 11 inches
 PRINT_H_PX = 816.0   # 8.5 inches
 MARGIN_PX  = 48.0    # 0.5-inch margin on each side
 
+# Mirror of cornerxy annotation geometry from render/svg.py — keep in sync.
+_CXY_FONT_PX       = 9.0
+_CXY_LEAD_TOTAL_PX = 22.0   # LEAD_GAP(5) + LEAD_LEN(14) + TEXT_GAP(3)
+_CXY_CHAR_W        = 0.55
+_CXY_LINE_H        = 1.4
+_CXY_DIAG          = 0.7071
+
 
 def compute_bounding_box(elements: list[PlacedElement]) -> tuple[float, float, float, float]:
     """Return (min_x, min_y, max_x, max_y) in feet."""
@@ -32,6 +39,32 @@ def compute_bounding_box(elements: list[PlacedElement]) -> tuple[float, float, f
     return min(xs), min(ys), max(xs), max(ys)
 
 
+def _cornerxy_max_extent_px(label: str) -> tuple[float, float]:
+    """Worst-case pixel extent of a cornerxy annotation from its corner point.
+
+    Returns (max_dx_px, max_dy_px) — the farthest the leader+text can reach
+    in the x and y directions, assuming the most space-consuming diagonal.
+    """
+    text_w = len(label) * _CXY_FONT_PX * _CXY_CHAR_W
+    text_h = _CXY_FONT_PX * _CXY_LINE_H
+    return _CXY_DIAG * _CXY_LEAD_TOTAL_PX + text_w, _CXY_DIAG * _CXY_LEAD_TOTAL_PX + text_h
+
+
+def _scale_from_bounds(
+    min_x: float, min_y: float, max_x: float, max_y: float
+) -> tuple[float, float, float]:
+    width_ft  = max_x - min_x or 1.0
+    height_ft = max_y - min_y or 1.0
+    usable_w  = PRINT_W_PX - 2 * MARGIN_PX
+    usable_h  = PRINT_H_PX - 2 * MARGIN_PX
+    scale = min(usable_w / width_ft, usable_h / height_ft)
+    drawing_w_px = width_ft  * scale
+    drawing_h_px = height_ft * scale
+    tx = (PRINT_W_PX - drawing_w_px) / 2 - min_x * scale
+    ty = (PRINT_H_PX - drawing_h_px) / 2 - min_y * scale
+    return scale, tx, ty
+
+
 def compute_scale(elements: list[PlacedElement]) -> tuple[float, float, float]:
     """Return (scale_ft_to_px, translate_x_px, translate_y_px).
 
@@ -39,18 +72,25 @@ def compute_scale(elements: list[PlacedElement]) -> tuple[float, float, float]:
     (1056×816 SVG units).
     """
     min_x, min_y, max_x, max_y = compute_bounding_box(elements)
-    width_ft  = max_x - min_x or 1.0
-    height_ft = max_y - min_y or 1.0
 
-    usable_w = PRINT_W_PX - 2 * MARGIN_PX
-    usable_h = PRINT_H_PX - 2 * MARGIN_PX
+    corners = [e for e in elements if e.kind == "cornerxy"]
+    if corners:
+        # Iteratively expand the bbox until the scale stabilises.  Each
+        # iteration converts the fixed pixel extents of the leader+text to
+        # feet using the current scale estimate; a smaller scale means the
+        # annotations need more feet, so the loop converges from above.
+        # Typically converges in ≤ 5 iterations (ratio ~0.93 per step).
+        prev_s = None
+        for _ in range(10):
+            s, _, _ = _scale_from_bounds(min_x, min_y, max_x, max_y)
+            if prev_s is not None and abs(s - prev_s) < 0.01:
+                break
+            prev_s = s
+            for e in corners:
+                dx_px, dy_px = _cornerxy_max_extent_px(e.label or "")
+                min_x = min(min_x, e.x - dx_px / s)
+                max_x = max(max_x, e.x + dx_px / s)
+                min_y = min(min_y, e.y - dy_px / s)
+                max_y = max(max_y, e.y + dy_px / s)
 
-    scale = min(usable_w / width_ft, usable_h / height_ft)
-
-    # center within full landscape page (1056×816)
-    drawing_w_px = width_ft  * scale
-    drawing_h_px = height_ft * scale
-    tx = (1056 - drawing_w_px) / 2 - min_x * scale
-    ty = (816  - drawing_h_px) / 2 - min_y * scale
-
-    return scale, tx, ty
+    return _scale_from_bounds(min_x, min_y, max_x, max_y)

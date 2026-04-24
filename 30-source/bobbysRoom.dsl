@@ -39,7 +39,6 @@ window 15"
 line 0 0px A=2.25,0
 direction 180
 line 5 shortdash
-
 line 0 0px A=0,-0.2
 #include rulerh.dsl
 #include rulerv.dsl
@@ -49,6 +48,7 @@ direction 0
 arrow 3px 1.5' A=10.5,1
 direction 45
 line 3" 0px
+color green
 label "hallway" 16
 label "toy box" 16 A=0.5,2
 label "Bobby's Room" 24 A=5,3

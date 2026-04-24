@@ -1,5 +1,6 @@
 from ..dsl.ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
+    ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, LabelElem,
 )
@@ -7,6 +8,13 @@ from ..model import PlacedElement
 from .cursor import DrawingCursor, direction_vector
 
 DEFAULT_LW = 1.0
+
+
+def _fmt_dec(v: float) -> str:
+    rounded = round(v, 2)
+    if rounded == int(rounded):
+        return str(int(rounded))
+    return f"{rounded:.2f}".rstrip('0')
 
 
 def _lw(val: float | None) -> float:
@@ -23,6 +31,7 @@ class ElementPlacer:
         self._show_id: bool = True
         self._show_dims: bool = True
         self._color: str = "black"
+        self._show_cornerxy: bool = False
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -32,7 +41,11 @@ class ElementPlacer:
     def _dispatch(self, node: ASTNode) -> None:
         match node:
             case DirectionDirective():
+                if self._show_cornerxy and node.degrees != self._cursor.direction:
+                    self._place_cornerxy()
                 self._cursor.direction = node.degrees
+            case ShowCornerXYDirective():
+                self._show_cornerxy = node.enabled
             case DisplayDirective():
                 if node.target == "elementid":
                     self._show_id = node.enabled
@@ -174,6 +187,17 @@ class ElementPlacer:
             **self._flags(), source_line=elem.source_line,
         ))
         self._move_cursor_to_end(x, y, elem.length)
+
+    def _place_cornerxy(self) -> None:
+        x, y = self._cursor.x, self._cursor.y
+        label = f"{_fmt_dec(x)}, {_fmt_dec(y)}"
+        self._elements.append(PlacedElement(
+            kind="cornerxy", number=None,
+            x=x, y=y, length=0.0, width=0.0,
+            direction=self._cursor.direction,
+            lw=0.8, dash=None, color="#888", label=label,
+            extra={},
+        ))
 
     def _place_label(self, elem: LabelElem) -> None:
         x, y = self._resolve_position(elem.absolute)
