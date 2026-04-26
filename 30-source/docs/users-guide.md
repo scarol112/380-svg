@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.10 $ $Date: 2026/04/26 15:03:31 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 17:20:04 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -54,6 +54,29 @@ separators:
 
 ```
 label "hello; world"   # label text is  hello; world
+```
+
+### Aliases
+
+Every keyword has a short alias so common sequences stay compact. Aliases are
+case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias | Full name | Alias |
+|---|---|---|---|
+| `line` | `l` | `direction` | `dir` |
+| `rect` | `r` | `elementid` | `eid` |
+| `wall` | `w` | `dimensions` | `dim` |
+| `door` | `d` | `color` | `col` |
+| `window` | `wi` | `include` | `inc` |
+| `arc` | `a` | `showcornerxy` | `sxy` |
+| `arrow` | `aw` | | |
+| `point` | `p` | | |
+| `label` | `lb` | | |
+
+```
+dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
+eid off; dim off
+p C=red A=3,3; p C=blue A=5,5
 ```
 
 ### Measurements

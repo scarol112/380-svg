@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.12 $ $Date: 2026/04/26 15:03:31 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.13 $ $Date: 2026/04/26 17:20:04 $ -->
 # App working title: svg
 
 ## Project tools
@@ -44,6 +44,7 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Trailing `#` comments are stripped before parsing; semicolons inside double-quoted strings are not treated as separators
 - Blank lines are ignored
 - Tokens are whitespace-separated
+- All element and directive keywords have short aliases (see Aliases table)
 
 ### Directives (non-drawing lines)
 ```
@@ -106,6 +107,28 @@ arrow <length> [<lw>px] [<dash>] [C=<color>]
 point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
+
+### Aliases
+
+Every keyword has a short alias. Aliases are case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias |
+|---|---|
+| `line` | `l` |
+| `rect` | `r` |
+| `wall` | `w` |
+| `door` | `d` |
+| `window` | `wi` |
+| `arc` | `a` |
+| `arrow` | `aw` |
+| `point` | `p` |
+| `label` | `lb` |
+| `direction` | `dir` |
+| `elementid` | `eid` |
+| `dimensions` | `dim` |
+| `color` | `col` |
+| `include` | `inc` |
+| `showcornerxy` | `sxy` |
 
 ### Dash styles
 

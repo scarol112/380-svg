@@ -70,7 +70,7 @@ def parse_file(
             tokens = tokenize(stmt, lineno)
             if not tokens:
                 continue
-            if tokens[0].value.lower() == "include":
+            if _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower()) == "include":
                 nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
             else:
                 node = _parse_line(tokens, lineno)
@@ -108,8 +108,27 @@ def _resolve_include(
     return parse_file(inc_path.read_text(), source_path=inc_path, _seen=_seen)
 
 
+_ALIASES: dict[str, str] = {
+    "l":   "line",
+    "r":   "rect",
+    "w":   "wall",
+    "d":   "door",
+    "wi":  "window",
+    "a":   "arc",
+    "aw":  "arrow",
+    "p":   "point",
+    "lb":  "label",
+    "dir": "direction",
+    "eid": "elementid",
+    "dim": "dimensions",
+    "col": "color",
+    "inc": "include",
+    "sxy": "showcornerxy",
+}
+
+
 def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
-    keyword = tokens[0].value.lower()
+    keyword = _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower())
     rest = tokens[1:]
 
     if keyword == "direction":
