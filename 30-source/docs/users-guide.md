@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.10 $ $Date: 2026/04/26 15:03:31 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -34,13 +34,26 @@ at your output file if it is not at the default `../output.svg`.
 
 ## Input file format
 
-One element or directive per line. Everything after `#` on a line is a comment
-and is ignored. Blank lines are ignored.
+One element or directive per line. Multiple statements can be placed on the
+same line by separating them with semicolons (`;`). Everything after `#` on a
+line is a comment and is ignored. Blank lines are ignored.
 
 ```
 # This is a comment
 direction 90
 rect 12 10 "Living Room"
+
+# Semicolons allow compact notation
+direction 90; line 10; direction 0; line 8
+elementid off; dimensions off
+point C=red A=2,3; point C=blue A=5,6
+```
+
+Semicolons inside double-quoted strings are treated as literal characters, not
+separators:
+
+```
+label "hello; world"   # label text is  hello; world
 ```
 
 ### Measurements

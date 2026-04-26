@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 03:29:53 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.12 $ $Date: 2026/04/26 15:03:31 $ -->
 # App working title: svg
 
 ## Project tools
@@ -39,7 +39,9 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 
 ### Syntax
 - Elements are expressed in files, one element per line
+- Multiple statements may appear on one line, separated by semicolons (`;`)
 - Lines beginning with "#" are comments, to be ignored
+- Trailing `#` comments are stripped before parsing; semicolons inside double-quoted strings are not treated as separators
 - Blank lines are ignored
 - Tokens are whitespace-separated
 

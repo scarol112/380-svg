@@ -23,6 +23,24 @@ def _strip_comment(raw: str) -> str:
     return raw.strip()
 
 
+def _split_statements(line: str) -> list[str]:
+    """Split on semicolons, ignoring those inside double-quoted strings."""
+    parts: list[str] = []
+    current: list[str] = []
+    in_quote = False
+    for ch in line:
+        if ch == '"':
+            in_quote = not in_quote
+            current.append(ch)
+        elif ch == ';' and not in_quote:
+            parts.append(''.join(current))
+            current = []
+        else:
+            current.append(ch)
+    parts.append(''.join(current))
+    return parts
+
+
 def parse_file(
     text: str,
     source_path: Path | None = None,
@@ -45,18 +63,19 @@ def parse_file(
         line = _strip_comment(raw_line)
         if not line:
             continue
-        tokens = tokenize(line, lineno)
-        if not tokens:
-            continue
-
-        if tokens[0].value.lower() == "include":
-            included = _resolve_include(tokens, lineno, source_path, _seen)
-            nodes.extend(included)
-            continue
-
-        node = _parse_line(tokens, lineno)
-        if node is not None:
-            nodes.append(node)
+        for stmt in _split_statements(line):
+            stmt = stmt.strip()
+            if not stmt:
+                continue
+            tokens = tokenize(stmt, lineno)
+            if not tokens:
+                continue
+            if tokens[0].value.lower() == "include":
+                nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
+            else:
+                node = _parse_line(tokens, lineno)
+                if node is not None:
+                    nodes.append(node)
     return nodes
 
 
