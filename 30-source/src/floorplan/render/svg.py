@@ -149,7 +149,7 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
     # Pass 2: annotations — pre-register solid geometry so text avoids drawn lines.
     # Rect interiors are open space; only register stroke-based elements.
     registry = AnnotationRegistry()
-    _STROKE_KINDS = {"line", "wall", "door", "window", "arrow", "arc"}
+    _STROKE_KINDS = {"line", "wall", "door", "window", "arrow", "arc", "point"}
     for elem in elements:
         if elem.lw > 0 and elem.kind in _STROKE_KINDS:
             bbox = _element_bbox_px(elem, scale, tx, ty)
@@ -205,6 +205,11 @@ def _element_bbox_px(
         pts_x += [x0 - r, x0 + r]
         pts_y += [y0 - r, y0 + r]
 
+    # For points, the circle radius (1.5px) plus half stroke dominates over length/width
+    if elem.kind == "point":
+        r = 1.5 + elem.lw / 2
+        return x0 - r, y0 - r, x0 + r, y0 + r
+
     pad = max(elem.lw, 1.0)
     return min(pts_x) - pad, min(pts_y) - pad, max(pts_x) + pad, max(pts_y) + pad
 
@@ -225,7 +230,18 @@ def _render_element(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
             return _arc_svg(elem, scale, tx, ty)
         case "arrow":
             return _arrow_svg(elem, scale, tx, ty)
+        case "point":
+            return _point_svg(elem, scale, tx, ty)
     return ""
+
+
+def _point_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    cx = _px(elem.x, scale, tx)
+    cy = _px(elem.y, scale, ty)
+    return (
+        f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="1.5" '
+        f'fill="{elem.color}" stroke="{elem.color}" stroke-width="{elem.lw}"/>'
+    )
 
 
 def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:

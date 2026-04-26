@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.10 $ $Date: 2026/04/24 14:27:32 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 03:29:53 $ -->
 # App working title: svg
 
 ## Project tools
@@ -22,6 +22,7 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`. For `window` elements the annotation shows the opening width only (not wall depth).
 - Invisible elements (`0px` line weight) receive no annotations.
 - Labels always render horizontally (readable) regardless of the current drawing direction.
+- **`point` cursor behaviour**: unlike all other geometry elements, `point` does not advance the cursor. The dot marks the current position (or an `A=` position) without affecting subsequent element placement. Dimension labels are never shown for points; element ID numbers are shown when `elementid` is on. When `showcornerxy` is on, a coordinate annotation in the corner-marker style is emitted at the point's position.
 - **Corner coordinate markers** (`showcornerxy on`): at each `direction` change (only when the angle actually changes), a small annotation is emitted at the cursor's current position showing the corner's coordinates in decimal feet. Each marker is a short leader line (5 px gap from the point, 14 px line, 3 px gap to text) rendered in grey. The leader direction is chosen from NE/NW/SE/SW (preferred NE) to avoid overlapping registered geometry, dimension labels, and `label` elements. The bounding-box scaler iterates to account for the pixel extents of all corner annotations so none are clipped at the page margins.
 
 ## SVG XML structure
@@ -100,6 +101,7 @@ door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing 
 window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
 arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
 arrow <length> [<lw>px] [<dash>] [C=<color>]
+point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 

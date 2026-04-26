@@ -2,7 +2,7 @@ from ..dsl.ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, LabelElem,
+    ArcElem, ArrowElem, PointElem, LabelElem,
 )
 from ..model import PlacedElement
 from .cursor import DrawingCursor, direction_vector
@@ -42,7 +42,7 @@ class ElementPlacer:
         match node:
             case DirectionDirective():
                 if self._show_cornerxy and node.degrees != self._cursor.direction:
-                    self._place_cornerxy()
+                    self._emit_cornerxy(self._cursor.x, self._cursor.y)
                 self._cursor.direction = node.degrees
             case ShowCornerXYDirective():
                 self._show_cornerxy = node.enabled
@@ -67,6 +67,8 @@ class ElementPlacer:
                 self._place_arc(node)
             case ArrowElem():
                 self._place_arrow(node)
+            case PointElem():
+                self._place_point(node)
             case LabelElem():
                 self._place_label(node)
 
@@ -188,16 +190,30 @@ class ElementPlacer:
         ))
         self._move_cursor_to_end(x, y, elem.length)
 
-    def _place_cornerxy(self) -> None:
-        x, y = self._cursor.x, self._cursor.y
-        label = f"{_fmt_dec(x)}, {_fmt_dec(y)}"
+    def _emit_cornerxy(self, x: float, y: float) -> None:
         self._elements.append(PlacedElement(
             kind="cornerxy", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=0.8, dash=None, color="#888", label=label,
+            lw=0.8, dash=None, color="#888",
+            label=f"{_fmt_dec(x)}, {_fmt_dec(y)}",
             extra={},
         ))
+
+    def _place_point(self, elem: PointElem) -> None:
+        x, y = self._resolve_position(elem.absolute)
+        self._set_canvas_origin_if_needed(x, y)
+        lw = elem.lw if elem.lw is not None else 1.0
+        self._elements.append(PlacedElement(
+            kind="point", number=self._next_number(),
+            x=x, y=y, length=0.0, width=0.0,
+            direction=self._cursor.direction,
+            lw=lw, dash=None, color=self._resolve_color(elem.color), label=None,
+            show_id=self._show_id, show_dims=False, source_line=elem.source_line,
+        ))
+        # cursor does not advance — point marks a location without disrupting flow
+        if self._show_cornerxy:
+            self._emit_cornerxy(x, y)
 
     def _place_label(self, elem: LabelElem) -> None:
         x, y = self._resolve_position(elem.absolute)

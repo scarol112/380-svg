@@ -90,6 +90,14 @@ class ArrowElem:
 
 
 @dataclass
+class PointElem:
+    lw: float | None = None  # stroke width; None = default 1px
+    color: str | None = None
+    absolute: tuple[float, float] | None = None
+    source_line: int = 0
+
+
+@dataclass
 class LabelElem:
     text: str
     align: str = "left"  # left | center | right
@@ -129,5 +137,6 @@ ASTNode = (
     | WindowElem
     | ArcElem
     | ArrowElem
+    | PointElem
     | LabelElem
 )

@@ -3,7 +3,7 @@ from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, LabelElem,
+    ArcElem, ArrowElem, PointElem, LabelElem,
 )
 from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
 
@@ -117,6 +117,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_arc(rest, lineno)
     if keyword == "arrow":
         return _parse_arrow(rest, lineno)
+    if keyword == "point":
+        return _parse_point(rest, lineno)
     if keyword == "label":
         return _parse_label(rest, lineno)
 
@@ -272,6 +274,12 @@ def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     c = _extract_common(tokens, lineno)
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
                      color=c["color"], absolute=c["absolute"], source_line=lineno)
+
+
+def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
+    c = _extract_common(tokens, lineno)
+    return PointElem(lw=c["lw"], color=c["color"], absolute=c["absolute"],
+                     source_line=lineno)
 
 
 def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:

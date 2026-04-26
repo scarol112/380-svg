@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.8 $ $Date: 2026/04/24 14:27:32 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -311,6 +311,37 @@ arrow <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 arrow 6
 arrow 4 A=0,15
+```
+
+---
+
+### `point`
+
+A filled circle 3 px in diameter, drawn at the current cursor position or at
+an absolute position. Useful for marking reference points, corners, or
+measurement targets.
+
+```
+point [<lw>px] [C=<color>] [A=<h>,<v>]
+```
+
+- `<lw>px` — stroke width (default 1 px); use `0px` to suppress rendering
+- `C=<color>` — fill and stroke color (default: current `color` directive)
+- `A=<h>,<v>` — place at an absolute position instead of the cursor
+
+**Cursor**: `point` does **not** advance the cursor. The drawing position after
+a `point` is the same as before it, so subsequent elements continue from the
+same location.
+
+**Annotations**: dimension labels are never shown for points. Element ID
+numbers are shown when `elementid` is on. When `showcornerxy` is on, a
+coordinate annotation in the corner-marker style is placed at the point.
+
+```
+point                      # mark the current cursor position
+point C=red                # red dot at the current position
+point A=10,5               # dot at (10ft, 5ft) from canvas origin; cursor unchanged
+point 0px                  # invisible — occupies no space, produces no output
 ```
 
 ---
