@@ -1,0 +1,58 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.26.17.44.06;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@inc border.dsl
+
+#showcornerxy on
+
+# left column
+l 0 0px A=0.4,0.5
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
+
+dir 180        ; l 3.7 0px
+
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
+
+# right column
+l 0 0px A=5.1,0.5
+
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
+
+dir 180        ; l 3.7 0px
+
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
+dir 90
+
+@

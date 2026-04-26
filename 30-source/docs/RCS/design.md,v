@@ -1,10 +1,15 @@
-head	1.12;
+head	1.13;
 access;
 symbols;
 locks
-	scarol:1.12; strict;
+	scarol:1.13; strict;
 comment	@# @;
 
+
+1.13
+date	2026.04.26.17.20.04;	author scarol;	state Exp;
+branches;
+next	1.12;
 
 1.12
 date	2026.04.26.15.03.31;	author scarol;	state Exp;
@@ -72,12 +77,12 @@ desc
 @
 
 
-1.12
+1.13
 log
-@Document semicolon-separated statements (issue #9)
+@Document element and directive aliases (issue #19)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 03:29:53 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.12 $ $Date: 2026/04/26 15:03:31 $ -->
 # App working title: svg
 
 ## Project tools
@@ -123,6 +128,7 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Trailing `#` comments are stripped before parsing; semicolons inside double-quoted strings are not treated as separators
 - Blank lines are ignored
 - Tokens are whitespace-separated
+- All element and directive keywords have short aliases (see Aliases table)
 
 ### Directives (non-drawing lines)
 ```
@@ -186,6 +192,28 @@ point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 
+### Aliases
+
+Every keyword has a short alias. Aliases are case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias |
+|---|---|
+| `line` | `l` |
+| `rect` | `r` |
+| `wall` | `w` |
+| `door` | `d` |
+| `window` | `wi` |
+| `arc` | `a` |
+| `arrow` | `aw` |
+| `point` | `p` |
+| `label` | `lb` |
+| `direction` | `dir` |
+| `elementid` | `eid` |
+| `dimensions` | `dim` |
+| `color` | `col` |
+| `include` | `inc` |
+| `showcornerxy` | `sxy` |
+
 ### Dash styles
 
 `<dash>` is one of: `dashed`, `shortdash`, `dotted`, `center`, `hidden`.
@@ -215,6 +243,19 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.12
+log
+@Document semicolon-separated statements (issue #9)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 03:29:53 $ -->
+d47 1
+d110 22
 @
 
 

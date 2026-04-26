@@ -1,0 +1,50 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.26.17.44.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@# Simple floor plan test — two rooms
+dir 90
+r 12 10 "Living Room"
+r 10 10 "Bedroom"
+l 5 2px A=24,6
+dir 180
+l 5
+
+# Door in living room bottom wall
+d 3 right A=2,10
+
+# Window on bedroom right wall
+wi 4 A=22,3
+
+dir 90
+dim off
+eid off
+l 1 2px A=0,-10
+l 1 0px
+l 1 2px
+l 1 0px
+eid on
+l 1 2px
+l 1 0px
+l 1 2px
+l 1 0px
+@

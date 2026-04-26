@@ -1,10 +1,15 @@
-head	1.10;
+head	1.11;
 access;
 symbols;
 locks
-	scarol:1.10; strict;
+	scarol:1.11; strict;
 comment	@# @;
 
+
+1.11
+date	2026.04.26.17.09.04;	author scarol;	state Exp;
+branches;
+next	1.10;
 
 1.10
 date	2026.04.26.15.03.02;	author scarol;	state Exp;
@@ -62,9 +67,9 @@ desc
 @
 
 
-1.10
+1.11
 log
-@Support multiple semicolon-separated statements per line (issue #9)
+@Add 1-3 character aliases for all elements and directives (issue #19)
 @
 text
 @from pathlib import Path
@@ -139,7 +144,7 @@ def parse_file(
             tokens = tokenize(stmt, lineno)
             if not tokens:
                 continue
-            if tokens[0].value.lower() == "include":
+            if _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower()) == "include":
                 nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
             else:
                 node = _parse_line(tokens, lineno)
@@ -177,8 +182,27 @@ def _resolve_include(
     return parse_file(inc_path.read_text(), source_path=inc_path, _seen=_seen)
 
 
+_ALIASES: dict[str, str] = {
+    "l":   "line",
+    "r":   "rect",
+    "w":   "wall",
+    "d":   "door",
+    "wi":  "window",
+    "a":   "arc",
+    "aw":  "arrow",
+    "p":   "point",
+    "lb":  "label",
+    "dir": "direction",
+    "eid": "elementid",
+    "dim": "dimensions",
+    "col": "color",
+    "inc": "include",
+    "sxy": "showcornerxy",
+}
+
+
 def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
-    keyword = tokens[0].value.lower()
+    keyword = _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower())
     rest = tokens[1:]
 
     if keyword == "direction":
@@ -389,6 +413,21 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
         if tokens and tokens[0].kind == "WORD":
             text = tokens[0].value
     return LabelElem(text=text, align=align, font_size=font_size, absolute=absolute, source_line=lineno)
+@
+
+
+1.10
+log
+@Support multiple semicolon-separated statements per line (issue #9)
+@
+text
+@d73 1
+a73 1
+            if tokens[0].value.lower() == "include":
+d111 19
+d131 1
+a131 1
+    keyword = tokens[0].value.lower()
 @
 
 

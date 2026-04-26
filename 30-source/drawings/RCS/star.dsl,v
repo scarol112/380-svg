@@ -1,0 +1,40 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.26.17.44.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@dir 0
+aw 5 A=0,0
+dir 45
+aw 5 A=0,0
+dir 90
+aw 5 A=0,0
+dir 135
+aw 5 A=0,0
+dir 180
+aw 5 A=0,0
+dir 225
+aw 5 A=0,0
+dir 270
+aw 5 A=0,0
+dir 315
+aw 5 A=0,0
+@

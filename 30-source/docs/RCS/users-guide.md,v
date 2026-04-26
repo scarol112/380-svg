@@ -1,10 +1,15 @@
-head	1.10;
+head	1.11;
 access;
 symbols;
 locks
-	scarol:1.10; strict;
+	scarol:1.11; strict;
 comment	@# @;
 
+
+1.11
+date	2026.04.26.17.20.04;	author scarol;	state Exp;
+branches;
+next	1.10;
 
 1.10
 date	2026.04.26.15.03.31;	author scarol;	state Exp;
@@ -61,12 +66,12 @@ desc
 @@
 
 
-1.10
+1.11
 log
-@Document semicolon-separated statements (issue #9)
+@Document element and directive aliases (issue #19)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.10 $ $Date: 2026/04/26 15:03:31 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -122,6 +127,29 @@ separators:
 
 ```
 label "hello; world"   # label text is  hello; world
+```
+
+### Aliases
+
+Every keyword has a short alias so common sequences stay compact. Aliases are
+case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias | Full name | Alias |
+|---|---|---|---|
+| `line` | `l` | `direction` | `dir` |
+| `rect` | `r` | `elementid` | `eid` |
+| `wall` | `w` | `dimensions` | `dim` |
+| `door` | `d` | `color` | `col` |
+| `window` | `wi` | `include` | `inc` |
+| `arc` | `a` | `showcornerxy` | `sxy` |
+| `arrow` | `aw` | | |
+| `point` | `p` | | |
+| `label` | `lb` | | |
+
+```
+dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
+eid off; dim off
+p C=red A=3,3; p C=blue A=5,5
 ```
 
 ### Measurements
@@ -505,6 +533,18 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.10
+log
+@Document semicolon-separated statements (issue #9)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
+d57 23
 @
 
 
