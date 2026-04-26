@@ -1,10 +1,25 @@
-head	1.7;
+head	1.10;
 access;
 symbols;
 locks
-	scarol:1.7; strict;
+	scarol:1.10; strict;
 comment	@# @;
 
+
+1.10
+date	2026.04.26.15.03.31;	author scarol;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2026.04.26.03.29.53;	author scarol;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2026.04.24.14.27.32;	author scarol;	state Exp;
+branches;
+next	1.7;
 
 1.7
 date	2026.04.21.15.40.29;	author scarol;	state Exp;
@@ -46,12 +61,12 @@ desc
 @@
 
 
-1.7
+1.10
 log
-@add C= to element syntax listings and common options table; remove orphaned example block
+@Document semicolon-separated statements (issue #9)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.6 $ $Date: 2026/04/21 15:38:38 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -87,13 +102,26 @@ at your output file if it is not at the default `../output.svg`.
 
 ## Input file format
 
-One element or directive per line. Everything after `#` on a line is a comment
-and is ignored. Blank lines are ignored.
+One element or directive per line. Multiple statements can be placed on the
+same line by separating them with semicolons (`;`). Everything after `#` on a
+line is a comment and is ignored. Blank lines are ignored.
 
 ```
 # This is a comment
 direction 90
 rect 12 10 "Living Room"
+
+# Semicolons allow compact notation
+direction 90; line 10; direction 0; line 8
+elementid off; dimensions off
+point C=red A=2,3; point C=blue A=5,6
+```
+
+Semicolons inside double-quoted strings are treated as literal characters, not
+separators:
+
+```
+label "hello; world"   # label text is  hello; world
 ```
 
 ### Measurements
@@ -160,11 +188,42 @@ include fixtures.dsl
 ```
 elementid on|off
 dimensions on|off
+showcornerxy on|off
 ```
 
-Toggle element reference numbers and dimension labels independently. Both are
-`on` by default. The directive takes effect for all elements that follow it;
-elements placed before the directive are unaffected.
+Toggle element reference numbers, dimension labels, and corner coordinate
+markers independently. `elementid` and `dimensions` are `on` by default;
+`showcornerxy` is `off` by default. Each directive takes effect immediately
+and applies to elements that follow it; elements placed before the directive
+are unaffected.
+
+#### `showcornerxy`
+
+When `on`, a coordinate marker is added at each point where the drawing
+direction changes. The marker shows the cursor position in decimal feet at
+the moment of the turn.
+
+Each marker consists of a short grey leader line drawn at 45° from the corner
+point (with a small gap at each end so it does not touch the point or the
+text), followed by the coordinates — for example `10.5, -8`.
+
+The leader direction is automatically chosen from NE, NW, SE, or SW to avoid
+overlapping other drawn elements and labels. When `showcornerxy` is active,
+the drawing is scaled down as needed so all markers fit within the page margins.
+
+```
+showcornerxy on
+direction 90
+line 10             # cursor moves to (10, 0)
+direction 0         # corner marker appears at (10, 0) labelled "10, 0"
+line 8              # cursor moves to (10, -8)
+direction 270       # corner marker appears at (10, -8) labelled "10, -8"
+showcornerxy off
+direction 180       # no marker — showcornerxy is off
+```
+
+`showcornerxy` is useful during drawing development to verify that walls meet
+at the correct coordinates.
 
 ### Color
 
@@ -337,6 +396,37 @@ arrow 4 A=0,15
 
 ---
 
+### `point`
+
+A filled circle 3 px in diameter, drawn at the current cursor position or at
+an absolute position. Useful for marking reference points, corners, or
+measurement targets.
+
+```
+point [<lw>px] [C=<color>] [A=<h>,<v>]
+```
+
+- `<lw>px` — stroke width (default 1 px); use `0px` to suppress rendering
+- `C=<color>` — fill and stroke color (default: current `color` directive)
+- `A=<h>,<v>` — place at an absolute position instead of the cursor
+
+**Cursor**: `point` does **not** advance the cursor. The drawing position after
+a `point` is the same as before it, so subsequent elements continue from the
+same location.
+
+**Annotations**: dimension labels are never shown for points. Element ID
+numbers are shown when `elementid` is on. When `showcornerxy` is on, a
+coordinate annotation in the corner-marker style is placed at the point.
+
+```
+point                      # mark the current cursor position
+point C=red                # red dot at the current position
+point A=10,5               # dot at (10ft, 5ft) from canvas origin; cursor unchanged
+point 0px                  # invisible — occupies no space, produces no output
+```
+
+---
+
 ### `label`
 
 A text annotation. Does not advance the cursor. Labels always render
@@ -415,6 +505,51 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.9
+log
+@Document point element
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.8 $ $Date: 2026/04/24 14:27:32 $ -->
+d37 3
+a39 2
+One element or directive per line. Everything after `#` on a line is a comment
+and is ignored. Blank lines are ignored.
+d45 12
+@
+
+
+1.8
+log
+@Document showcornerxy directive (issue #15)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:40:29 $ -->
+d314 31
+@
+
+
+1.7
+log
+@add C= to element syntax listings and common options table; remove orphaned example block
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.6 $ $Date: 2026/04/21 15:38:38 $ -->
+d110 1
+d113 33
+a145 3
+Toggle element reference numbers and dimension labels independently. Both are
+`on` by default. The directive takes effect for all elements that follow it;
+elements placed before the directive are unaffected.
 @
 
 

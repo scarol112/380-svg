@@ -1,10 +1,25 @@
-head	1.9;
+head	1.12;
 access;
 symbols;
 locks
-	scarol:1.9; strict;
+	scarol:1.12; strict;
 comment	@# @;
 
+
+1.12
+date	2026.04.26.15.03.31;	author scarol;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2026.04.26.03.29.53;	author scarol;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2026.04.24.14.27.32;	author scarol;	state Exp;
+branches;
+next	1.9;
 
 1.9
 date	2026.04.21.15.40.29;	author scarol;	state Exp;
@@ -57,12 +72,12 @@ desc
 @
 
 
-1.9
+1.12
 log
-@add C= to element syntax listings and common options table; remove orphaned example block
+@Document semicolon-separated statements (issue #9)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.8 $ $Date: 2026/04/21 15:38:38 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 03:29:53 $ -->
 # App working title: svg
 
 ## Project tools
@@ -86,6 +101,8 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`. For `window` elements the annotation shows the opening width only (not wall depth).
 - Invisible elements (`0px` line weight) receive no annotations.
 - Labels always render horizontally (readable) regardless of the current drawing direction.
+- **`point` cursor behaviour**: unlike all other geometry elements, `point` does not advance the cursor. The dot marks the current position (or an `A=` position) without affecting subsequent element placement. Dimension labels are never shown for points; element ID numbers are shown when `elementid` is on. When `showcornerxy` is on, a coordinate annotation in the corner-marker style is emitted at the point's position.
+- **Corner coordinate markers** (`showcornerxy on`): at each `direction` change (only when the angle actually changes), a small annotation is emitted at the cursor's current position showing the corner's coordinates in decimal feet. Each marker is a short leader line (5 px gap from the point, 14 px line, 3 px gap to text) rendered in grey. The leader direction is chosen from NE/NW/SE/SW (preferred NE) to avoid overlapping registered geometry, dimension labels, and `label` elements. The bounding-box scaler iterates to account for the pixel extents of all corner annotations so none are clipped at the page margins.
 
 ## SVG XML structure
 ```xml
@@ -101,17 +118,20 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 
 ### Syntax
 - Elements are expressed in files, one element per line
+- Multiple statements may appear on one line, separated by semicolons (`;`)
 - Lines beginning with "#" are comments, to be ignored
+- Trailing `#` comments are stripped before parsing; semicolons inside double-quoted strings are not treated as separators
 - Blank lines are ignored
 - Tokens are whitespace-separated
 
 ### Directives (non-drawing lines)
 ```
-direction <degrees>    # set drawing direction: 0=up, 90=right, 180=down, 270=left
-elementid on|off       # show/hide element reference numbers (default: on)
-dimensions on|off      # show/hide dimension labels (default: on)
-color <value>          # set stroke color for subsequent elements (default: black)
-include <filename>     # insert contents of another DSL file at this position
+direction <degrees>      # set drawing direction: 0=up, 90=right, 180=down, 270=left
+elementid on|off         # show/hide element reference numbers (default: on)
+dimensions on|off        # show/hide dimension labels (default: on)
+showcornerxy on|off      # show/hide corner coordinate markers (default: off)
+color <value>            # set stroke color for subsequent elements (default: black)
+include <filename>       # insert contents of another DSL file at this position
 ```
 Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
 
@@ -162,6 +182,7 @@ door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing 
 window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
 arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
 arrow <length> [<lw>px] [<dash>] [C=<color>]
+point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
 ```
 
@@ -194,6 +215,51 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.11
+log
+@Document point element
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.10 $ $Date: 2026/04/24 14:27:32 $ -->
+d42 1
+d44 1
+@
+
+
+1.10
+log
+@Document showcornerxy directive (issue #15)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.9 $ $Date: 2026/04/21 15:40:29 $ -->
+d25 1
+d104 1
+@
+
+
+1.9
+log
+@add C= to element syntax listings and common options table; remove orphaned example block
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.8 $ $Date: 2026/04/21 15:38:38 $ -->
+d25 1
+d47 6
+a52 5
+direction <degrees>    # set drawing direction: 0=up, 90=right, 180=down, 270=left
+elementid on|off       # show/hide element reference numbers (default: on)
+dimensions on|off      # show/hide dimension labels (default: on)
+color <value>          # set stroke color for subsequent elements (default: black)
+include <filename>     # insert contents of another DSL file at this position
 @
 
 

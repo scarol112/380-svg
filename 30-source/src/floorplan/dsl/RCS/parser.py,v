@@ -1,10 +1,20 @@
-head	1.8;
+head	1.10;
 access;
 symbols;
 locks
-	scarol:1.8; strict;
+	scarol:1.10; strict;
 comment	@# @;
 
+
+1.10
+date	2026.04.26.15.03.02;	author scarol;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2026.04.26.03.25.09;	author scarol;	state Exp;
+branches;
+next	1.8;
 
 1.8
 date	2026.04.24.12.30.06;	author scarol;	state Exp;
@@ -52,9 +62,9 @@ desc
 @
 
 
-1.8
+1.10
 log
-@Add showcornerxy directive (issue #15)
+@Support multiple semicolon-separated statements per line (issue #9)
 @
 text
 @from pathlib import Path
@@ -62,7 +72,7 @@ from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, LabelElem,
+    ArcElem, ArrowElem, PointElem, LabelElem,
 )
 from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
 
@@ -80,6 +90,24 @@ def _strip_comment(raw: str) -> str:
         elif ch == '#' and not in_quote:
             return raw[:i].strip()
     return raw.strip()
+
+
+def _split_statements(line: str) -> list[str]:
+    """Split on semicolons, ignoring those inside double-quoted strings."""
+    parts: list[str] = []
+    current: list[str] = []
+    in_quote = False
+    for ch in line:
+        if ch == '"':
+            in_quote = not in_quote
+            current.append(ch)
+        elif ch == ';' and not in_quote:
+            parts.append(''.join(current))
+            current = []
+        else:
+            current.append(ch)
+    parts.append(''.join(current))
+    return parts
 
 
 def parse_file(
@@ -104,18 +132,19 @@ def parse_file(
         line = _strip_comment(raw_line)
         if not line:
             continue
-        tokens = tokenize(line, lineno)
-        if not tokens:
-            continue
-
-        if tokens[0].value.lower() == "include":
-            included = _resolve_include(tokens, lineno, source_path, _seen)
-            nodes.extend(included)
-            continue
-
-        node = _parse_line(tokens, lineno)
-        if node is not None:
-            nodes.append(node)
+        for stmt in _split_statements(line):
+            stmt = stmt.strip()
+            if not stmt:
+                continue
+            tokens = tokenize(stmt, lineno)
+            if not tokens:
+                continue
+            if tokens[0].value.lower() == "include":
+                nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
+            else:
+                node = _parse_line(tokens, lineno)
+                if node is not None:
+                    nodes.append(node)
     return nodes
 
 
@@ -176,6 +205,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_arc(rest, lineno)
     if keyword == "arrow":
         return _parse_arrow(rest, lineno)
+    if keyword == "point":
+        return _parse_point(rest, lineno)
     if keyword == "label":
         return _parse_label(rest, lineno)
 
@@ -333,6 +364,12 @@ def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
                      color=c["color"], absolute=c["absolute"], source_line=lineno)
 
 
+def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
+    c = _extract_common(tokens, lineno)
+    return PointElem(lw=c["lw"], color=c["color"], absolute=c["absolute"],
+                     source_line=lineno)
+
+
 def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
     text = ""
     align = "left"
@@ -352,6 +389,42 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
         if tokens and tokens[0].kind == "WORD":
             text = tokens[0].value
     return LabelElem(text=text, align=align, font_size=font_size, absolute=absolute, source_line=lineno)
+@
+
+
+1.9
+log
+@Add point element
+@
+text
+@d26 18
+d66 13
+a78 12
+        tokens = tokenize(line, lineno)
+        if not tokens:
+            continue
+
+        if tokens[0].value.lower() == "include":
+            included = _resolve_include(tokens, lineno, source_path, _seen)
+            nodes.extend(included)
+            continue
+
+        node = _parse_line(tokens, lineno)
+        if node is not None:
+            nodes.append(node)
+@
+
+
+1.8
+log
+@Add showcornerxy directive (issue #15)
+@
+text
+@d6 1
+a6 1
+    ArcElem, ArrowElem, LabelElem,
+d120 2
+d277 6
 @
 
 
