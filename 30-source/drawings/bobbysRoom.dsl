@@ -45,7 +45,7 @@ l 0 0px A=0,-0.2
 dim off
 sxy off
 
-l 0 0px A=0,10
+l 0 0px A=0,8
 inc rulerh.dsl
 
 dir 0
@@ -58,4 +58,4 @@ lb "toy box" 16 A=0.5,2
 lb "Bobby's Room" 24 A=5,3
 lb "Closet" 16 A=13,7
 
-
+inc grid20x16.dsl

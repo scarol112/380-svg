@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.26.18.06.08;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@Resolve input path before cd so bare filenames work from any directory
 @
 text
 @#!/usr/bin/env bash
@@ -33,6 +38,16 @@ if [[ -z "$INPUT" ]]; then
     exit 1
 fi
 
+INPUT="$(realpath "$INPUT")"
 cd "$(dirname "$0")/.."
 uv run python -m floorplan.cli "$INPUT" -o "$OUTPUT"
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d12 1
 @
