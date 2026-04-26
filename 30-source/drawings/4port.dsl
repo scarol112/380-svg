@@ -1,34 +1,34 @@
-include border.dsl
+inc border.dsl
 
 #showcornerxy on
 
 # left column
-line 0 0px A=0.4,0.5
-Direction 90         ; line 4.5
-direction 180        ; line 3.5
-direction 270        ; line 4.5
-direction 0          ; line 3.5
+l 0 0px A=0.4,0.5
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
 
-direction 180        ; line 3.7 0px
+dir 180        ; l 3.7 0px
 
-direction 90         ; line 4.5
-direction 180        ; line 3.5
-direction 270        ; line 4.5
-direction 0          ; line 3.5
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
 
 # right column
-line 0 0px A=5.1,0.5
+l 0 0px A=5.1,0.5
 
-direction 90         ; line 4.5
-direction 180        ; line 3.5
-direction 270        ; line 4.5
-direction 0          ; line 3.5
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
 
-direction 180        ; line 3.7 0px
+dir 180        ; l 3.7 0px
 
-direction 90         ; line 4.5
-direction 180        ; line 3.5
-direction 270        ; line 4.5
-direction 0          ; line 3.5
-direction 90
+dir 90         ; l 4.5
+dir 180        ; l 3.5
+dir 270        ; l 4.5
+dir 0          ; l 3.5
+dir 90
 

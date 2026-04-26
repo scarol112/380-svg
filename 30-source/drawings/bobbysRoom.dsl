@@ -1,61 +1,61 @@
 # Bobby's Room
-elementid off
-showcornerxy on
+eid off
+sxy on
 # entry wall
-line 9'1"
-line 27.6" 0px
-line 4"
+l 9'1"
+l 27.6" 0px
+l 4"
 
 # closet wall
-direction 180
-line 63" 
-direction 90
-line 48"
-direction 180
-line 47"
-direction 270
-line 48"
-direction 0
-line 24"
-direction 180
-line 24" 0px
+dir 180
+l 63" 
+dir 90
+l 48"
+dir 180
+l 47"
+dir 270
+l 48"
+dir 0
+l 24"
+dir 180
+l 24" 0px
 
 # window wall
-direction 270
-line 11"
-window 77"
-line 25"
+dir 270
+l 11"
+wi 77"
+l 25"
 
 # side wall
-direction 0
-line 50"
+dir 0
+l 50"
 
 # toy box alcove
-direction 270
-line 27"
-direction 0
-line 45"
-window 15"
-line 0 0px A=2.25,0
-direction 180
-line 5 shortdash
-line 0 0px A=0,-0.2
+dir 270
+l 27"
+dir 0
+l 45"
+wi 15"
+l 0 0px A=2.25,0
+dir 180
+l 5 shortdash
+l 0 0px A=0,-0.2
 
 # Annotations
-dimensions off
-showcornerxy off
+dim off
+sxy off
 
-line 0 0px A=0,10
-include rulerh.dsl
+l 0 0px A=0,10
+inc rulerh.dsl
 
-direction 0
-arrow 3px 1.5' A=10.5,1
-direction 45
-line 3" 0px
-color green
-label "hallway" 16
-label "toy box" 16 A=0.5,2
-label "Bobby's Room" 24 A=5,3
-label "Closet" 16 A=13,7
+dir 0
+aw 3px 1.5' A=10.5,1
+dir 45
+l 3" 0px
+col green
+lb "hallway" 16
+lb "toy box" 16 A=0.5,2
+lb "Bobby's Room" 24 A=5,3
+lb "Closet" 16 A=13,7
 
 

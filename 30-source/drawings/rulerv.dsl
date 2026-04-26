@@ -1,27 +1,27 @@
-elementid off
-dimensions off
-direction 180
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
-line 6"
-line 6" 4px
+eid off
+dim off
+dir 180
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px
+l 6"
+l 6" 4px

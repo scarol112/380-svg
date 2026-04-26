@@ -1,80 +1,80 @@
-elementid off
-showcornerxy on
+eid off
+sxy on
 # kitchen wall
-line 8'8"
-line 32" 0px
-line 7'6"
+l 8'8"
+l 32" 0px
+l 7'6"
 
 # Common wall
-direction 180
-line 3'8"
-line 4' 0px
-line 3'8"
+dir 180
+l 3'8"
+l 4' 0px
+l 3'8"
 
 # Side Yard Wall
-direction 270
-line 4;
-window 3'2"
-line 5'2"
-window 3'2"
-line 3'4"
+dir 270
+l 4;
+wi 3'2"
+l 5'2"
+wi 3'2"
+l 3'4"
 
 # back yard wall
-direction 0
-line 2'11"
-window 5'6"
-line 2'11"
+dir 0
+l 2'11"
+wi 5'6"
+l 2'11"
 
 # Office
 # Common wall
-line 0 0px A=18.92,11.33
-direction 0
-line 3'8"
-line 4' 0px
-line 4'5"
+l 0 0px A=18.92,11.33
+dir 0
+l 3'8"
+l 4' 0px
+l 4'5"
 
 # Hallway wall
-direction 90
-line 5'5"
-line 3'8" 0px
-line 27"
+dir 90
+l 5'5"
+l 3'8" 0px
+l 27"
 
 # Front wall
-direction 180
-dimensions off
-line 8"
-dimensions on
-window 34"
-line 22.5"
-window 34"
-line 46.8"
+dir 180
+dim off
+l 8"
+dim on
+wi 34"
+l 22.5"
+wi 34"
+l 46.8"
 
 # side wall
-direction 270
-line 51"
-window 34"
-line 51"
+dir 270
+l 51"
+wi 34"
+l 51"
 
 # Annotations
-dimensions off
-showcornerxy off
+dim off
+sxy off
 
-line 0 0px A=0,12.5
-include rulerh.dsl
+l 0 0px A=0,12.5
+inc rulerh.dsl
 
-direction 0
-arrow 3px 1.5' A=10,1
-direction 45
-line 3" 0px26,0
-label "Kitchen" 16
+dir 0
+aw 3px 1.5' A=10,1
+dir 45
+l 3" 0px26,0
+lb "Kitchen" 16
 
-direction 0
-arrow 3px 1.5' A=26,0
-direction 45
-line 3" 0px
-label "hallway" 16
+dir 0
+aw 3px 1.5' A=26,0
+dir 45
+l 3" 0px
+lb "hallway" 16
 
-label "Office" 24 A=23.5,5
-label "Dining Room" 24 A=7.8,5
+lb "Office" 24 A=23.5,5
+lb "Dining Room" 24 A=7.8,5
 
 

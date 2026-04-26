@@ -1,12 +1,12 @@
 # 10x8 border
-elementid off
-dimensions off
-showcornerxy off
-line 10
-direction 180
-line 8
-direction 270
-line 10
-direction 0
-line 8
-direction 90
+eid off
+dim off
+sxy off
+l 10
+dir 180
+l 8
+dir 270
+l 10
+dir 0
+l 8
+dir 90

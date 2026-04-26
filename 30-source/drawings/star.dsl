@@ -1,16 +1,16 @@
-direction 0
-arrow 5 A=0,0
-direction 45
-arrow 5 A=0,0
-direction 90
-arrow 5 A=0,0
-direction 135
-arrow 5 A=0,0
-direction 180
-arrow 5 A=0,0
-direction 225
-arrow 5 A=0,0
-direction 270
-arrow 5 A=0,0
-direction 315
-arrow 5 A=0,0
+dir 0
+aw 5 A=0,0
+dir 45
+aw 5 A=0,0
+dir 90
+aw 5 A=0,0
+dir 135
+aw 5 A=0,0
+dir 180
+aw 5 A=0,0
+dir 225
+aw 5 A=0,0
+dir 270
+aw 5 A=0,0
+dir 315
+aw 5 A=0,0

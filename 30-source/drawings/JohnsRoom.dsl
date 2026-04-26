@@ -1,65 +1,65 @@
-elementid off
-showcornerxy on
+eid off
+sxy on
 # Entry wall
 # closet
-line 2
-direction 180
-wall 2'9" 3" C=green
-line 4 0px
-wall 1'6" 3"
-Direction 270
-line 2
-direction 0
-line 8'3"
+l 2
+dir 180
+w 2'9" 3" C=green
+l 4 0px
+w 1'6" 3"
+dir 270
+l 2
+dir 0
+l 8'3"
 
 # doorway
-direction 90
-line 16" A=2.25,0
-line 30" 0px
-line 1'1" 
+dir 90
+l 16" A=2.25,0
+l 30" 0px
+l 1'1" 
 
 # front wall
-direction 0
-line 2
-direction 90
-line 83.5"
+dir 0
+l 2
+dir 90
+l 83.5"
 
 # Side wall
-direction 270
-line 4.5 0px
-direction 180
-line 10'3" dotted
-direction 0
-line 10'3" 0px
-direction 90
-line 4.5 0px
+dir 270
+l 4.5 0px
+dir 180
+l 10'3" dotted
+dir 0
+l 10'3" 0px
+dir 90
+l 4.5 0px
 
-direction 180
-line 10'3"
+dir 180
+l 10'3"
 
 # Back wall
-direction 270
-line 47.5"
-window 79"
-line 18"
+dir 270
+l 47.5"
+wi 79"
+l 18"
 
 # Annotations
-dimensions off
-showcornerxy off
+dim off
+sxy off
 
-line 0 0px A=0,9
-include rulerh.dsl
+l 0 0px A=0,9
+inc rulerh.dsl
 
-direction 0
-arrow 1.5 2px A=5,1
-label 16 "hallway" A=4.6,-1
+dir 0
+aw 1.5 2px A=5,1
+lb 16 "hallway" A=4.6,-1
 
-direction 90
-arrow 1.5 2px A=11,4
-label 16 "slopes down to 5ft" A=11,5
+dir 90
+aw 1.5 2px A=11,4
+lb 16 "slopes down to 5ft" A=11,5
 
-label "Closet" 16 A=0.5,3.4
-label "Johnny's Bedroom" 24 A=4,3.4
+lb "Closet" 16 A=0.5,3.4
+lb "Johnny's Bedroom" 24 A=4,3.4
 
 
 
