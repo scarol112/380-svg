@@ -7,4 +7,4 @@ offset = 2
 dir 90
 rect $roomw $roomh "${roomw}x${roomh} ft room"
 door 3 ${lw}px A=$offset,$roomh
-point C=red A=$cursorx,$cursory
+point C=red A=$__cx,$__cy

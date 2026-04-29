@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.29.23.42.31;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.29.21.22.08;	author scarol;	state Exp;
@@ -16,9 +21,9 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Add variables_test.dsl demonstrating issue #20 variable feature
+@Update to renamed system variables __cx/__cy
 @
 text
 @# Issue #20 variable test
@@ -30,5 +35,16 @@ offset = 2
 dir 90
 rect $roomw $roomh "${roomw}x${roomh} ft room"
 door 3 ${lw}px A=$offset,$roomh
+point C=red A=$__cx,$__cy
+@
+
+
+1.1
+log
+@Add variables_test.dsl demonstrating issue #20 variable feature
+@
+text
+@d10 1
+a10 1
 point C=red A=$cursorx,$cursory
 @

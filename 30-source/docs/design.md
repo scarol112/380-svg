@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.16 $ $Date: 2026/04/29 22:24:20 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.17 $ $Date: 2026/04/29 23:42:31 $ -->
 # App working title: svg
 
 ## Project tools
@@ -76,14 +76,15 @@ door 3 A=$offset,$roomh
 point A=$cursorx,$cursory
 ```
 
-**Built-in read-only variables** (updated after every placed element):
+**System variables** — names starting with `__` are reserved and read-only. Assigning to any `__`-prefixed name is an error.
 
-| Name | Value |
-|---|---|
-| `$cursorx` | Cursor x position in feet from canvas origin (same space as `A=`) |
-| `$cursory` | Cursor y position in feet from canvas origin |
+| Variable | Alias | Value |
+|---|---|---|
+| `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same space as `A=`) |
+| `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
+| `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, …) |
 
-Assigning to `cursorx` or `cursory` is an error.
+All three update after every placed element or directive.
 
 **Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
 

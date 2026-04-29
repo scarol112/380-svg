@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 23:42:31 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -193,20 +193,26 @@ Two reference forms, identical behavior:
 | `$name` | Standalone (whitespace-separated) | `rect $roomw $roomh` |
 | `${name}` | Embedded into a token | `${lw}px`, `"${w}x${h} ft"` |
 
-**Built-in cursor variables** — read-only, updated after every placed element:
+**System variables** — names starting with `__` (double underscore) are reserved and read-only. Attempting to assign to any `__`-prefixed name is an error.
 
-| Variable | Meaning |
-|---|---|
-| `$cursorx` | Current cursor x in feet from canvas origin (same as `A=` x) |
-| `$cursory` | Current cursor y in feet from canvas origin (same as `A=` y) |
+| Variable | Alias | Value |
+|---|---|---|
+| `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same coordinate space as `A=`) |
+| `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
+| `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
+
+All system variables update after every statement.
 
 ```
 dir 90
 rect 12 10 "Living Room"
-point C=red A=$cursorx,$cursory   # red dot at cursor after rect
+point C=red A=$__cx,$__cy       # red dot at cursor after rect
+dir 0
+line (__dir / 90)               # length = 0/90 = 0 (placeholder; __dir=0 after dir 0)
+lb "__dir=${__dir}" A=0,1       # label showing current direction
 ```
 
-Variables are shared across `include` files. Assigning to `cursorx` or `cursory` is an error.
+Variables are shared across `include` files.
 
 ---
 

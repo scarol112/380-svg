@@ -23,14 +23,15 @@ _SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()]+$')
 _INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
 _BARE_ID_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
-_READONLY_VARS = frozenset({"cursorx", "cursory"})
-
-
 def execute_dsl(
     text: str,
     source_path: Path | None = None,
 ) -> list[PlacedElement]:
-    vars_: dict[str, float] = {"cursorx": 0.0, "cursory": 0.0}
+    vars_: dict[str, float] = {
+        "__cursorx": 0.0, "__cursory": 0.0,
+        "__cx": 0.0,      "__cy": 0.0,
+        "__dir": 90.0,
+    }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
     if source_path is not None:
@@ -83,8 +84,8 @@ def _execute_stmt(
     m = _ASSIGNMENT_RE.match(stmt)
     if m:
         name, op, expr_raw = m.group(1), m.group(2), m.group(3).strip()
-        if name in _READONLY_VARS:
-            raise ParseError(f"Line {lineno}: '{name}' is a read-only variable")
+        if name.startswith('__'):
+            raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
         expr_sub = _substitute_vars(expr_raw, vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         value = _eval_expr(expr_sub, lineno)
@@ -108,7 +109,7 @@ def _execute_stmt(
     node = _parse_line(tokens, lineno)
     if node is not None:
         placer._dispatch(node)
-        _update_cursor_vars(placer, vars_)
+        _update_system_vars(placer, vars_)
 
 
 def _execute_include(
@@ -204,7 +205,12 @@ def _eval_expr(expr: str, lineno: int) -> float:
         raise ParseError(f"Line {lineno}: expression error in {expr!r}: {e}")
 
 
-def _update_cursor_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
+def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
     ox, oy = placer._canvas_origin
-    vars_["cursorx"] = placer._cursor.x - ox
-    vars_["cursory"] = placer._cursor.y - oy
+    cx = placer._cursor.x - ox
+    cy = placer._cursor.y - oy
+    vars_["__cursorx"] = cx
+    vars_["__cursory"] = cy
+    vars_["__cx"] = cx
+    vars_["__cy"] = cy
+    vars_["__dir"] = placer._cursor.direction
