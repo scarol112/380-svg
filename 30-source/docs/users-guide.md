@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.13 $ $Date: 2026/04/29 21:53:19 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -153,6 +153,20 @@ inner = $roomw - 2
 ```
 
 Arithmetic operators `+ - * /` with standard precedence are supported. References to other variables use `$name`.
+
+**Inline expressions**: anywhere a number appears, `(expr)` is evaluated immediately. Bare variable names inside `(...)` are variable references — no `$` prefix needed inside the parens. Nested parentheses work.
+
+```
+n = 8
+line (n/2)                    # length 4
+rect (roomw - 2) $roomh       # subtract from a variable
+door 3 A=2,(roomh - 0.5)      # expression in A= coordinate
+x = (a * (b + c))             # nested parens in assignment
+```
+
+Parentheses inside double-quoted label strings are **not** evaluated — they are literal text.
+
+---
 
 Compound assignment adjusts an already-defined variable:
 

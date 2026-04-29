@@ -19,6 +19,9 @@ _ALL_KEYWORDS = {
 _VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
 _ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(\+|-)?=\s*(.+)$')
 _SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()]+$')
+# (expr) inline arithmetic — bare identifiers inside are variable references
+_INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
+_BARE_ID_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
 _READONLY_VARS = frozenset({"cursorx", "cursory"})
 
@@ -83,6 +86,7 @@ def _execute_stmt(
         if name in _READONLY_VARS:
             raise ParseError(f"Line {lineno}: '{name}' is a read-only variable")
         expr_sub = _substitute_vars(expr_raw, vars_, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         value = _eval_expr(expr_sub, lineno)
         if op is None:
             vars_[name] = value
@@ -95,8 +99,9 @@ def _execute_stmt(
                 vars_[name] -= value
         return
 
-    # Element or directive: substitute $vars, tokenize, parse, dispatch
+    # Element or directive: substitute $vars, evaluate (expr), tokenize, parse, dispatch
     sub_stmt = _substitute_vars(stmt, vars_, lineno)
+    sub_stmt = _evaluate_inline_exprs(sub_stmt, vars_, lineno)
     tokens = tokenize(sub_stmt, lineno)
     if not tokens:
         return
@@ -141,6 +146,50 @@ def _substitute_vars(text: str, vars_: dict[str, float], lineno: int) -> str:
             raise ParseError(f"Line {lineno}: undefined variable '${name}'")
         return f"{vars_[name]:g}"
     return _VARREF_RE.sub(replace, text)
+
+
+def _evaluate_inline_exprs(text: str, vars_: dict[str, float], lineno: int) -> str:
+    """Replace each (expr) group outside quoted strings with its evaluated value.
+
+    Bare identifiers inside parentheses are variable references.
+    Parentheses inside double-quoted strings are left untouched.
+    """
+    result: list[str] = []
+    i = 0
+    in_quote = False
+    while i < len(text):
+        ch = text[i]
+        if ch == '"':
+            in_quote = not in_quote
+            result.append(ch)
+            i += 1
+        elif ch == '(' and not in_quote:
+            # Find matching ) by tracking depth, so nested parens work
+            j = i + 1
+            depth = 1
+            while j < len(text) and depth > 0:
+                if text[j] == '(':
+                    depth += 1
+                elif text[j] == ')':
+                    depth -= 1
+                j += 1
+            if depth != 0:
+                result.append(ch)
+                i += 1
+            else:
+                inner = text[i + 1:j - 1]
+                def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+                    name = m.group()
+                    if name not in _v:
+                        raise ParseError(f"Line {_l}: undefined variable '{name}' in expression")
+                    return f"{_v[name]:g}"
+                expr = _BARE_ID_RE.sub(sub_id, inner)
+                result.append(f"{_eval_expr(expr, lineno):g}")
+                i = j
+        else:
+            result.append(ch)
+            i += 1
+    return ''.join(result)
 
 
 def _eval_expr(expr: str, lineno: int) -> float:

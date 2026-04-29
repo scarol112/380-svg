@@ -1,10 +1,15 @@
-head	1.15;
+head	1.16;
 access;
 symbols;
 locks
-	scarol:1.15; strict;
+	scarol:1.16; strict;
 comment	@# @;
 
+
+1.16
+date	2026.04.29.22.24.20;	author scarol;	state Exp;
+branches;
+next	1.15;
 
 1.15
 date	2026.04.29.21.53.19;	author scarol;	state Exp;
@@ -87,12 +92,12 @@ desc
 @
 
 
-1.15
+1.16
 log
-@Document += and -= compound assignment operators
+@Document (expr) inline arithmetic syntax
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 21:21:49 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 21:53:19 $ -->
 # App working title: svg
 
 ## Project tools
@@ -180,6 +185,16 @@ point A=$cursorx,$cursory
 Assigning to `cursorx` or `cursory` is an error.
 
 **Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
+
+**Inline expressions**: `(expr)` outside quoted strings is evaluated immediately and replaced with its numeric value. Bare identifiers inside `(...)` are variable references — no `$` prefix needed inside the parens. Nested parentheses are supported.
+
+```
+line (n/2)                # length = n/2
+rect (roomw - 2) $roomh   # width expression
+door 3 A=2,(roomh-0.5)    # bare names in A= coordinates
+x = (a*(b+c))             # nested parens in assignment RHS
+lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
+```
 
 **Scope**: variables are shared across `include` files — one table for the entire drawing.
 
@@ -298,6 +313,18 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.15
+log
+@Document += and -= compound assignment operators
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 21:21:49 $ -->
+d89 10
 @
 
 

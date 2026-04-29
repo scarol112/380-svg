@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 21:53:19 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.16 $ $Date: 2026/04/29 22:24:20 $ -->
 # App working title: svg
 
 ## Project tools
@@ -86,6 +86,16 @@ point A=$cursorx,$cursory
 Assigning to `cursorx` or `cursory` is an error.
 
 **Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
+
+**Inline expressions**: `(expr)` outside quoted strings is evaluated immediately and replaced with its numeric value. Bare identifiers inside `(...)` are variable references — no `$` prefix needed inside the parens. Nested parentheses are supported.
+
+```
+line (n/2)                # length = n/2
+rect (roomw - 2) $roomh   # width expression
+door 3 A=2,(roomh-0.5)    # bare names in A= coordinates
+x = (a*(b+c))             # nested parens in assignment RHS
+lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
+```
 
 **Scope**: variables are shared across `include` files — one table for the entire drawing.
 
