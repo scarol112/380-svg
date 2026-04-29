@@ -1,0 +1,34 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.29.21.22.08;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Add variables_test.dsl demonstrating issue #20 variable feature
+@
+text
+@# Issue #20 variable test
+roomw = 12
+roomh = 8
+lw = 2
+offset = 2
+
+dir 90
+rect $roomw $roomh "${roomw}x${roomh} ft room"
+door 3 ${lw}px A=$offset,$roomh
+point C=red A=$cursorx,$cursory
+@

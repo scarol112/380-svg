@@ -1,0 +1,161 @@
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+from .dsl.lexer import tokenize
+from .dsl.parser import ParseError, _ALIASES, _parse_line, _split_statements, _strip_comment
+from .layout.placer import ElementPlacer
+from .model import PlacedElement
+
+
+_ALL_KEYWORDS = {
+    "line", "rect", "wall", "door", "window", "arc", "arrow", "point",
+    "label", "direction", "elementid", "dimensions", "showcornerxy",
+    "color", "include",
+}
+
+# Matches ${name} (brace form) or $name (bare form); brace form tried first
+_VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
+_ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(\+|-)?=\s*(.+)$')
+_SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()]+$')
+
+_READONLY_VARS = frozenset({"cursorx", "cursory"})
+
+
+def execute_dsl(
+    text: str,
+    source_path: Path | None = None,
+) -> list[PlacedElement]:
+    vars_: dict[str, float] = {"cursorx": 0.0, "cursory": 0.0}
+    placer = ElementPlacer()
+    seen: frozenset[Path] = frozenset()
+    if source_path is not None:
+        seen = seen | {source_path.resolve()}
+    _execute_text(text, source_path, vars_, placer, seen)
+    return placer._elements
+
+
+def _execute_text(
+    text: str,
+    source_path: Path | None,
+    vars_: dict[str, float],
+    placer: ElementPlacer,
+    seen: frozenset[Path],
+) -> None:
+    for lineno, raw_line in enumerate(text.splitlines(), start=1):
+        line = _strip_comment(raw_line)
+        if not line:
+            continue
+        for stmt in _split_statements(line):
+            stmt = stmt.strip()
+            if not stmt:
+                continue
+            _execute_stmt(stmt, lineno, source_path, vars_, placer, seen)
+
+
+def _execute_stmt(
+    stmt: str,
+    lineno: int,
+    source_path: Path | None,
+    vars_: dict[str, float],
+    placer: ElementPlacer,
+    seen: frozenset[Path],
+) -> None:
+    parts = stmt.split()
+    if not parts:
+        return
+    first_word = parts[0].lower()
+    canonical = _ALIASES.get(first_word, first_word)
+
+    # Include: resolve path before any var substitution
+    if canonical == "include":
+        tokens = tokenize(stmt, lineno)
+        _execute_include(tokens, lineno, source_path, vars_, placer, seen)
+        return
+
+    # Assignment wins when the statement is IDENTIFIER = expr, regardless of
+    # whether the name happens to be a keyword alias (e.g. "w = 10" assigns a
+    # variable; "w 10" is still a wall because there is no "=").
+    m = _ASSIGNMENT_RE.match(stmt)
+    if m:
+        name, op, expr_raw = m.group(1), m.group(2), m.group(3).strip()
+        if name in _READONLY_VARS:
+            raise ParseError(f"Line {lineno}: '{name}' is a read-only variable")
+        expr_sub = _substitute_vars(expr_raw, vars_, lineno)
+        value = _eval_expr(expr_sub, lineno)
+        if op is None:
+            vars_[name] = value
+        else:
+            if name not in vars_:
+                raise ParseError(f"Line {lineno}: '{name}' is not defined (cannot use {op}=)")
+            if op == '+':
+                vars_[name] += value
+            else:
+                vars_[name] -= value
+        return
+
+    # Element or directive: substitute $vars, tokenize, parse, dispatch
+    sub_stmt = _substitute_vars(stmt, vars_, lineno)
+    tokens = tokenize(sub_stmt, lineno)
+    if not tokens:
+        return
+    node = _parse_line(tokens, lineno)
+    if node is not None:
+        placer._dispatch(node)
+        _update_cursor_vars(placer, vars_)
+
+
+def _execute_include(
+    tokens: list,
+    lineno: int,
+    source_path: Path | None,
+    vars_: dict[str, float],
+    placer: ElementPlacer,
+    seen: frozenset[Path],
+) -> None:
+    if len(tokens) < 2:
+        raise ParseError(f"Line {lineno}: include requires a filename")
+
+    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    inc_path = Path(raw)
+
+    if not inc_path.is_absolute():
+        base = source_path.parent if source_path else Path.cwd()
+        inc_path = (base / inc_path).resolve()
+    else:
+        inc_path = inc_path.resolve()
+
+    if inc_path in seen:
+        raise ParseError(f"Line {lineno}: circular include detected: {inc_path}")
+    if not inc_path.exists():
+        raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
+
+    _execute_text(inc_path.read_text(), inc_path, vars_, placer, seen | {inc_path})
+
+
+def _substitute_vars(text: str, vars_: dict[str, float], lineno: int) -> str:
+    def replace(m: re.Match) -> str:  # type: ignore[type-arg]
+        name = m.group(1) if m.group(1) is not None else m.group(2)
+        if name not in vars_:
+            raise ParseError(f"Line {lineno}: undefined variable '${name}'")
+        return f"{vars_[name]:g}"
+    return _VARREF_RE.sub(replace, text)
+
+
+def _eval_expr(expr: str, lineno: int) -> float:
+    if not _SAFE_EXPR_RE.match(expr):
+        raise ParseError(f"Line {lineno}: invalid expression: {expr!r}")
+    try:
+        result = eval(expr, {"__builtins__": {}}, {})
+        return float(result)
+    except ZeroDivisionError:
+        raise ParseError(f"Line {lineno}: division by zero in: {expr!r}")
+    except Exception as e:
+        raise ParseError(f"Line {lineno}: expression error in {expr!r}: {e}")
+
+
+def _update_cursor_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
+    ox, oy = placer._canvas_origin
+    vars_["cursorx"] = placer._cursor.x - ox
+    vars_["cursory"] = placer._cursor.y - oy

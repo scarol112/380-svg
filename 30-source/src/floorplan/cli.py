@@ -2,8 +2,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from .dsl.parser import parse_file, ParseError
-from .layout.placer import ElementPlacer
+from .dsl.parser import ParseError
+from .interpreter import execute_dsl
 from .layout.scaler import compute_scale
 from .render.svg import render_svg
 
@@ -41,16 +41,13 @@ def main() -> None:
         text = sys.stdin.read()
 
     try:
-        nodes = parse_file(text, source_path=source_path)
+        elements = execute_dsl(text, source_path=source_path)
     except ParseError as e:
         _err(f"Error: {e}")
         sys.exit(1)
 
-    if not nodes:
+    if not elements:
         print("Warning: no elements found in input.", file=sys.stderr)
-
-    placer = ElementPlacer()
-    elements = placer.place_all(nodes)
 
     scale, tx, ty = compute_scale(elements)
     svg = render_svg(elements, scale, tx, ty)

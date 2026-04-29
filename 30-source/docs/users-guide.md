@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 17:20:04 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.13 $ $Date: 2026/04/29 21:53:19 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -137,6 +137,64 @@ as if the included lines were written inline.
 include walls.dsl
 include fixtures.dsl
 ```
+
+### Variables
+
+Numeric variables let you name dimensions and positions for reuse and calculation.
+
+**Assign** with a bare `name = expression`:
+
+```
+roomw = 14
+roomh = 11
+lw    = 2
+half  = $roomw * 0.5
+inner = $roomw - 2
+```
+
+Arithmetic operators `+ - * /` with standard precedence are supported. References to other variables use `$name`.
+
+Compound assignment adjusts an already-defined variable:
+
+```
+margin = 1
+roomw = 14
+roomw -= 1    # trim: roomw is now 13
+roomw += 0.5  # roomw is now 13.5
+```
+
+**Reference** a variable anywhere a number appears:
+
+```
+rect $roomw $roomh "Main Room"
+wall $roomh 2px A=$roomw,0
+line 10 ${lw}px dashed
+label "${roomw}x${roomh} room" center A=0,0
+```
+
+Two reference forms, identical behavior:
+
+| Form | Use | Example |
+|---|---|---|
+| `$name` | Standalone (whitespace-separated) | `rect $roomw $roomh` |
+| `${name}` | Embedded into a token | `${lw}px`, `"${w}x${h} ft"` |
+
+**Built-in cursor variables** — read-only, updated after every placed element:
+
+| Variable | Meaning |
+|---|---|
+| `$cursorx` | Current cursor x in feet from canvas origin (same as `A=` x) |
+| `$cursory` | Current cursor y in feet from canvas origin (same as `A=` y) |
+
+```
+dir 90
+rect 12 10 "Living Room"
+point C=red A=$cursorx,$cursory   # red dot at cursor after rect
+```
+
+Variables are shared across `include` files. Assigning to `cursorx` or `cursory` is an error.
+
+---
 
 ### Display directives
 

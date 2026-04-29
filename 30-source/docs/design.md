@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.13 $ $Date: 2026/04/26 17:20:04 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 21:53:19 $ -->
 # App working title: svg
 
 ## Project tools
@@ -45,6 +45,51 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Blank lines are ignored
 - Tokens are whitespace-separated
 - All element and directive keywords have short aliases (see Aliases table)
+
+### Variables
+
+Numeric variables can be assigned and used anywhere a number appears.
+
+**Assignment** — bare `name = expr`, no keyword required:
+```
+roomw = 12
+roomh = 8.5
+lw = 2
+half = $roomw * 0.5
+```
+
+Compound assignment operators `+=` and `-=` adjust an already-defined variable:
+```
+x = 10
+x += 3    # x is now 13
+x -= 1    # x is now 12
+```
+
+**Reference** — two equivalent forms:
+- `$name` — standalone (whitespace-separated)
+- `${name}` — embedded (value concatenates with adjacent chars)
+
+```
+rect $roomw $roomh "${roomw}x${roomh} ft"
+line 10 ${lw}px dashed
+door 3 A=$offset,$roomh
+point A=$cursorx,$cursory
+```
+
+**Built-in read-only variables** (updated after every placed element):
+
+| Name | Value |
+|---|---|
+| `$cursorx` | Cursor x position in feet from canvas origin (same space as `A=`) |
+| `$cursory` | Cursor y position in feet from canvas origin |
+
+Assigning to `cursorx` or `cursory` is an error.
+
+**Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
+
+**Scope**: variables are shared across `include` files — one table for the entire drawing.
+
+**Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
 
 ### Directives (non-drawing lines)
 ```

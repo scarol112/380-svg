@@ -1,10 +1,20 @@
-head	1.13;
+head	1.15;
 access;
 symbols;
 locks
-	scarol:1.13; strict;
+	scarol:1.15; strict;
 comment	@# @;
 
+
+1.15
+date	2026.04.29.21.53.19;	author scarol;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2026.04.29.21.21.49;	author scarol;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2026.04.26.17.20.04;	author scarol;	state Exp;
@@ -77,12 +87,12 @@ desc
 @
 
 
-1.13
+1.15
 log
-@Document element and directive aliases (issue #19)
+@Document += and -= compound assignment operators
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.12 $ $Date: 2026/04/26 15:03:31 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 21:21:49 $ -->
 # App working title: svg
 
 ## Project tools
@@ -129,6 +139,51 @@ SVG files being developed are displayed by 380-030.html which refreshes every 6 
 - Blank lines are ignored
 - Tokens are whitespace-separated
 - All element and directive keywords have short aliases (see Aliases table)
+
+### Variables
+
+Numeric variables can be assigned and used anywhere a number appears.
+
+**Assignment** — bare `name = expr`, no keyword required:
+```
+roomw = 12
+roomh = 8.5
+lw = 2
+half = $roomw * 0.5
+```
+
+Compound assignment operators `+=` and `-=` adjust an already-defined variable:
+```
+x = 10
+x += 3    # x is now 13
+x -= 1    # x is now 12
+```
+
+**Reference** — two equivalent forms:
+- `$name` — standalone (whitespace-separated)
+- `${name}` — embedded (value concatenates with adjacent chars)
+
+```
+rect $roomw $roomh "${roomw}x${roomh} ft"
+line 10 ${lw}px dashed
+door 3 A=$offset,$roomh
+point A=$cursorx,$cursory
+```
+
+**Built-in read-only variables** (updated after every placed element):
+
+| Name | Value |
+|---|---|
+| `$cursorx` | Cursor x position in feet from canvas origin (same space as `A=`) |
+| `$cursory` | Cursor y position in feet from canvas origin |
+
+Assigning to `cursorx` or `cursory` is an error.
+
+**Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
+
+**Scope**: variables are shared across `include` files — one table for the entire drawing.
+
+**Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
 
 ### Directives (non-drawing lines)
 ```
@@ -243,6 +298,30 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.14
+log
+@Document numeric variables, cursorx/cursory, and arithmetic (issue #20)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.13 $ $Date: 2026/04/26 17:20:04 $ -->
+d59 7
+@
+
+
+1.13
+log
+@Document element and directive aliases (issue #19)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.12 $ $Date: 2026/04/26 15:03:31 $ -->
+d48 38
 @
 
 
