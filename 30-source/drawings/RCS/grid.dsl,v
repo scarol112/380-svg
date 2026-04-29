@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.04.29.15.03.19;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.26.17.44.19;	author scarol;	state Exp;
@@ -16,13 +21,50 @@ desc
 @@
 
 
+1.2
+log
+@spaces brainstorm, added inch numbers to rulerh10
+@
+text
+@# 10x10 grid
+eid off
+dim off
+sxy off
+dir 90
+color cyan
+l 10 A=0,0
+l 10 A=0,1
+l 10 A=0,2
+l 10 A=0,3
+l 10 A=0,4
+l 10 A=0,5
+l 10 A=0,6
+l 10 A=0,7
+l 10 A=0,8
+
+dir 180
+l 8 A=0,0
+l 8 A=1,0
+l 8 A=2,0
+l 8 A=3,0
+l 8 A=4,0
+l 8 A=5,0
+l 8 A=6,0
+l 8 A=7,0
+l 8 A=8,0
+l 8 A=9,0
+l 8 A=10,0
+@
+
+
 1.1
 log
 @Substitute long keyword names with short aliases
 @
 text
-@eid off
-dim off
+@d1 1
+d4 13
+a16 20
 l 19 A=0,0
 l 19 A=0,1
 l 19 A=0,2
@@ -43,7 +85,8 @@ l 19 A=0,16
 l 19 A=0,17
 l 19 A=0,18
 l 19 A=0,19
-dir 180
+d18 11
+a28 20
 l 19 A=0,0
 l 19 A=1,0
 l 19 A=2,0

@@ -1,4 +1,27 @@
-# 20x16 grid
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.29.15.03.19;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# 20x16 grid
 eid off
 dim off
 sxy off
@@ -44,3 +67,4 @@ l 16 A=17,0
 l 16 A=18,0
 l 16 A=19,0
 l 16 A=20,0
+@

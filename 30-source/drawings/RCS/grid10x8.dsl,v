@@ -1,4 +1,28 @@
-# 10x10 grid
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.04.29.15.03.19;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@initial
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# 10x10 grid
 eid off
 dim off
 sxy off
@@ -26,3 +50,4 @@ l 8 A=7,0
 l 8 A=8,0
 l 8 A=9,0
 l 8 A=10,0
+@

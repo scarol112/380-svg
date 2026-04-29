@@ -2,6 +2,7 @@
 eid off
 dim off
 sxy off
+dir 90
 l 10
 dir 180
 l 8
