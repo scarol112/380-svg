@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 23:42:31 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.16 $ $Date: 2026/04/30 02:03:02 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -69,8 +69,8 @@ case-insensitive and can be mixed freely with full names.
 | `door` | `d` | `color` | `col` |
 | `window` | `wi` | `include` | `inc` |
 | `arc` | `a` | `showcornerxy` | `sxy` |
-| `arrow` | `aw` | | |
-| `point` | `p` | | |
+| `arrow` | `aw` | `moveto` | `mto` |
+| `point` | `p` | `lineto` | `lto` |
 | `label` | `lb` | | |
 
 ```
@@ -200,6 +200,7 @@ Two reference forms, identical behavior:
 | `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same coordinate space as `A=`) |
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
+| `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 
 All system variables update after every statement.
 
@@ -425,6 +426,48 @@ arrow <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 arrow 6
 arrow 4 A=0,15
+```
+
+---
+
+### `moveto`
+
+Moves the cursor to an absolute canvas position without drawing anything. No element ID or dimension annotation is produced.
+
+```
+moveto <x> <y> [A=<sx>,<sy>]
+```
+
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — start point override for `__mltodir` calculation only; the cursor still moves to `(x, y)`
+
+Updates `$__mltodir` to the compass bearing from start to destination. Does not change `$__dir`.
+
+```
+moveto 5 0          # jump cursor to (5, 0)
+mto 0 0 A=5,0       # __mltodir = 270° (leftward); cursor moves to (0, 0)
+```
+
+---
+
+### `lineto`
+
+Draws a straight line from the current cursor (or from `A=sx,sy`) to the specified destination, then advances the cursor there. The element is numbered and dimensioned like any other geometry element.
+
+```
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]
+```
+
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — overrides the start point (same semantics as on other elements)
+- All standard line options apply: line weight, dash style, per-element color
+
+Updates `$__mltodir` to the compass bearing of the drawn line. Does not change `$__dir`.
+
+```
+lineto 10 5                     # diagonal from cursor to (10, 5)
+lto 14 8 2px dashed C=blue A=10,0  # blue dashed line from (10, 0) to (14, 8)
+lb "bearing: ${__mltodir}"      # show the last lineto direction
 ```
 
 ---

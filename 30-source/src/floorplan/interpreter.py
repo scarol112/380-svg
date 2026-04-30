@@ -12,7 +12,7 @@ from .model import PlacedElement
 _ALL_KEYWORDS = {
     "line", "rect", "wall", "door", "window", "arc", "arrow", "point",
     "label", "direction", "elementid", "dimensions", "showcornerxy",
-    "color", "include",
+    "color", "include", "moveto", "lineto",
 }
 
 # Matches ${name} (brace form) or $name (bare form); brace form tried first
@@ -31,6 +31,7 @@ def execute_dsl(
         "__cursorx": 0.0, "__cursory": 0.0,
         "__cx": 0.0,      "__cy": 0.0,
         "__dir": 90.0,
+        "__mltodir": 0.0,
     }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
@@ -214,3 +215,4 @@ def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
     vars_["__cx"] = cx
     vars_["__cy"] = cy
     vars_["__dir"] = placer._cursor.direction
+    vars_["__mltodir"] = placer._mltodir

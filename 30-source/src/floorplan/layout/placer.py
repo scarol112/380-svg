@@ -1,8 +1,11 @@
+import math
+
 from ..dsl.ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, PointElem, LabelElem,
+    MoveToElem, LineToElem,
 )
 from ..model import PlacedElement
 from .cursor import DrawingCursor, direction_vector
@@ -32,6 +35,7 @@ class ElementPlacer:
         self._show_dims: bool = True
         self._color: str = "black"
         self._show_cornerxy: bool = False
+        self._mltodir: float = 0.0
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -71,6 +75,10 @@ class ElementPlacer:
                 self._place_point(node)
             case LabelElem():
                 self._place_label(node)
+            case MoveToElem():
+                self._place_moveto(node)
+            case LineToElem():
+                self._place_lineto(node)
 
     # ── coordinate helpers ────────────────────────────────────────────────────
 
@@ -229,3 +237,49 @@ class ElementPlacer:
             extra=extra,
             source_line=elem.source_line,
         ))
+
+    def _place_moveto(self, elem: MoveToElem) -> None:
+        ox, oy = self._canvas_origin
+        if elem.absolute is not None:
+            start_x = ox + elem.absolute[0]
+            start_y = oy + elem.absolute[1]
+        else:
+            start_x = self._cursor.x
+            start_y = self._cursor.y
+        dest_x = ox + elem.dest_x
+        dest_y = oy + elem.dest_y
+        ddx = dest_x - start_x
+        ddy = dest_y - start_y
+        if ddx != 0.0 or ddy != 0.0:
+            self._mltodir = math.degrees(math.atan2(ddx, -ddy)) % 360
+        self._cursor.x = dest_x
+        self._cursor.y = dest_y
+
+    def _place_lineto(self, elem: LineToElem) -> None:
+        ox, oy = self._canvas_origin
+        if elem.absolute is not None:
+            start_x = ox + elem.absolute[0]
+            start_y = oy + elem.absolute[1]
+        else:
+            start_x = self._cursor.x
+            start_y = self._cursor.y
+        dest_x = ox + elem.dest_x
+        dest_y = oy + elem.dest_y
+        self._set_canvas_origin_if_needed(start_x, start_y)
+        ddx = dest_x - start_x
+        ddy = dest_y - start_y
+        if ddx != 0.0 or ddy != 0.0:
+            bearing = math.degrees(math.atan2(ddx, -ddy)) % 360
+        else:
+            bearing = self._cursor.direction
+        self._mltodir = bearing
+        length = math.sqrt(ddx * ddx + ddy * ddy)
+        self._elements.append(PlacedElement(
+            kind="lineto", number=self._next_number(),
+            x=start_x, y=start_y, length=length, width=0.0,
+            direction=bearing,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
+            **self._flags(), source_line=elem.source_line,
+        ))
+        self._cursor.x = dest_x
+        self._cursor.y = dest_y

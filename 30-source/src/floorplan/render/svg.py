@@ -149,7 +149,7 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
     # Pass 2: annotations — pre-register solid geometry so text avoids drawn lines.
     # Rect interiors are open space; only register stroke-based elements.
     registry = AnnotationRegistry()
-    _STROKE_KINDS = {"line", "wall", "door", "window", "arrow", "arc", "point"}
+    _STROKE_KINDS = {"line", "lineto", "wall", "door", "window", "arrow", "arc", "point"}
     for elem in elements:
         if elem.lw > 0 and elem.kind in _STROKE_KINDS:
             bbox = _element_bbox_px(elem, scale, tx, ty)
@@ -216,7 +216,7 @@ def _element_bbox_px(
 
 def _render_element(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     match elem.kind:
-        case "line":
+        case "line" | "lineto":
             return _line_svg(elem, scale, tx, ty)
         case "rect":
             return _rect_svg(elem, scale, tx, ty)

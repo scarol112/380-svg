@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.17 $ $Date: 2026/04/29 23:42:31 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.18 $ $Date: 2026/04/30 02:03:02 $ -->
 # App working title: svg
 
 ## Project tools
@@ -83,6 +83,7 @@ point A=$cursorx,$cursory
 | `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same space as `A=`) |
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, …) |
+| `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 
 All three update after every placed element or directive.
 
@@ -162,6 +163,8 @@ arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
 arrow <length> [<lw>px] [<dash>] [C=<color>]
 point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
 label "text" [left|center|right] [<size>]        # default align=left, size=10px
+moveto <x> <y> [A=<sx>,<sy>]                     # jump cursor; no geometry, no ID; updates __mltodir
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]  # line to absolute dest; updates __mltodir
 ```
 
 ### Aliases
@@ -185,6 +188,8 @@ Every keyword has a short alias. Aliases are case-insensitive and can be mixed f
 | `color` | `col` |
 | `include` | `inc` |
 | `showcornerxy` | `sxy` |
+| `moveto` | `mto` |
+| `lineto` | `lto` |
 
 ### Dash styles
 

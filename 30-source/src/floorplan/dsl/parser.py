@@ -4,6 +4,7 @@ from .ast import (
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, PointElem, LabelElem,
+    MoveToElem, LineToElem,
 )
 from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
 
@@ -124,6 +125,8 @@ _ALIASES: dict[str, str] = {
     "col": "color",
     "inc": "include",
     "sxy": "showcornerxy",
+    "mto": "moveto",
+    "lto": "lineto",
 }
 
 
@@ -159,6 +162,10 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_point(rest, lineno)
     if keyword == "label":
         return _parse_label(rest, lineno)
+    if keyword == "moveto":
+        return _parse_moveto(rest, lineno)
+    if keyword == "lineto":
+        return _parse_lineto(rest, lineno)
 
     raise ParseError(f"Line {lineno}: unknown element type {keyword!r}")
 
@@ -339,3 +346,28 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
         if tokens and tokens[0].kind == "WORD":
             text = tokens[0].value
     return LabelElem(text=text, align=align, font_size=font_size, absolute=absolute, source_line=lineno)
+
+
+def _parse_moveto(tokens: list[Token], lineno: int) -> MoveToElem:
+    if len(tokens) < 2:
+        raise ParseError(f"Line {lineno}: moveto requires dest_x and dest_y")
+    dest_x = parse_measurement(tokens[0])
+    dest_y = parse_measurement(tokens[1])
+    absolute = None
+    for tok in tokens[2:]:
+        if tok.kind == "ABSOLUTE":
+            absolute = parse_absolute(tok)
+    return MoveToElem(dest_x=dest_x, dest_y=dest_y, absolute=absolute, source_line=lineno)
+
+
+def _parse_lineto(tokens: list[Token], lineno: int) -> LineToElem:
+    if len(tokens) < 2:
+        raise ParseError(f"Line {lineno}: lineto requires dest_x and dest_y")
+    dest_x = parse_measurement(tokens[0])
+    dest_y = parse_measurement(tokens[1])
+    c = _extract_common(tokens[2:], lineno)
+    return LineToElem(
+        dest_x=dest_x, dest_y=dest_y,
+        lw=c["lw"], dash=c["dash"], color=c["color"],
+        absolute=c["absolute"], source_line=lineno,
+    )

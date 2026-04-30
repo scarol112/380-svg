@@ -107,6 +107,25 @@ class LabelElem:
 
 
 @dataclass
+class MoveToElem:
+    dest_x: float           # canvas-origin-relative feet
+    dest_y: float
+    absolute: tuple[float, float] | None = None  # A= start override
+    source_line: int = 0
+
+
+@dataclass
+class LineToElem:
+    dest_x: float           # canvas-origin-relative feet
+    dest_y: float
+    lw: float | None = None
+    dash: str | None = None
+    color: str | None = None
+    absolute: tuple[float, float] | None = None  # A= start override
+    source_line: int = 0
+
+
+@dataclass
 class DisplayDirective:
     target: str   # "elementid" or "dimensions"
     enabled: bool
@@ -139,4 +158,6 @@ ASTNode = (
     | ArrowElem
     | PointElem
     | LabelElem
+    | MoveToElem
+    | LineToElem
 )
