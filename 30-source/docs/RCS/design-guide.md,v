@@ -1,0 +1,438 @@
+head	1.2;
+access;
+symbols;
+locks
+	scarol:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2026.05.02.11.15.05;	author scarol;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2026.05.01.19.51.47;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@
+text
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.1 $ $Date: 2026/05/01 19:51:47 $ -->
+# App working title: svg
+
+## Project tools
+uv for dependency management
+
+## Project assets
+bin/380-010.sh - shell driver for the main program
+assets/380-030.html - frame for displaying the svg in progress
+assets/380-031.css - css for 380-030.html
+assets/380-032.js - javascript for 380-030.html
+
+## Code Structure
+
+### Shell and browser assets
+
+| File | Purpose |
+|---|---|
+| `bin/380-010.sh` | Shell driver. Resolves the input path, `cd`s to `30-source/`, and invokes `uv run python -m floorplan.cli`. Accepts `<input.dsl> [output.svg]`. |
+| `assets/380-030.html` | Browser viewer frame. Displays the current SVG output and refreshes it every 6 seconds so edits appear without a manual reload. |
+| `assets/380-031.css` | Stylesheet for the viewer frame. |
+| `assets/380-032.js` | JavaScript for the viewer: auto-refresh timer, SVG file path field, and display logic. |
+
+### Package `src/floorplan/`
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `cli.py` | Command-line entry point (`python -m floorplan.cli`). Parses `argparse` arguments, reads the DSL file (or stdin), calls `execute_dsl()`, computes the auto-scale transform via `compute_scale()`, and writes the SVG via `render_svg()`. |
+| `model.py` | Defines `PlacedElement` — the single shared dataclass that the placer produces and the renderer consumes. Fields: kind, number, x/y, length/width, direction, lw, dash, color, label, extra, show\_id, show\_dims, source\_line. |
+| `interpreter.py` | Interleaved parse-and-execute engine. Processes DSL statements one at a time so that system variables (`$__cx`, `$__cy`, `$__dir`, `$__mltodir`) always reflect live state. Handles variable assignment, `$name`/`${name}` substitution, `(expr)` inline arithmetic, `+=`/`-=` compound assignment, and `include` file resolution. Entry point: `execute_dsl(text, source_path)`. |
+
+### Sub-package `src/floorplan/dsl/`  *(language front-end)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `ast.py` | Dataclass definitions for every AST node type: one per element (`LineElem`, `RectElem`, `WallElem`, `DoorElem`, `WindowElem`, `ArcElem`, `ArrowElem`, `PointElem`, `LabelElem`, `MoveToElem`, `LineToElem`, `TextLineElem`, `TextBreakElem`, `TextBoxElem`, `TextAppendElem`) plus directives (`DirectionDirective`, `DisplayDirective`, `ColorDirective`, `ShowCornerXYDirective`, `TextStyleDirective`). Also defines the `ASTNode` union type. All geometry and label elements carry an optional `name` field for `@@name` element registration. |
+| `lexer.py` | Tokenizer. Converts a raw DSL line into a list of `Token` objects. Recognises measurement units (feet, feet+inches, inches, `px`), coordinate pairs (`h,v`), `A=h,v` absolute placements, `C=color` color overrides, double-quoted strings, and plain words/numbers. |
+| `parser.py` | Parser. Converts token lists into AST nodes. Contains the `_ALIASES` table mapping short aliases to canonical keyword names, the `parse_file()` batch entry point, `_parse_line()` dispatcher, and one `_parse_*` helper per element and directive type. Also resolves `include` directives for the batch pipeline. |
+
+### Sub-package `src/floorplan/layout/`  *(geometry and placement)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `cursor.py` | `DrawingCursor` (x, y, direction) and `direction_vector(degrees)`. Converts compass degrees (0=up, 90=right, 180=down, 270=left) to SVG `(dx, dy)` unit vectors, accounting for SVG's Y-down axis. |
+| `placer.py` | `ElementPlacer`. Walks AST nodes and converts them into `PlacedElement` objects. Tracks cursor position, canvas origin, element numbering counter, `elementid`/`dimensions` toggles, stroke color, `showcornerxy` state, `_mltodir`, named-element registry (`_named_elements`), and default text style (`_text_style`). Contains a `_place_*` method for each element type. Text elements that reference a named element (`textline`, `textbreak`) copy the referenced element's geometry at placement time so no lookup is needed at render time. `textappend` mutates the target element's `extra["text_rows"]` list. |
+| `scaler.py` | Auto-scale computation. Calculates the bounding box of all placed elements, derives a uniform scale factor so the drawing fits within the print area (full page minus 0.5 in margins), and returns `(scale, tx, ty)`. Iterates to account for the pixel extents of corner-marker annotations so none are clipped. |
+
+### Sub-package `src/floorplan/render/`  *(SVG output)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `svg.py` | Main SVG renderer. Two-pass loop over `PlacedElement` lists: pass 1 emits geometry (`<line>`, `<rect>`, `<path>`, etc.); pass 2 emits annotations (element ID numbers, dimension labels, rect labels, free labels, text elements, corner markers). Inline bold/italic markup (`*italic*`, `**bold**`, `***bold+italic***`, `\*`) is parsed by `_parse_inline_markup()` and rendered as `<tspan>` elements. `_spans_to_svg()` is the common text-to-SVG helper. Entry point: `render_svg(elements, scale, tx, ty)`. |
+| `dimensions.py` | Generates element ID numbers (red, small font) and dimension labels (grey, slightly larger font). `AnnotationRegistry` tracks all placed annotation bounding boxes and nudges new labels outward until they no longer overlap registered geometry or prior annotations. |
+| `styles.py` | `DASH_PATTERNS` dict mapping dash-style keywords (`dashed`, `shortdash`, `dotted`, `center`, `hidden`) to SVG `stroke-dasharray` values. `dash_attr()` helper returns the appropriate attribute string or empty string for solid strokes. |
+| `symbols.py` | SVG markup for compound symbols. `defs_svg()` produces the `<defs>` block (arrowhead marker). `door_svg()` renders the door slab line plus dashed quarter-circle swing arc. `window_svg()` renders the two parallel lines of a window opening. |
+
+---
+
+## Display
+SVG files being developed are displayed by 380-030.html which refreshes every 6 seconds to show recent changes to the underlying file.
+
+## SVG structure
+- Default file layout for print is letter-size paper, landscape orientation
+- By default the image is centered horizontally and vertically on the page and scaled to fill an 8 by 10 inch print rectangle
+- Auto-scale is computed after all elements are parsed: the bounding box of all placed elements is calculated, then a uniform scale factor is derived so the drawing fits within 768×960 SVG units (8×10 inches at 96dpi). Scale = min(768 / total_width_ft, 960 / total_height_ft).
+- **Canvas origin** is the top-left of the first user-defined element's bounding box, fixed for the lifetime of the drawing. All absolute ("A=") offsets are measured from this point.
+- User-defined elements are numbered for reference. Numbers are displayed in **red** in a small font above horizontal elements and to the left of vertical elements. Only geometry elements are numbered (line, rect, wall, door, window, arc) — not labels or directives. Element ID display can be toggled with `elementid on/off`.
+- Digital dimensions are displayed below or to the right of user-defined elements. The renderer automatically detects and resolves text overlaps by nudging annotations further from the element. Dimension display can be toggled with `dimensions on/off`. For `window` elements the annotation shows the opening width only (not wall depth).
+- Invisible elements (`0px` line weight) receive no annotations.
+- Labels always render horizontally (readable) regardless of the current drawing direction.
+- **`point` cursor behaviour**: unlike all other geometry elements, `point` does not advance the cursor. The dot marks the current position (or an `A=` position) without affecting subsequent element placement. Dimension labels are never shown for points; element ID numbers are shown when `elementid` is on. When `showcornerxy` is on, a coordinate annotation in the corner-marker style is emitted at the point's position.
+- **Corner coordinate markers** (`showcornerxy on`): at each `direction` change (only when the angle actually changes), a small annotation is emitted at the cursor's current position showing the corner's coordinates in decimal feet. Each marker is a short leader line (5 px gap from the point, 14 px line, 3 px gap to text) rendered in grey. The leader direction is chosen from NE/NW/SE/SW (preferred NE) to avoid overlapping registered geometry, dimension labels, and `label` elements. The bounding-box scaler iterates to account for the pixel extents of all corner annotations so none are clipped at the page margins.
+
+## SVG XML structure
+```xml
+<svg width="11in" height="8.5in" viewBox="0 0 1056 816">
+  <defs><!-- door arc, window, arrowhead marker symbols --></defs>
+  <g id="drawing" transform="translate(tx,ty) scale(k)">
+    <!-- all geometry in feet-space, scaled by transform -->
+  </g>
+</svg>
+```
+
+## User description of image elements
+
+### Syntax
+- Elements are expressed in files, one element per line
+- Multiple statements may appear on one line, separated by semicolons (`;`)
+- Lines beginning with "#" are comments, to be ignored
+- Trailing `#` comments are stripped before parsing; semicolons inside double-quoted strings are not treated as separators
+- Blank lines are ignored
+- Tokens are whitespace-separated
+- All element and directive keywords have short aliases (see Aliases table)
+
+### Variables
+
+Numeric variables can be assigned and used anywhere a number appears.
+
+**Assignment** — bare `name = expr`, no keyword required:
+```
+roomw = 12
+roomh = 8.5
+lw = 2
+half = $roomw * 0.5
+```
+
+Compound assignment operators `+=` and `-=` adjust an already-defined variable:
+```
+x = 10
+x += 3    # x is now 13
+x -= 1    # x is now 12
+```
+
+**Reference** — two equivalent forms:
+- `$name` — standalone (whitespace-separated)
+- `${name}` — embedded (value concatenates with adjacent chars)
+
+```
+rect $roomw $roomh "${roomw}x${roomh} ft"
+line 10 ${lw}px dashed
+door 3 A=$offset,$roomh
+point A=$cursorx,$cursory
+```
+
+**System variables** — names starting with `__` are reserved and read-only. Assigning to any `__`-prefixed name is an error.
+
+| Variable | Alias | Value |
+|---|---|---|
+| `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same space as `A=`) |
+| `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
+| `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, …) |
+| `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
+
+All three update after every placed element or directive.
+
+**Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
+
+**Inline expressions**: `(expr)` outside quoted strings is evaluated immediately and replaced with its numeric value. Bare identifiers inside `(...)` are variable references — no `$` prefix needed inside the parens. Nested parentheses are supported.
+
+```
+line (n/2)                # length = n/2
+rect (roomw - 2) $roomh   # width expression
+door 3 A=2,(roomh-0.5)    # bare names in A= coordinates
+x = (a*(b+c))             # nested parens in assignment RHS
+lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
+```
+
+**Scope**: variables are shared across `include` files — one table for the entire drawing.
+
+**Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
+
+### Element naming
+
+Any element can be given a name by appending `@@name` at the end of its statement. The name can then be referenced by text overlay elements (`textline`, `textbreak`, `textappend`).
+
+```
+line 12 @@corridor
+rect 14 10 @@living_room "Bedroom"
+wall 8 0.5 @@north_wall C=blue
+```
+
+Names are case-sensitive identifiers (`[A-Za-z_][A-Za-z0-9_]*`). An element registered under a name replaces any earlier element of the same name.
+
+### Inline bold/italic markup
+
+Inside any double-quoted string (for `label`, `textline`, `textbreak`, `textbox`, `textappend`, and rect inline labels), standard Markdown span syntax applies:
+
+| Markup | Result |
+|---|---|
+| `*text*` | italic |
+| `**text**` | bold |
+| `***text***` | bold and italic |
+| `\*` | literal asterisk |
+| `\n` | newline (line break) |
+
+```
+lb "Normal *italic* and **bold** text"
+lb "***Important notice***"
+lb "Price: $4.50/sq\*ft"
+lb "Line 1\nLine 2\n\nLine 4 after blank"
+```
+
+`\n` is processed in the lexer at tokenisation time, before variable substitution, so `$varname` inside the same quoted string still works normally. `\*` is processed later in the SVG renderer so that `*` spans are recognised correctly across the whole string. Unclosed markup delimiters are treated as literal text. No other backslash sequences are recognised.
+
+### Directives (non-drawing lines)
+```
+direction <degrees>      # set drawing direction: 0=up, 90=right, 180=down, 270=left
+elementid on|off         # show/hide element reference numbers (default: on)
+dimensions on|off        # show/hide dimension labels (default: on)
+showcornerxy on|off      # show/hide corner coordinate markers (default: off)
+color <value>            # set stroke color for subsequent elements (default: black)
+include <filename>       # insert contents of another DSL file at this position
+textstyle [<size>] [font=<family>] [normal]  # set default font size/family for text
+```
+Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
+
+`color` accepts any CSS color: named colors (`red`, `blue`, `green`, …) or quoted values for hex and rgb notation (`"#ff0000"`, `"rgb(0,128,0)"`). Use `color black` to reset. Color applies to strokes only; wall fill color is always dark grey.
+
+Per-element color: append `C=<value>` to any geometry element to override the current directive color for that one element only. Same value syntax as the `color` directive.
+
+`include` filenames may be quoted or bare. Relative paths are resolved from the directory of the including file. Circular includes are detected and reported as an error.
+
+### Measurements
+- `12` = 12 feet
+- `12.5` = 12.5 feet
+- `12'6"` = 12 feet 6 inches
+- `6"` = 6 inches (= 0.5 feet)
+- `2px` = line weight in SVG user units (96dpi screen pixels); for line weight only
+- `0px` = invisible element (cursor still advances; no geometry or annotations rendered)
+
+### Drawing Coordinate System
+Compass degrees map to SVG delta vectors (Y increases downward in SVG):
+- 0° (up) → delta (0, −1)
+- 90° (right) → delta (+1, 0)
+- 180° (down) → delta (0, +1)
+- 270° (left) → delta (−1, 0)
+
+All internal geometry is stored in feet (float). The SVG renderer multiplies by `scale_factor` (SVG units/foot) at render time.
+
+### Element syntax (positional)
+```
+<type> <length> [<width>] [<lw>px] [<dash>] [C=<color>] [<begin_h>,<begin_v>] [<end_h>,<end_v>] [A=<h>,<v>] ["label"]
+```
+
+Optional tokens after length/width (order-independent within their type):
+- `<n>px` — line weight override (SVG user units)
+- `<dash>` — dash style keyword (see Dash styles)
+- `C=<color>` — per-element stroke color override; same values as `color` directive
+- `<h>,<v>` (first coord pair) — **Begin Point**: (h,v) offset from element top-left where this element connects to the previous element's End Point. Default: center of element's trailing side.
+- `<h>,<v>` (second coord pair) — **End Point**: (h,v) offset from element top-left where the next element connects. Default: center of element's leading side.
+- `A=<h>,<v>` — absolute placement: (h,v) from canvas origin to this element's top-left. The cursor is updated to the element's end point, so the next element continues from there.
+- `"text"` — inline annotation string
+
+### Element Types
+
+```
+line <length> [<lw>px] [<dash>] [C=<color>] [@@name]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [@@name]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>] [@@name]  # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>] [@@name]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>] [@@name]  # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [@@name]
+arrow <length> [<lw>px] [<dash>] [C=<color>] [@@name]
+point [<lw>px] [C=<color>] [A=<h>,<v>] [@@name]  # 3px filled circle; cursor does not advance
+label "text" [left|center|right] [<size>] [font=<family>] [@@name]  # default align=left, size=10px
+moveto <x> <y> [A=<sx>,<sy>]                     # jump cursor; no geometry, no ID; updates __mltodir
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>] [@@name]  # line to absolute dest
+```
+
+All geometry elements and `label` now accept an optional `[@@name]` tag to register the element for later reference.
+
+### Text elements
+
+```
+textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
+textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+**`textline`** — places text alongside a named element, rotated to match its direction.
+- `<name>` must be a previously named element (via `@@name`)
+- Alignment anchor: `left` = text starts at element start; `center` = text is centered; `right` = text ends at element end
+- Text is offset slightly away from the line and rotated to be readable (never upside-down)
+- Cursor does not advance
+
+```
+l 14 @@corridor
+textline "Corridor" corridor center 10
+textline "**North Wall**" north_wall left 12   # bold markup
+```
+
+**`textbreak`** — places text at a point on a named line with a white-filled border box masking the line behind it. The line's geometry is unmodified; SVG layer order makes the box appear "in front of" the line.
+- Same anchor options as `textline`
+- Cursor does not advance
+
+```
+l 14 @@front_wall
+textbreak "Section A-A" front_wall center 10
+```
+
+**`textbox`** — a stroked rectangle with text inside; behaves like `rect` for cursor advancement.
+- `wrap` enables word-wrapping using `<tspan>` elements; without it, text is single-line (may overflow)
+- Can be named with `@@name` for subsequent `textappend`
+- Shows element ID and dimension labels unless those are turned off
+
+```
+tbox 6 2 "Long descriptive note" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0 @@schedule                             # zero-height starter for textappend
+```
+
+**`textappend`** — appends a text row to a named `rect` or `textbox`, expanding the element's height downward. The rect border is redrawn at the new height.
+
+```
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel left 9
+```
+
+**`textstyle`** — sets the default font size and family for all subsequent text elements (analogous to `color` for strokes). Any text element can override locally with a size number or `font=<family>` modifier.
+
+```
+textstyle 12 font=serif      # 12px serif globally
+textstyle font=monospace     # change family, keep size
+textstyle normal             # reset to 10px sans-serif
+lb "Title" 18                # local size override
+```
+
+### Aliases
+
+Every keyword has a short alias. Aliases are case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias |
+|---|---|
+| `line` | `l` |
+| `rect` | `r` |
+| `wall` | `w` |
+| `door` | `d` |
+| `window` | `wi` |
+| `arc` | `a` |
+| `arrow` | `aw` |
+| `point` | `p` |
+| `label` | `lb` |
+| `direction` | `dir` |
+| `elementid` | `eid` |
+| `dimensions` | `dim` |
+| `color` | `col` |
+| `include` | `inc` |
+| `showcornerxy` | `sxy` |
+| `moveto` | `mto` |
+| `lineto` | `lto` |
+| `textstyle` | `tstyle` |
+| `textline` | `txl` |
+| `textbreak` | `txbr` |
+| `textbox` | `tbox` |
+| `textappend` | `tapp` |
+
+### Dash styles
+
+`<dash>` is one of: `dashed`, `shortdash`, `dotted`, `center`, `hidden`.
+Omitting a dash keyword renders a solid stroke (default).
+
+| Keyword | `stroke-dasharray` | Use |
+|---|---|---|
+| `dashed` | `8,4` | General dashed line |
+| `shortdash` | `4,4` | Short dashes |
+| `dotted` | `2,2` | Dotted line |
+| `center` | `12,3,2,3` | Center line |
+| `hidden` | `4,2` | Hidden / behind-wall line |
+
+### Drawing Sequence
+Beginning at the canvas origin, elements are drawn one after the other in the current drawing direction, with the Begin Point of the new element adjacent to the End Point of the previous element. An element with `A=` is placed absolutely; the cursor still advances to its end point.
+
+### Element Placement
+- `A=<h>,<v>` is the horizontal and vertical distance from the canvas origin to the top-left corner of the element.
+- If no offset is specified, the new element begins where the previous one ended.
+- After any element (absolute or not), the cursor advances to that element's end point. The next element continues from there regardless of whether `A=` was used.
+
+### Example DSL file
+```
+# Simple 12×10 ft bedroom
+direction 90
+rect 12 10 "Bedroom"
+door 3 right A=2,10
+window 4 A=12,3
+```
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.1 $ $Date: 2026/05/01 00:00:00 $ -->
+d38 1
+a38 1
+| `ast.py` | Dataclass definitions for every AST node type: one per element (`LineElem`, `RectElem`, `WallElem`, `DoorElem`, `WindowElem`, `ArcElem`, `ArrowElem`, `PointElem`, `LabelElem`, `MoveToElem`, `LineToElem`) plus directives (`DirectionDirective`, `DisplayDirective`, `ColorDirective`, `ShowCornerXYDirective`). Also defines the `ASTNode` union type. |
+d48 1
+a48 1
+| `placer.py` | `ElementPlacer`. Walks AST nodes and converts them into `PlacedElement` objects. Tracks cursor position, canvas origin, element numbering counter, `elementid`/`dimensions` toggles, stroke color, `showcornerxy` state, and `_mltodir`. Contains a `_place_*` method for each element type. |
+d56 1
+a56 1
+| `svg.py` | Main SVG renderer. Two-pass loop over `PlacedElement` lists: pass 1 emits geometry (`<line>`, `<rect>`, `<path>`, etc.); pass 2 emits annotations (element ID numbers, dimension labels, rect labels, free labels, corner markers). Dispatches to per-element rendering functions. Entry point: `render_svg(elements, scale, tx, ty)`. |
+d156 33
+d197 1
+d241 9
+a249 9
+line <length> [<lw>px] [<dash>] [C=<color>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>]   # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
+arrow <length> [<lw>px] [<dash>] [C=<color>]
+point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
+label "text" [left|center|right] [<size>]        # default align=left, size=10px
+d251 62
+a312 1
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]  # line to absolute dest; updates __mltodir
+d338 5
+@

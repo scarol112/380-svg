@@ -38,4 +38,4 @@ The broader project root (`/srv/380-svg/`) contains sibling directories for rese
 
 Early stage — no implementation exists yet. The `src/` directory is empty. No build system, test runner, or linter is configured.
 
-## Design decisions are documented in docs/design.md - update that file whenh new features or designh decisions are made.
+## Design decisions are documented in docs/design-guide.md - update that file when new features or design decisions are made.

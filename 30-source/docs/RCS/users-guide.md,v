@@ -1,10 +1,20 @@
-head	1.15;
+head	1.17;
 access;
 symbols;
 locks
-	scarol:1.15; strict;
+	scarol:1.17; strict;
 comment	@# @;
 
+
+1.17
+date	2026.05.02.11.15.05;	author scarol;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2026.04.30.02.03.02;	author scarol;	state Exp;
+branches;
+next	1.15;
 
 1.15
 date	2026.04.29.23.42.31;	author scarol;	state Exp;
@@ -86,12 +96,12 @@ desc
 @@
 
 
-1.15
+1.17
 log
-@Document __ system variables: __cursorx, __cursory, __cx, __cy, __dir
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.16 $ $Date: 2026/04/30 02:03:02 $ -->
 # Floor Plan Generator — User's Guide
 
 ## Running the program
@@ -162,9 +172,11 @@ case-insensitive and can be mixed freely with full names.
 | `door` | `d` | `color` | `col` |
 | `window` | `wi` | `include` | `inc` |
 | `arc` | `a` | `showcornerxy` | `sxy` |
-| `arrow` | `aw` | | |
-| `point` | `p` | | |
-| `label` | `lb` | | |
+| `arrow` | `aw` | `moveto` | `mto` |
+| `point` | `p` | `lineto` | `lto` |
+| `label` | `lb` | `textstyle` | `tstyle` |
+| `textline` | `txl` | `textbreak` | `txbr` |
+| `textbox` | `tbox` | `textappend` | `tapp` |
 
 ```
 dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
@@ -293,6 +305,7 @@ Two reference forms, identical behavior:
 | `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same coordinate space as `A=`) |
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
+| `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 
 All system variables update after every statement.
 
@@ -420,16 +433,17 @@ An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
 perpendicular to it.
 
 ```
-rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@@name]
 ```
 
 ```
 rect 12 10
 rect 10'6" 8' "Bedroom"
 rect 14 11 2px "Master Bedroom" A=12,0
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
 ```
 
-The label is centered inside the rectangle.
+The label is centered inside the rectangle. Inline markup (`*italic*`, `**bold**`) is supported in the label. A named rect can receive `textappend` rows that expand it downward.
 
 ---
 
@@ -522,6 +536,48 @@ arrow 4 A=0,15
 
 ---
 
+### `moveto`
+
+Moves the cursor to an absolute canvas position without drawing anything. No element ID or dimension annotation is produced.
+
+```
+moveto <x> <y> [A=<sx>,<sy>]
+```
+
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — start point override for `__mltodir` calculation only; the cursor still moves to `(x, y)`
+
+Updates `$__mltodir` to the compass bearing from start to destination. Does not change `$__dir`.
+
+```
+moveto 5 0          # jump cursor to (5, 0)
+mto 0 0 A=5,0       # __mltodir = 270° (leftward); cursor moves to (0, 0)
+```
+
+---
+
+### `lineto`
+
+Draws a straight line from the current cursor (or from `A=sx,sy`) to the specified destination, then advances the cursor there. The element is numbered and dimensioned like any other geometry element.
+
+```
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]
+```
+
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — overrides the start point (same semantics as on other elements)
+- All standard line options apply: line weight, dash style, per-element color
+
+Updates `$__mltodir` to the compass bearing of the drawn line. Does not change `$__dir`.
+
+```
+lineto 10 5                     # diagonal from cursor to (10, 5)
+lto 14 8 2px dashed C=blue A=10,0  # blue dashed line from (10, 0) to (14, 8)
+lb "bearing: ${__mltodir}"      # show the last lineto direction
+```
+
+---
+
 ### `point`
 
 A filled circle 3 px in diameter, drawn at the current cursor position or at
@@ -559,16 +615,173 @@ A text annotation. Does not advance the cursor. Labels always render
 horizontally regardless of the current drawing direction.
 
 ```
-label "text" [left|center|right] [<size>] [A=<h>,<v>]
+label "text" [left|center|right] [<size>] [font=<family>] [A=<h>,<v>] [@@name]
 ```
 
 - alignment — `left` (default), `center`, or `right`
-- `<size>` — font size in SVG pixels (default 10)
+- `<size>` — font size in SVG pixels (default 10, or the current `textstyle` size)
+- `font=<family>` — font family for this label only (e.g. `font=serif`)
+- `@@name` — register this label under a name for later reference
+
+Quoted text supports **inline markup** and **line breaks** — see [Text styling](#text-styling) below.
 
 ```
 label "North" center A=10,0
 label "see detail A" left A=5,20
 label "SCALE 1:48" center 14 A=5,25
+lb "**Bold title**\nSubtitle" center 12 A=0,0
+```
+
+---
+
+## Text styling
+
+### Element naming
+
+Any element can be tagged with `@@name` at the end of its statement. The name is used to anchor text elements to that element later.
+
+```
+line 12 @@corridor
+rect 14 10 @@living_room "Bedroom"
+wall 8 0.5 @@north_wall
+```
+
+Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration.
+
+---
+
+### Inline bold, italic, and line breaks
+
+Inside any double-quoted string you can use **Markdown-style** span markers:
+
+| What you write | What renders |
+|---|---|
+| `*text*` | *italic* |
+| `**text**` | **bold** |
+| `***text***` | ***bold italic*** |
+| `\*` | literal asterisk `*` |
+| `\n` | line break |
+
+```
+lb "Normal *italic* and **bold** text"
+lb "***Critical notice***" center 12
+lb "Price: $4.50/sq\*ft"
+lb "Room: Bedroom\nArea: 168 sq ft\nFinish: Hardwood"
+```
+
+`\n` creates a new line. A double `\n\n` leaves a blank line gap. These work in `label`, `textbox`, `textappend`, `textline`, and `textbreak`.
+
+Unclosed markup (e.g. `*only one asterisk`) is treated as literal text.
+
+---
+
+### `textstyle` — default font
+
+Sets the default font size and family for all subsequent text elements. Works like `color` does for strokes.
+
+```
+textstyle [<size>] [font=<family>] [normal]
+```
+
+- `<size>` — default font size in SVG pixels
+- `font=<family>` — CSS font family: `sans-serif`, `serif`, `monospace`, or any CSS font name
+- `normal` — resets both to defaults (10px, sans-serif)
+
+Any text element can override locally with its own `<size>` or `font=<family>`.
+
+```
+textstyle 12 font=serif        # 12px serif for everything that follows
+textstyle font=monospace       # change family only
+textstyle normal               # back to 10px sans-serif
+lb "Title" 18                  # local override: 18px, current family
+lb "Body" font=sans-serif      # local font override only
+```
+
+---
+
+### `textline` — text alongside a named element
+
+Places text alongside a named line or other element, rotated to match its direction. Does not advance the cursor.
+
+```
+textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+- `<name>` — a previously registered element name (via `@@name`)
+- alignment — where on the element to anchor the text: `left` = at the start, `center` = centred (default), `right` = at the end
+- Text is offset slightly away from the element and rotated to stay readable
+
+```
+dir 90
+l 14 @@corridor
+textline "Corridor" corridor center 10
+txl "**North Wall**" north_wall left 12 C=blue
+```
+
+---
+
+### `textbreak` — text that visually breaks a line
+
+Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
+
+```
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+```
+l 14 @@front_wall
+textbreak "Front Wall" front_wall center 10
+txbr "**Section A-A**" section_line center 12
+```
+
+---
+
+### `textbox` — text inside a drawn rectangle
+
+A stroked rectangle with text inside. Behaves like `rect` for cursor advancement — the cursor moves forward by `length` in the current direction.
+
+```
+textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
+```
+
+- `wrap` — word-wraps the text to fit within the box width using `<tspan>` elements
+- `@@name` — name the box so `textappend` can add rows to it later
+
+Text supports inline markup and `\n` line breaks. With `wrap`, explicit `\n` paragraph breaks are honoured before word-wrapping is applied.
+
+```
+tbox 6 2 "Long note that wraps inside the box" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0.8 @@panel "**Schedule**" C="lightgray"
+```
+
+A `textbox` with `width=0` starts at zero height and grows downward via `textappend`.
+
+---
+
+### `textappend` — add rows to a named rect or textbox
+
+Appends a text row below the current content of a named `rect` or `textbox`, expanding the element's border downward. Does not advance the cursor.
+
+```
+textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+- Each call adds one row (or more, if `\n` appears in the text)
+- An empty string `""` inserts a blank spacer row
+
+```
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel
+textappend "" panel             # blank spacer
+textappend "Updated: 2026-05" panel right 8
+
+tbox 4 0.6 @@notes "**Notes**"
+tapp "Item 1\nItem 2" notes    # two rows from one call
+tapp "" notes                  # blank line
+tapp "Item 3" notes
 ```
 
 ---
@@ -585,6 +798,8 @@ label "SCALE 1:48" center 14 A=5,25
 | `hidden` | Hidden line — short dashes (4,2) |
 | `C=<color>` | Per-element stroke color override. Named (`C=red`) or quoted CSS (`C="#ff0000"`). Does not affect subsequent elements. |
 | `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
+| `@@name` | Register this element under a name for later reference by `textline`, `textbreak`, or `textappend`. |
+| `font=<family>` | *(text elements and `label` only)* Per-element font family override. |
 
 Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
 
@@ -631,6 +846,52 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.16
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 23:42:31 $ -->
+d74 3
+a76 1
+| `label` | `lb` | | |
+d333 1
+a333 1
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
+d340 1
+d343 1
+a343 1
+The label is centered inside the rectangle.
+d515 1
+a515 1
+label "text" [left|center|right] [<size>] [A=<h>,<v>]
+d519 5
+a523 1
+- `<size>` — font size in SVG pixels (default 10)
+d529 153
+d698 2
+@
+
+
+1.15
+log
+@Document __ system variables: __cursorx, __cursory, __cx, __cy, __dir
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
+d72 2
+a73 2
+| `arrow` | `aw` | | |
+| `point` | `p` | | |
+d203 1
+d429 42
 @
 
 

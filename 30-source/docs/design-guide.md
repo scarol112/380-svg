@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design.md,v $ $Revision: 1.18 $ $Date: 2026/04/30 02:03:02 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.2 $ $Date: 2026/05/02 11:15:05 $ -->
 # App working title: svg
 
 ## Project tools
@@ -9,6 +9,56 @@ bin/380-010.sh - shell driver for the main program
 assets/380-030.html - frame for displaying the svg in progress
 assets/380-031.css - css for 380-030.html
 assets/380-032.js - javascript for 380-030.html
+
+## Code Structure
+
+### Shell and browser assets
+
+| File | Purpose |
+|---|---|
+| `bin/380-010.sh` | Shell driver. Resolves the input path, `cd`s to `30-source/`, and invokes `uv run python -m floorplan.cli`. Accepts `<input.dsl> [output.svg]`. |
+| `assets/380-030.html` | Browser viewer frame. Displays the current SVG output and refreshes it every 6 seconds so edits appear without a manual reload. |
+| `assets/380-031.css` | Stylesheet for the viewer frame. |
+| `assets/380-032.js` | JavaScript for the viewer: auto-refresh timer, SVG file path field, and display logic. |
+
+### Package `src/floorplan/`
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `cli.py` | Command-line entry point (`python -m floorplan.cli`). Parses `argparse` arguments, reads the DSL file (or stdin), calls `execute_dsl()`, computes the auto-scale transform via `compute_scale()`, and writes the SVG via `render_svg()`. |
+| `model.py` | Defines `PlacedElement` — the single shared dataclass that the placer produces and the renderer consumes. Fields: kind, number, x/y, length/width, direction, lw, dash, color, label, extra, show\_id, show\_dims, source\_line. |
+| `interpreter.py` | Interleaved parse-and-execute engine. Processes DSL statements one at a time so that system variables (`$__cx`, `$__cy`, `$__dir`, `$__mltodir`) always reflect live state. Handles variable assignment, `$name`/`${name}` substitution, `(expr)` inline arithmetic, `+=`/`-=` compound assignment, and `include` file resolution. Entry point: `execute_dsl(text, source_path)`. |
+
+### Sub-package `src/floorplan/dsl/`  *(language front-end)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `ast.py` | Dataclass definitions for every AST node type: one per element (`LineElem`, `RectElem`, `WallElem`, `DoorElem`, `WindowElem`, `ArcElem`, `ArrowElem`, `PointElem`, `LabelElem`, `MoveToElem`, `LineToElem`, `TextLineElem`, `TextBreakElem`, `TextBoxElem`, `TextAppendElem`) plus directives (`DirectionDirective`, `DisplayDirective`, `ColorDirective`, `ShowCornerXYDirective`, `TextStyleDirective`). Also defines the `ASTNode` union type. All geometry and label elements carry an optional `name` field for `@name` element registration. |
+| `lexer.py` | Tokenizer. Converts a raw DSL line into a list of `Token` objects. Recognises measurement units (feet, feet+inches, inches, `px`), coordinate pairs (`h,v`), `A=h,v` absolute placements, `C=color` color overrides, double-quoted strings, and plain words/numbers. |
+| `parser.py` | Parser. Converts token lists into AST nodes. Contains the `_ALIASES` table mapping short aliases to canonical keyword names, the `parse_file()` batch entry point, `_parse_line()` dispatcher, and one `_parse_*` helper per element and directive type. Also resolves `include` directives for the batch pipeline. |
+
+### Sub-package `src/floorplan/layout/`  *(geometry and placement)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `cursor.py` | `DrawingCursor` (x, y, direction) and `direction_vector(degrees)`. Converts compass degrees (0=up, 90=right, 180=down, 270=left) to SVG `(dx, dy)` unit vectors, accounting for SVG's Y-down axis. |
+| `placer.py` | `ElementPlacer`. Walks AST nodes and converts them into `PlacedElement` objects. Tracks cursor position, canvas origin, element numbering counter, `elementid`/`dimensions` toggles, stroke color, `showcornerxy` state, `_mltodir`, named-element registry (`_named_elements`), and default text style (`_text_style`). Contains a `_place_*` method for each element type. Text elements that reference a named element (`textline`, `textbreak`) copy the referenced element's geometry at placement time so no lookup is needed at render time. `textappend` mutates the target element's `extra["text_rows"]` list. |
+| `scaler.py` | Auto-scale computation. Calculates the bounding box of all placed elements, derives a uniform scale factor so the drawing fits within the print area (full page minus 0.5 in margins), and returns `(scale, tx, ty)`. Iterates to account for the pixel extents of corner-marker annotations so none are clipped. |
+
+### Sub-package `src/floorplan/render/`  *(SVG output)*
+
+| File | Purpose |
+|---|---|
+| `__init__.py` | Package marker (empty). |
+| `svg.py` | Main SVG renderer. Two-pass loop over `PlacedElement` lists: pass 1 emits geometry (`<line>`, `<rect>`, `<path>`, etc.); pass 2 emits annotations (element ID numbers, dimension labels, rect labels, free labels, text elements, corner markers). Inline bold/italic markup (`*italic*`, `**bold**`, `***bold+italic***`, `\*`) is parsed by `_parse_inline_markup()` and rendered as `<tspan>` elements. `_spans_to_svg()` is the common text-to-SVG helper. Entry point: `render_svg(elements, scale, tx, ty)`. |
+| `dimensions.py` | Generates element ID numbers (red, small font) and dimension labels (grey, slightly larger font). `AnnotationRegistry` tracks all placed annotation bounding boxes and nudges new labels outward until they no longer overlap registered geometry or prior annotations. |
+| `styles.py` | `DASH_PATTERNS` dict mapping dash-style keywords (`dashed`, `shortdash`, `dotted`, `center`, `hidden`) to SVG `stroke-dasharray` values. `dash_attr()` helper returns the appropriate attribute string or empty string for solid strokes. |
+| `symbols.py` | SVG markup for compound symbols. `defs_svg()` produces the `<defs>` block (arrowhead marker). `door_svg()` renders the door slab line plus dashed quarter-circle swing arc. `window_svg()` renders the two parallel lines of a window opening. |
+
+---
 
 ## Display
 SVG files being developed are displayed by 380-030.html which refreshes every 6 seconds to show recent changes to the underlying file.
@@ -103,6 +153,39 @@ lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
 
 **Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
 
+### Element naming
+
+Any element can be given a name by appending `@name` at the end of its statement. The name can then be referenced by text overlay elements (`textline`, `textbreak`, `textappend`).
+
+```
+line 12 @corridor
+rect 14 10 @living_room "Bedroom"
+wall 8 0.5 @north_wall C=blue
+```
+
+Names are case-sensitive identifiers (`[A-Za-z_][A-Za-z0-9_]*`). An element registered under a name replaces any earlier element of the same name.
+
+### Inline bold/italic markup
+
+Inside any double-quoted string (for `label`, `textline`, `textbreak`, `textbox`, `textappend`, and rect inline labels), standard Markdown span syntax applies:
+
+| Markup | Result |
+|---|---|
+| `*text*` | italic |
+| `**text**` | bold |
+| `***text***` | bold and italic |
+| `\*` | literal asterisk |
+| `\n` | newline (line break) |
+
+```
+lb "Normal *italic* and **bold** text"
+lb "***Important notice***"
+lb "Price: $4.50/sq\*ft"
+lb "Line 1\nLine 2\n\nLine 4 after blank"
+```
+
+`\n` is processed in the lexer at tokenisation time, before variable substitution, so `$varname` inside the same quoted string still works normally. `\*` is processed later in the SVG renderer so that `*` spans are recognised correctly across the whole string. Unclosed markup delimiters are treated as literal text. No other backslash sequences are recognised.
+
 ### Directives (non-drawing lines)
 ```
 direction <degrees>      # set drawing direction: 0=up, 90=right, 180=down, 270=left
@@ -111,6 +194,7 @@ dimensions on|off        # show/hide dimension labels (default: on)
 showcornerxy on|off      # show/hide corner coordinate markers (default: off)
 color <value>            # set stroke color for subsequent elements (default: black)
 include <filename>       # insert contents of another DSL file at this position
+textstyle [<size>] [font=<family>] [normal]  # set default font size/family for text
 ```
 Default direction is 90 (rightward). All display directives take effect immediately and apply to elements that follow them.
 
@@ -154,17 +238,78 @@ Optional tokens after length/width (order-independent within their type):
 ### Element Types
 
 ```
-line <length> [<lw>px] [<dash>] [C=<color>]
-rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"]
-wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>]   # default thickness = 6"
-door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>]  # default swing = right
-window <width> [<depth>] [<lw>px] [<dash>] [C=<color>]      # default depth = 6"
-arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>]
-arrow <length> [<lw>px] [<dash>] [C=<color>]
-point [<lw>px] [C=<color>] [A=<h>,<v>]          # 3px filled circle; cursor does not advance
-label "text" [left|center|right] [<size>]        # default align=left, size=10px
+line <length> [<lw>px] [<dash>] [C=<color>] [@name]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [@name]
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>] [@name]  # default thickness = 6"
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>] [@name]  # default swing = right
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>] [@name]  # default depth = 6"
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [@name]
+arrow <length> [<lw>px] [<dash>] [C=<color>] [@name]
+point [<lw>px] [C=<color>] [A=<h>,<v>] [@name]  # 3px filled circle; cursor does not advance
+label "text" [left|center|right] [<size>] [font=<family>] [@name]  # default align=left, size=10px
 moveto <x> <y> [A=<sx>,<sy>]                     # jump cursor; no geometry, no ID; updates __mltodir
-lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]  # line to absolute dest; updates __mltodir
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>] [@name]  # line to absolute dest
+```
+
+All geometry elements and `label` now accept an optional `[@name]` tag to register the element for later reference.
+
+### Text elements
+
+```
+textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@name]
+textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+**`textline`** — places text alongside a named element, rotated to match its direction.
+- `<name>` must be a previously named element (via `@name`)
+- Alignment anchor: `left` = text starts at element start; `center` = text is centered; `right` = text ends at element end
+- Text is offset slightly away from the line and rotated to be readable (never upside-down)
+- Cursor does not advance
+
+```
+l 14 @corridor
+textline "Corridor" corridor center 10
+textline "**North Wall**" north_wall left 12   # bold markup
+```
+
+**`textbreak`** — places text at a point on a named line with a white-filled border box masking the line behind it. The line's geometry is unmodified; SVG layer order makes the box appear "in front of" the line.
+- Same anchor options as `textline`
+- Cursor does not advance
+
+```
+l 14 @front_wall
+textbreak "Section A-A" front_wall center 10
+```
+
+**`textbox`** — a stroked rectangle with text inside; behaves like `rect` for cursor advancement.
+- `wrap` enables word-wrapping using `<tspan>` elements; without it, text is single-line (may overflow)
+- Can be named with `@name` for subsequent `textappend`
+- Shows element ID and dimension labels unless those are turned off
+
+```
+tbox 6 2 "Long descriptive note" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0 @schedule                             # zero-height starter for textappend
+```
+
+**`textappend`** — appends a text row to a named `rect` or `textbox`, expanding the element's height downward. The rect border is redrawn at the new height.
+
+```
+rect 4 0.8 @panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel left 9
+```
+
+**`textstyle`** — sets the default font size and family for all subsequent text elements (analogous to `color` for strokes). Any text element can override locally with a size number or `font=<family>` modifier.
+
+```
+textstyle 12 font=serif      # 12px serif globally
+textstyle font=monospace     # change family, keep size
+textstyle normal             # reset to 10px sans-serif
+lb "Title" 18                # local size override
 ```
 
 ### Aliases
@@ -190,6 +335,11 @@ Every keyword has a short alias. Aliases are case-insensitive and can be mixed f
 | `showcornerxy` | `sxy` |
 | `moveto` | `mto` |
 | `lineto` | `lto` |
+| `textstyle` | `tstyle` |
+| `textline` | `txl` |
+| `textbreak` | `txbr` |
+| `textbox` | `tbox` |
+| `textappend` | `tapp` |
 
 ### Dash styles
 

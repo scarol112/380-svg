@@ -1,10 +1,20 @@
-head	1.4;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.05.02.11.15.05;	author scarol;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2026.04.30.02.03.02;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.04.29.23.42.31;	author scarol;	state Exp;
@@ -31,9 +41,9 @@ desc
 @@
 
 
-1.4
+1.6
 log
-@Rename cursorx/cursory to __cursorx/__cursory; add __cx/__cy aliases and __dir; reserve __ prefix
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
 @
 text
 @from __future__ import annotations
@@ -50,7 +60,8 @@ from .model import PlacedElement
 _ALL_KEYWORDS = {
     "line", "rect", "wall", "door", "window", "arc", "arrow", "point",
     "label", "direction", "elementid", "dimensions", "showcornerxy",
-    "color", "include",
+    "color", "include", "moveto", "lineto",
+    "textstyle", "textline", "textbreak", "textbox", "textappend",
 }
 
 # Matches ${name} (brace form) or $name (bare form); brace form tried first
@@ -69,6 +80,7 @@ def execute_dsl(
         "__cursorx": 0.0, "__cursory": 0.0,
         "__cx": 0.0,      "__cy": 0.0,
         "__dir": 90.0,
+        "__mltodir": 0.0,
     }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
@@ -252,6 +264,29 @@ def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
     vars_["__cx"] = cx
     vars_["__cy"] = cy
     vars_["__dir"] = placer._cursor.direction
+    vars_["__mltodir"] = placer._mltodir
+@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@d16 1
+@
+
+
+1.4
+log
+@Rename cursorx/cursory to __cursorx/__cursory; add __cx/__cy aliases and __dir; reserve __ prefix
+@
+text
+@d15 1
+a15 1
+    "color", "include",
+d34 1
+d218 1
 @
 
 

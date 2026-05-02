@@ -13,6 +13,7 @@ _ALL_KEYWORDS = {
     "line", "rect", "wall", "door", "window", "arc", "arrow", "point",
     "label", "direction", "elementid", "dimensions", "showcornerxy",
     "color", "include", "moveto", "lineto",
+    "textstyle", "textline", "textbreak", "textbox", "textappend",
 }
 
 # Matches ${name} (brace form) or $name (bare form); brace form tried first

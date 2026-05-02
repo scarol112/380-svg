@@ -16,6 +16,7 @@ class LineElem:
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
+    name: str | None = None
     source_line: int = 0
 
 
@@ -30,6 +31,7 @@ class RectElem:
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -43,6 +45,7 @@ class WallElem:
     begin: tuple[float, float] | None = None
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -54,6 +57,7 @@ class DoorElem:
     dash: str | None = None
     color: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -65,6 +69,7 @@ class WindowElem:
     dash: str | None = None
     color: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -76,6 +81,7 @@ class ArcElem:
     dash: str | None = None
     color: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -86,6 +92,7 @@ class ArrowElem:
     dash: str | None = None
     color: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -94,6 +101,7 @@ class PointElem:
     lw: float | None = None  # stroke width; None = default 1px
     color: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -102,7 +110,9 @@ class LabelElem:
     text: str
     align: str = "left"  # left | center | right
     font_size: float | None = None
+    font_family: str | None = None
     absolute: tuple[float, float] | None = None
+    name: str | None = None
     source_line: int = 0
 
 
@@ -122,6 +132,7 @@ class LineToElem:
     dash: str | None = None
     color: str | None = None
     absolute: tuple[float, float] | None = None  # A= start override
+    name: str | None = None
     source_line: int = 0
 
 
@@ -144,11 +155,76 @@ class ShowCornerXYDirective:
     source_line: int = 0
 
 
+# ── text features ─────────────────────────────────────────────────────────────
+
+@dataclass
+class TextStyleDirective:
+    """Global default font size and family for all subsequent text elements."""
+    size: float | None = None
+    font_family: str | None = None
+    source_line: int = 0
+
+
+@dataclass
+class TextLineElem:
+    """Text placed along a named element, anchored at left/center/right end."""
+    text: str
+    element_name: str
+    align: str = "center"   # left | center | right
+    font_size: float | None = None
+    font_family: str | None = None
+    color: str | None = None
+    source_line: int = 0
+
+
+@dataclass
+class TextBreakElem:
+    """Text centered on a named line, visually breaking it with a white border box."""
+    text: str
+    element_name: str
+    align: str = "center"
+    font_size: float | None = None
+    font_family: str | None = None
+    color: str | None = None
+    source_line: int = 0
+
+
+@dataclass
+class TextBoxElem:
+    """Explicit-size rect with text inside; advances cursor like rect."""
+    length: float   # feet, in drawing direction
+    width: float    # feet, perpendicular
+    text: str = ""
+    align: str = "left"   # left | center | right
+    wrap: bool = False
+    font_size: float | None = None
+    font_family: str | None = None
+    lw: float | None = None
+    dash: str | None = None
+    color: str | None = None
+    absolute: tuple[float, float] | None = None
+    name: str | None = None
+    source_line: int = 0
+
+
+@dataclass
+class TextAppendElem:
+    """Append a text row to a named rect/textbox, expanding it downward."""
+    text: str
+    element_name: str
+    align: str = "left"
+    font_size: float | None = None
+    font_family: str | None = None
+    color: str | None = None
+    source_line: int = 0
+
+
 ASTNode = (
     DirectionDirective
     | DisplayDirective
     | ColorDirective
     | ShowCornerXYDirective
+    | TextStyleDirective
     | LineElem
     | RectElem
     | WallElem
@@ -160,4 +236,8 @@ ASTNode = (
     | LabelElem
     | MoveToElem
     | LineToElem
+    | TextLineElem
+    | TextBreakElem
+    | TextBoxElem
+    | TextAppendElem
 )

@@ -5,6 +5,10 @@ The scale transform is applied as a pre-computation rather than an SVG
 <g transform>, so stroke-width and font-size are always in screen pixels.
 """
 import math
+import re
+import textwrap
+from dataclasses import dataclass
+
 from ..model import PlacedElement
 from ..layout.cursor import direction_vector
 from .dimensions import element_number_svg, dimension_label_svg, AnnotationRegistry
@@ -30,10 +34,134 @@ _DIAGONALS: list[tuple[float, float, str]] = [
 ]
 
 
-
 _LABEL_CHAR_W = 0.55
 _LABEL_LINE_H = 1.4
 
+# ── inline markup ─────────────────────────────────────────────────────────────
+
+@dataclass
+class InlineSpan:
+    text: str
+    bold: bool = False
+    italic: bool = False
+
+
+def _parse_inline_markup(raw: str) -> list[InlineSpan]:
+    """Parse *italic*, **bold**, ***bold+italic***, and \\* escape into spans."""
+    spans: list[InlineSpan] = []
+    i = 0
+    current: list[str] = []
+
+    while i < len(raw):
+        if raw[i] == '\\' and i + 1 < len(raw) and raw[i + 1] == '*':
+            current.append('*')
+            i += 2
+            continue
+
+        if raw[i] == '*':
+            j = i
+            while j < len(raw) and raw[j] == '*':
+                j += 1
+            star_count = j - i
+
+            if current:
+                spans.append(InlineSpan(text=''.join(current)))
+                current = []
+
+            if star_count >= 3:
+                bold = italic = True
+                closer = '***'
+            elif star_count == 2:
+                bold, italic = True, False
+                closer = '**'
+            else:
+                bold, italic = False, True
+                closer = '*'
+
+            end = raw.find(closer, j)
+            if end == -1:
+                # No matching close — emit literal asterisks as plain text
+                current.extend(['*'] * star_count)
+                i = j
+            else:
+                spans.append(InlineSpan(text=raw[j:end], bold=bold, italic=italic))
+                i = end + len(closer)
+            continue
+
+        current.append(raw[i])
+        i += 1
+
+    if current:
+        spans.append(InlineSpan(text=''.join(current)))
+
+    return spans or [InlineSpan(text=raw)]
+
+
+def _xml_esc(text: str) -> str:
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
+def _spans_to_svg(
+    spans: list[InlineSpan],
+    x: float,
+    y: float,
+    font_size: float,
+    font_family: str,
+    anchor: str,
+    color: str = "black",
+    transform: str = "",
+    dominant_baseline: str = "",
+) -> str:
+    """Render inline-markup spans as a <text> element with <tspan> children."""
+    trans_attr = f' transform="{transform}"' if transform else ""
+    base_attr = f' dominant-baseline="{dominant_baseline}"' if dominant_baseline else ""
+    has_style = any(s.bold or s.italic for s in spans)
+
+    parts: list[str] = [
+        f'<text x="{x:.1f}" y="{y:.1f}" '
+        f'font-size="{font_size}" font-family="{font_family}" '
+        f'fill="{color}" text-anchor="{anchor}"{base_attr}{trans_attr}>'
+    ]
+
+    if not has_style and len(spans) == 1:
+        parts.append(_xml_esc(spans[0].text))
+    else:
+        for span in spans:
+            attrs: list[str] = []
+            if span.bold:
+                attrs.append('font-weight="bold"')
+            if span.italic:
+                attrs.append('font-style="italic"')
+            attr_str = (' ' + ' '.join(attrs)) if attrs else ''
+            parts.append(f'<tspan{attr_str}>{_xml_esc(span.text)}</tspan>')
+
+    parts.append('</text>')
+    return ''.join(parts)
+
+
+def _readable_angle(direction: float) -> float:
+    """Convert drawing direction to SVG rotation that keeps text uphill and readable."""
+    angle = (direction - 90) % 360
+    if angle > 180:
+        angle -= 360  # normalize to (-180, 180]
+    if abs(angle) > 90:  # text would face backwards — flip 180°
+        angle = angle - 180 if angle > 0 else angle + 180
+    return angle
+
+
+def _plain_len(text: str) -> int:
+    """Length of text after stripping inline markup characters."""
+    return len(re.sub(r'\\\*|\*+', '', text))
+
+
+def _wrap_text(raw: str, available_px: float, font_size: float) -> list[str]:
+    """Break text into lines fitting available_px, wrapping at word boundaries."""
+    chars = max(1, int(available_px / (font_size * _LABEL_CHAR_W)))
+    lines = textwrap.wrap(raw, width=chars, break_long_words=True)
+    return lines or [raw]
+
+
+# ── bbox helpers ──────────────────────────────────────────────────────────────
 
 def _free_label_bbox(
     elem: PlacedElement, scale: float, tx: float, ty: float
@@ -41,8 +169,9 @@ def _free_label_bbox(
     font_size = elem.extra.get("font_size", LABEL_FONT)
     x = _px(elem.x, scale, tx)
     y = _px(elem.y, scale, ty)
-    w = len(elem.label or "") * font_size * _LABEL_CHAR_W
-    h = font_size * _LABEL_LINE_H
+    lines = (elem.label or "").split('\n')
+    w = max((_plain_len(ln) for ln in lines), default=0) * font_size * _LABEL_CHAR_W
+    h = font_size * _LABEL_LINE_H * len(lines)
     align = elem.extra.get("align", "left")
     if align == "center":
         return x - w / 2, y - h, x + w / 2, y
@@ -67,7 +196,7 @@ def _rect_label_bbox(
     else:
         cx = _px(elem.x, scale, tx)
         cy = _px(elem.y + elem.length / 2, scale, ty)
-    w = len(elem.label or "") * LABEL_FONT * _LABEL_CHAR_W
+    w = _plain_len(elem.label or "") * LABEL_FONT * _LABEL_CHAR_W
     h = LABEL_FONT * _LABEL_LINE_H
     return cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
 
@@ -128,6 +257,33 @@ def _cornerxy_svg(
     )
 
 
+# ── rect geometry helper ──────────────────────────────────────────────────────
+
+def _rect_box(
+    elem: PlacedElement, scale: float, tx: float, ty: float, extra_h: float = 0.0
+) -> tuple[float, float, float, float]:
+    """Return (rx, ry, rw, rh) in SVG pixels for a rect/wall/textbox element.
+
+    extra_h is additional height in SVG pixels appended in the 'width' direction.
+    """
+    d = elem.direction % 360
+    lf = elem.length * scale
+    wf = elem.width * scale + extra_h
+    ox = _px(elem.x, scale, tx)
+    oy = _px(elem.y, scale, ty)
+
+    if d == 90:
+        return ox, oy, lf, wf
+    if d == 270:
+        return ox - lf, oy - wf, lf, wf
+    if d == 0:
+        return ox - wf / 2, oy - lf, wf, lf
+    # d == 180
+    return ox - wf / 2, oy, wf, lf
+
+
+# ── render pipeline ───────────────────────────────────────────────────────────
+
 def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
     lines: list[str] = []
     lines.append(
@@ -147,7 +303,6 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
             lines.append(f"    {geom}")
 
     # Pass 2: annotations — pre-register solid geometry so text avoids drawn lines.
-    # Rect interiors are open space; only register stroke-based elements.
     registry = AnnotationRegistry()
     _STROKE_KINDS = {"line", "lineto", "wall", "door", "window", "arrow", "arc", "point"}
     for elem in elements:
@@ -158,7 +313,7 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
 
     for elem in elements:
         if elem.lw == 0.0:
-            continue  # invisible elements get no annotations either
+            continue
         if elem.number is not None and elem.show_id:
             lines.append(f"    {element_number_svg(elem, scale, tx, ty, registry)}")
         if elem.number is not None and elem.show_dims:
@@ -166,9 +321,17 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
         if elem.kind == "rect" and elem.label:
             lines.append(f"    {_label_for_rect(elem, scale, tx, ty)}")
             registry.register_box(*_rect_label_bbox(elem, scale, tx, ty))
+        if elem.kind in ("rect", "textbox") and elem.extra.get("text_rows"):
+            lines.append(f"    {_text_rows_svg(elem, scale, tx, ty)}")
+        if elem.kind == "textbox" and elem.label:
+            lines.append(f"    {_textbox_label_svg(elem, scale, tx, ty)}")
         if elem.kind == "label":
             lines.append(f"    {_label_svg(elem, scale, tx, ty)}")
             registry.register_box(*_free_label_bbox(elem, scale, tx, ty))
+        if elem.kind == "textline":
+            lines.append(f"    {_textline_svg(elem, scale, tx, ty)}")
+        if elem.kind == "textbreak":
+            lines.append(f"    {_textbreak_svg(elem, scale, tx, ty)}")
 
     # Corner markers last so they avoid all geometry and prior annotations
     for elem in elements:
@@ -232,6 +395,8 @@ def _render_element(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
             return _arrow_svg(elem, scale, tx, ty)
         case "point":
             return _point_svg(elem, scale, tx, ty)
+        case "textbox":
+            return _textbox_border_svg(elem, scale, tx, ty)
     return ""
 
 
@@ -257,21 +422,11 @@ def _line_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
 
 def _rect_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
-    d = elem.direction % 360
-    lf = elem.length * scale
-    wf = elem.width * scale
-    ox = _px(elem.x, scale, tx)
-    oy = _px(elem.y, scale, ty)
-
-    if d == 90:
-        rx, ry, rw, rh = ox, oy, lf, wf
-    elif d == 270:
-        rx, ry, rw, rh = ox - lf, oy - wf, lf, wf
-    elif d == 0:
-        rx, ry, rw, rh = ox - wf / 2, oy - lf, wf, lf
-    else:
-        rx, ry, rw, rh = ox - wf / 2, oy, wf, lf
-
+    rows_h = sum(
+        r["font_size"] * _LABEL_LINE_H * len(r["text"].split('\n'))
+        for r in elem.extra.get("text_rows", [])
+    )
+    rx, ry, rw, rh = _rect_box(elem, scale, tx, ty, extra_h=rows_h)
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
         f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
@@ -288,7 +443,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     if d == 90:
         rx, ry, rw, rh = ox, oy, lf, wf
     elif d == 270:
-        rx, ry, rw, rh = ox - lf, oy - wf / 2, lf, wf
+        rx, ry, rw, rh = ox - lf, oy - wf / 2, lf, wf  # centered on cursor path
     elif d == 0:
         rx, ry, rw, rh = ox - wf / 2, oy - lf, wf, lf
     else:
@@ -331,17 +486,25 @@ def _arrow_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     )
 
 
+# ── text rendering ────────────────────────────────────────────────────────────
+
 def _label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     anchor_map = {"left": "start", "center": "middle", "right": "end"}
     anchor = anchor_map.get(elem.extra.get("align", "left"), "start")
     font_size = elem.extra.get("font_size", LABEL_FONT)
+    font_family = elem.extra.get("font_family", "sans-serif")
     x = _px(elem.x, scale, tx)
     y = _px(elem.y, scale, ty)
-    return (
-        f'<text x="{x:.1f}" y="{y:.1f}" '
-        f'font-size="{font_size}" font-family="sans-serif" text-anchor="{anchor}">'
-        f'{elem.label}</text>'
-    )
+    lines = (elem.label or "").split('\n')
+    parts = []
+    for i, line in enumerate(lines):
+        y_pos = y + i * font_size * _LABEL_LINE_H
+        if line:
+            spans = _parse_inline_markup(line)
+            parts.append(_spans_to_svg(spans, x, y_pos, font_size, font_family,
+                                       anchor, color=elem.color))
+        # blank lines advance y but produce no element
+    return "\n    ".join(parts) if parts else ""
 
 
 def _label_for_rect(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
@@ -358,8 +521,182 @@ def _label_for_rect(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
     else:
         cx = _px(elem.x, scale, tx)
         cy = _px(elem.y + elem.length / 2, scale, ty)
-    return (
-        f'<text x="{cx:.1f}" y="{cy:.1f}" '
-        f'font-size="{LABEL_FONT}" font-family="sans-serif" text-anchor="middle" '
-        f'dominant-baseline="middle">{elem.label}</text>'
+    font_family = elem.extra.get("font_family", "sans-serif")
+    spans = _parse_inline_markup(elem.label or "")
+    return _spans_to_svg(spans, cx, cy, LABEL_FONT, font_family, "middle",
+                         dominant_baseline="central")
+
+
+def _textbox_border_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    rows_h = sum(
+        r["font_size"] * _LABEL_LINE_H * len(r["text"].split('\n'))
+        for r in elem.extra.get("text_rows", [])
     )
+    rx, ry, rw, rh = _rect_box(elem, scale, tx, ty, extra_h=rows_h)
+    return (
+        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
+        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+    )
+
+
+def _textbox_label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Render the main label text inside a textbox (word-wrapped if requested)."""
+    font_size = elem.extra.get("font_size", LABEL_FONT)
+    font_family = elem.extra.get("font_family", "sans-serif")
+    align = elem.extra.get("align", "left")
+    wrap = elem.extra.get("wrap", False)
+    anchor_map = {"left": "start", "center": "middle", "right": "end"}
+    anchor = anchor_map.get(align, "start")
+
+    rx, ry, rw, _ = _rect_box(elem, scale, tx, ty)
+    x_margin = font_size * 0.4
+
+    if align == "left":
+        text_x = rx + x_margin
+    elif align == "right":
+        text_x = rx + rw - x_margin
+    else:
+        text_x = rx + rw / 2
+
+    # Split on explicit \n first, then optionally word-wrap each non-empty segment
+    raw = elem.label or ""
+    paragraphs = raw.split('\n')
+    all_lines: list[str] = []
+    for para in paragraphs:
+        if para:
+            all_lines.extend(_wrap_text(para, rw * 0.9, font_size) if wrap else [para])
+        else:
+            all_lines.append('')  # blank line preserved as spacer
+
+    parts: list[str] = []
+    for i, line in enumerate(all_lines):
+        y_pos = ry + font_size * (1 + i * _LABEL_LINE_H)
+        if line:
+            spans = _parse_inline_markup(line)
+            parts.append(_spans_to_svg(spans, text_x, y_pos, font_size, font_family,
+                                       anchor, color=elem.color))
+        # blank lines advance y but produce no element
+    return "\n    ".join(parts)
+
+
+def _text_rows_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Render textappend rows below a rect or textbox."""
+    text_rows = elem.extra.get("text_rows", [])
+    if not text_rows:
+        return ""
+
+    rx, ry, rw, rh_base = _rect_box(elem, scale, tx, ty)
+    # rh_base is the original rect height without any appended rows
+    anchor_map = {"left": "start", "center": "middle", "right": "end"}
+
+    parts: list[str] = []
+    row_top = ry + rh_base  # top of first text row (below original rect)
+    for row in text_rows:
+        fs = row["font_size"]
+        row_align = row.get("align", "left")
+        anchor = anchor_map.get(row_align, "start")
+        x_margin = fs * 0.4
+        if row_align == "left":
+            row_x = rx + x_margin
+        elif row_align == "right":
+            row_x = rx + rw - x_margin
+        else:
+            row_x = rx + rw / 2
+        font_family = row.get("font_family", "sans-serif")
+        color = row.get("color", "black")
+        for sub_line in row["text"].split('\n'):
+            baseline = row_top + fs
+            if sub_line:
+                spans = _parse_inline_markup(sub_line)
+                parts.append(_spans_to_svg(spans, row_x, baseline, fs,
+                                           font_family, anchor, color=color))
+            row_top += fs * _LABEL_LINE_H
+
+    return "\n    ".join(parts)
+
+
+def _textline_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Render text along a line (rotated to match its direction)."""
+    align = elem.extra.get("align", "center")
+    font_size = elem.extra.get("font_size", LABEL_FONT)
+    font_family = elem.extra.get("font_family", "sans-serif")
+    anchor_map = {"left": "start", "center": "middle", "right": "end"}
+    anchor = anchor_map.get(align, "middle")
+
+    dx, dy = direction_vector(elem.direction)
+    x0 = _px(elem.x, scale, tx)
+    y0 = _px(elem.y, scale, ty)
+
+    if align == "left":
+        ax, ay = x0, y0
+    elif align == "right":
+        ax = _px(elem.x + dx * elem.length, scale, tx)
+        ay = _px(elem.y + dy * elem.length, scale, ty)
+    else:
+        ax = _px(elem.x + dx * elem.length / 2, scale, tx)
+        ay = _px(elem.y + dy * elem.length / 2, scale, ty)
+
+    # Offset text slightly above the line (perpendicular direction)
+    pdx, pdy = direction_vector((elem.direction + 270) % 360)  # 90° left = above for dir=90
+    offset_px = font_size * 0.5
+    ax += pdx * offset_px
+    ay += pdy * offset_px
+
+    angle = _readable_angle(elem.direction)
+    transform = f"rotate({angle:.1f},{ax:.1f},{ay:.1f})" if angle != 0.0 else ""
+
+    spans = _parse_inline_markup(elem.label or "")
+    return _spans_to_svg(spans, ax, ay, font_size, font_family, anchor,
+                         color=elem.color, transform=transform)
+
+
+def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
+    """Text centered on a line with a white fill box obscuring the line behind it."""
+    align = elem.extra.get("align", "center")
+    font_size = elem.extra.get("font_size", LABEL_FONT)
+    font_family = elem.extra.get("font_family", "sans-serif")
+
+    dx, dy = direction_vector(elem.direction)
+    x0 = _px(elem.x, scale, tx)
+    y0 = _px(elem.y, scale, ty)
+
+    if align == "left":
+        ax, ay = x0, y0
+        anchor = "start"
+    elif align == "right":
+        ax = _px(elem.x + dx * elem.length, scale, tx)
+        ay = _px(elem.y + dy * elem.length, scale, ty)
+        anchor = "end"
+    else:
+        ax = _px(elem.x + dx * elem.length / 2, scale, tx)
+        ay = _px(elem.y + dy * elem.length / 2, scale, ty)
+        anchor = "middle"
+
+    raw_len = _plain_len(elem.label or "")
+    text_w = raw_len * font_size * _LABEL_CHAR_W
+    text_h = font_size * _LABEL_LINE_H
+    pad = font_size * 0.4
+    box_w = text_w + pad * 2
+    box_h = text_h + pad * 2
+
+    # Box centered on anchor point
+    rx = ax - box_w / 2
+    ry = ay - box_h / 2
+
+    angle = _readable_angle(elem.direction)
+    trans = f"rotate({angle:.1f},{ax:.1f},{ay:.1f})" if angle != 0.0 else ""
+    ta = f' transform="{trans}"' if trans else ""
+
+    # Text baseline: roughly center of box
+    ty_pos = ay + font_size * 0.35
+
+    parts = [
+        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
+        f'fill="white"{ta}/>',
+        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
+        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>',
+    ]
+    spans = _parse_inline_markup(elem.label or "")
+    parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
+                               "middle", color=elem.color, transform=trans))
+    return "\n    ".join(parts)

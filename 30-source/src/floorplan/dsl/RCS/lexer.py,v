@@ -1,10 +1,15 @@
-head	1.2;
+head	1.3;
 access;
 symbols;
 locks
-	scarol:1.2; strict;
+	scarol:1.3; strict;
 comment	@# @;
 
+
+1.3
+date	2026.05.02.11.15.05;	author scarol;	state Exp;
+branches;
+next	1.2;
 
 1.2
 date	2026.04.21.15.38.38;	author scarol;	state Exp;
@@ -22,9 +27,9 @@ desc
 @
 
 
-1.2
+1.3
 log
-@C= per-element color override; quote-aware comment strip for hex colors
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
 @
 text
 @import re
@@ -73,7 +78,8 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
 
         m = _QUOTED.match(raw, i)
         if m:
-            tokens.append(Token("QUOTED", m.group(1), lineno))
+            content = m.group(1).replace('\\n', '\n')
+            tokens.append(Token("QUOTED", content, lineno))
             i = m.end()
             continue
 
@@ -155,6 +161,17 @@ def parse_absolute(token: Token) -> tuple[float, float]:
     if not m:
         raise ValueError(f"Not an absolute offset: {token.value!r}")
     return float(m.group(1)), float(m.group(2))
+@
+
+
+1.2
+log
+@C= per-element color override; quote-aware comment strip for hex colors
+@
+text
+@d47 2
+a48 1
+            tokens.append(Token("QUOTED", m.group(1), lineno))
 @
 
 

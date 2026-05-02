@@ -5,6 +5,7 @@ from .ast import (
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
+    TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
 from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
 
@@ -110,23 +111,28 @@ def _resolve_include(
 
 
 _ALIASES: dict[str, str] = {
-    "l":   "line",
-    "r":   "rect",
-    "w":   "wall",
-    "d":   "door",
-    "wi":  "window",
-    "a":   "arc",
-    "aw":  "arrow",
-    "p":   "point",
-    "lb":  "label",
-    "dir": "direction",
-    "eid": "elementid",
-    "dim": "dimensions",
-    "col": "color",
-    "inc": "include",
-    "sxy": "showcornerxy",
-    "mto": "moveto",
-    "lto": "lineto",
+    "l":      "line",
+    "r":      "rect",
+    "w":      "wall",
+    "d":      "door",
+    "wi":     "window",
+    "a":      "arc",
+    "aw":     "arrow",
+    "p":      "point",
+    "lb":     "label",
+    "dir":    "direction",
+    "eid":    "elementid",
+    "dim":    "dimensions",
+    "col":    "color",
+    "inc":    "include",
+    "sxy":    "showcornerxy",
+    "mto":    "moveto",
+    "lto":    "lineto",
+    "tstyle": "textstyle",
+    "txl":    "textline",
+    "txbr":   "textbreak",
+    "tbox":   "textbox",
+    "tapp":   "textappend",
 }
 
 
@@ -166,6 +172,16 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_moveto(rest, lineno)
     if keyword == "lineto":
         return _parse_lineto(rest, lineno)
+    if keyword == "textstyle":
+        return _parse_textstyle(rest, lineno)
+    if keyword == "textline":
+        return _parse_textline(rest, lineno)
+    if keyword == "textbreak":
+        return _parse_textbreak(rest, lineno)
+    if keyword == "textbox":
+        return _parse_textbox(rest, lineno)
+    if keyword == "textappend":
+        return _parse_textappend(rest, lineno)
 
     raise ParseError(f"Line {lineno}: unknown element type {keyword!r}")
 
@@ -213,18 +229,20 @@ def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 _DASH_STYLES = {"dashed", "shortdash", "dotted", "center", "hidden"}
+_ALIGN_WORDS = {"left", "center", "right"}
 
 
 def _extract_common(tokens: list[Token], lineno: int) -> dict:
-    """Pull lw, dash, coords (begin/end), absolute, quoted label from a token list."""
-    result: dict = {"lw": None, "dash": None, "color": None, "begin": None, "end": None, "absolute": None, "label": None}
+    """Pull lw, dash, coords (begin/end), absolute, label, name, font_family from tokens."""
+    result: dict = {
+        "lw": None, "dash": None, "color": None, "begin": None, "end": None,
+        "absolute": None, "label": None, "name": None, "font_family": None,
+    }
     coords_found: list[tuple[float, float]] = []
 
     for tok in tokens:
         if tok.kind == "PX":
             result["lw"] = float(tok.value)
-        elif tok.kind == "WORD" and tok.value.lower() in _DASH_STYLES:
-            result["dash"] = tok.value.lower()
         elif tok.kind == "COLOR_ELEM":
             result["color"] = tok.value
         elif tok.kind == "ABSOLUTE":
@@ -233,6 +251,14 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
             coords_found.append(parse_coord(tok))
         elif tok.kind == "QUOTED":
             result["label"] = tok.value
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv in _DASH_STYLES:
+                result["dash"] = lv
+            elif tok.value.startswith("@") and len(tok.value) > 1:
+                result["name"] = tok.value[1:]
+            elif lv.startswith("font=") and len(lv) > 5:
+                result["font_family"] = tok.value[5:]  # preserve case for CSS
 
     if len(coords_found) >= 1:
         result["begin"] = coords_found[0]
@@ -261,7 +287,8 @@ def _parse_line_elem(tokens: list[Token], lineno: int) -> LineElem:
     (length,) = _leading_measurements(tokens, 1, lineno)
     c = _extract_common(tokens, lineno)
     return LineElem(length=length, lw=c["lw"], dash=c["dash"], color=c["color"],
-                    begin=c["begin"], end=c["end"], absolute=c["absolute"], source_line=lineno)
+                    begin=c["begin"], end=c["end"], absolute=c["absolute"],
+                    name=c["name"], source_line=lineno)
 
 
 def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
@@ -269,7 +296,7 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
     c = _extract_common(tokens, lineno)
     return RectElem(length=length, width=width, lw=c["lw"], dash=c["dash"], color=c["color"],
                     label=c["label"], begin=c["begin"], end=c["end"], absolute=c["absolute"],
-                    source_line=lineno)
+                    name=c["name"], source_line=lineno)
 
 
 def _parse_wall(tokens: list[Token], lineno: int) -> WallElem:
@@ -283,7 +310,7 @@ def _parse_wall(tokens: list[Token], lineno: int) -> WallElem:
     c = _extract_common(tokens, lineno)
     return WallElem(length=length, thickness=thickness, lw=c["lw"], dash=c["dash"],
                     color=c["color"], begin=c["begin"], end=c["end"],
-                    absolute=c["absolute"], source_line=lineno)
+                    absolute=c["absolute"], name=c["name"], source_line=lineno)
 
 
 def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
@@ -294,7 +321,8 @@ def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
             swing = tok.value.lower()
     c = _extract_common(tokens, lineno)
     return DoorElem(width=width, swing=swing, lw=c["lw"], dash=c["dash"],
-                    color=c["color"], absolute=c["absolute"], source_line=lineno)
+                    color=c["color"], absolute=c["absolute"], name=c["name"],
+                    source_line=lineno)
 
 
 def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
@@ -304,48 +332,64 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
     depth = dims[1] if len(dims) > 1 else 0.5
     c = _extract_common(tokens, lineno)
     return WindowElem(width=width, depth=depth, lw=c["lw"], dash=c["dash"],
-                      color=c["color"], absolute=c["absolute"], source_line=lineno)
+                      color=c["color"], absolute=c["absolute"], name=c["name"],
+                      source_line=lineno)
 
 
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     radius, sweep = _leading_measurements(tokens, 2, lineno)
     c = _extract_common(tokens, lineno)
     return ArcElem(radius=radius, sweep=sweep, lw=c["lw"], dash=c["dash"],
-                   color=c["color"], absolute=c["absolute"], source_line=lineno)
+                   color=c["color"], absolute=c["absolute"], name=c["name"],
+                   source_line=lineno)
 
 
 def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     (length,) = _leading_measurements(tokens, 1, lineno)
     c = _extract_common(tokens, lineno)
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
-                     color=c["color"], absolute=c["absolute"], source_line=lineno)
+                     color=c["color"], absolute=c["absolute"], name=c["name"],
+                     source_line=lineno)
 
 
 def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
     c = _extract_common(tokens, lineno)
     return PointElem(lw=c["lw"], color=c["color"], absolute=c["absolute"],
-                     source_line=lineno)
+                     name=c["name"], source_line=lineno)
 
 
 def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
     text = ""
     align = "left"
     font_size = None
+    font_family = None
     absolute = None
+    name = None
     for tok in tokens:
         if tok.kind == "QUOTED":
             text = tok.value
-        elif tok.kind == "WORD" and tok.value.lower() in ("left", "center", "right"):
-            align = tok.value.lower()
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv in _ALIGN_WORDS:
+                align = lv
+            elif tok.value.startswith("@") and len(tok.value) > 1:
+                name = tok.value[1:]
+            elif lv.startswith("font=") and len(lv) > 5:
+                font_family = tok.value[5:]
         elif tok.kind == "NUMBER":
             font_size = float(tok.value)
         elif tok.kind == "ABSOLUTE":
             absolute = parse_absolute(tok)
     if not text:
-        # bare word after label keyword
-        if tokens and tokens[0].kind == "WORD":
-            text = tokens[0].value
-    return LabelElem(text=text, align=align, font_size=font_size, absolute=absolute, source_line=lineno)
+        # bare word after label keyword (but not a name tag)
+        for tok in tokens:
+            if tok.kind == "WORD" and not tok.value.startswith("@"):
+                lv = tok.value.lower()
+                if lv not in _ALIGN_WORDS and not lv.startswith("font="):
+                    text = tok.value
+                    break
+    return LabelElem(text=text, align=align, font_size=font_size, font_family=font_family,
+                     absolute=absolute, name=name, source_line=lineno)
 
 
 def _parse_moveto(tokens: list[Token], lineno: int) -> MoveToElem:
@@ -369,5 +413,163 @@ def _parse_lineto(tokens: list[Token], lineno: int) -> LineToElem:
     return LineToElem(
         dest_x=dest_x, dest_y=dest_y,
         lw=c["lw"], dash=c["dash"], color=c["color"],
-        absolute=c["absolute"], source_line=lineno,
+        absolute=c["absolute"], name=c["name"], source_line=lineno,
     )
+
+
+# ── text feature parsers ──────────────────────────────────────────────────────
+
+def _parse_textstyle(tokens: list[Token], lineno: int) -> TextStyleDirective:
+    """textstyle [<size>] [font=<family>] [normal]"""
+    size = None
+    font_family = None
+    for tok in tokens:
+        if tok.kind == "NUMBER":
+            size = float(tok.value)
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv == "normal":
+                size = 10.0
+                font_family = "sans-serif"
+            elif lv.startswith("font=") and len(lv) > 5:
+                font_family = tok.value[5:]
+    return TextStyleDirective(size=size, font_family=font_family, source_line=lineno)
+
+
+def _parse_textline(tokens: list[Token], lineno: int) -> TextLineElem:
+    """textline "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+    text = ""
+    element_name = ""
+    align = "center"
+    font_size = None
+    font_family = None
+    color = None
+    text_found = False
+    name_found = False
+    for tok in tokens:
+        if tok.kind == "QUOTED" and not text_found:
+            text = tok.value
+            text_found = True
+        elif tok.kind == "COLOR_ELEM":
+            color = tok.value
+        elif tok.kind == "NUMBER" and font_size is None:
+            font_size = float(tok.value)
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv in _ALIGN_WORDS:
+                align = lv
+            elif lv.startswith("font=") and len(lv) > 5:
+                font_family = tok.value[5:]
+            elif not name_found and not tok.value.startswith("@"):
+                element_name = lv
+                name_found = True
+    if not element_name:
+        raise ParseError(f"Line {lineno}: textline requires an element name")
+    return TextLineElem(text=text, element_name=element_name, align=align,
+                        font_size=font_size, font_family=font_family, color=color,
+                        source_line=lineno)
+
+
+def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
+    """textbreak "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+    text = ""
+    element_name = ""
+    align = "center"
+    font_size = None
+    font_family = None
+    color = None
+    text_found = False
+    name_found = False
+    for tok in tokens:
+        if tok.kind == "QUOTED" and not text_found:
+            text = tok.value
+            text_found = True
+        elif tok.kind == "COLOR_ELEM":
+            color = tok.value
+        elif tok.kind == "NUMBER" and font_size is None:
+            font_size = float(tok.value)
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv in _ALIGN_WORDS:
+                align = lv
+            elif lv.startswith("font=") and len(lv) > 5:
+                font_family = tok.value[5:]
+            elif not name_found and not tok.value.startswith("@"):
+                element_name = lv
+                name_found = True
+    if not element_name:
+        raise ParseError(f"Line {lineno}: textbreak requires an element name")
+    return TextBreakElem(text=text, element_name=element_name, align=align,
+                         font_size=font_size, font_family=font_family, color=color,
+                         source_line=lineno)
+
+
+def _parse_textbox(tokens: list[Token], lineno: int) -> TextBoxElem:
+    """textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+               [C=<color>] [<lw>px] [<dash>] [A=<h>,<v>] [@name]"""
+    length, width = _leading_measurements(tokens, 2, lineno)
+    c = _extract_common(tokens, lineno)
+
+    wrap = False
+    align = "left"
+    font_size = None
+    font_family = c["font_family"]
+
+    dim_count = 0
+    for tok in tokens:
+        if tok.kind in ("MEASUREMENT", "NUMBER"):
+            dim_count += 1
+            if dim_count > 2 and tok.kind == "NUMBER" and font_size is None:
+                font_size = float(tok.value)
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv == "wrap":
+                wrap = True
+            elif lv in _ALIGN_WORDS:
+                align = lv
+
+    return TextBoxElem(
+        length=length, width=width,
+        text=c["label"] or "",
+        align=align, wrap=wrap,
+        font_size=font_size,
+        font_family=font_family,
+        lw=c["lw"], dash=c["dash"], color=c["color"],
+        absolute=c["absolute"],
+        name=c["name"],
+        source_line=lineno,
+    )
+
+
+def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
+    """textappend "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+    text = ""
+    element_name = ""
+    align = "left"
+    font_size = None
+    font_family = None
+    color = None
+    text_found = False
+    name_found = False
+    for tok in tokens:
+        if tok.kind == "QUOTED" and not text_found:
+            text = tok.value
+            text_found = True
+        elif tok.kind == "COLOR_ELEM":
+            color = tok.value
+        elif tok.kind == "NUMBER" and font_size is None:
+            font_size = float(tok.value)
+        elif tok.kind == "WORD":
+            lv = tok.value.lower()
+            if lv in _ALIGN_WORDS:
+                align = lv
+            elif lv.startswith("font=") and len(lv) > 5:
+                font_family = tok.value[5:]
+            elif not name_found and not tok.value.startswith("@"):
+                element_name = lv
+                name_found = True
+    if not element_name:
+        raise ParseError(f"Line {lineno}: textappend requires an element name")
+    return TextAppendElem(text=text, element_name=element_name, align=align,
+                          font_size=font_size, font_family=font_family, color=color,
+                          source_line=lineno)

@@ -1,9 +1,9 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.16 $ $Date: 2026/04/30 02:03:02 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
 # Floor Plan Generator — User's Guide
 
-## Running the program
+### Running the program
 
-### Shell driver (recommended)
+#### Shell driver (recommended)
 
 ```
 bin/380-010.sh <input.dsl> [output.svg]
@@ -12,7 +12,7 @@ bin/380-010.sh <input.dsl> [output.svg]
 - `input.dsl` — required; path to your drawing description file
 - `output.svg` — optional; defaults to `output.svg` in the current directory
 
-### Python directly
+#### Python directly
 
 ```
 uv run python -m floorplan.cli <input.dsl> [-o output.svg]
@@ -24,7 +24,7 @@ Or read from stdin:
 cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
 ```
 
-### Viewing the output
+#### Viewing the output
 
 Open `assets/380-030.html` in a browser. It displays the SVG and refreshes
 automatically every 6 seconds. Use the path field in the toolbar to point it
@@ -32,7 +32,7 @@ at your output file if it is not at the default `../output.svg`.
 
 ---
 
-## Input file format
+### Input file format
 
 One element or directive per line. Multiple statements can be placed on the
 same line by separating them with semicolons (`;`). Everything after `#` on a
@@ -56,7 +56,7 @@ separators:
 label "hello; world"   # label text is  hello; world
 ```
 
-### Aliases
+#### Aliases
 
 Every keyword has a short alias so common sequences stay compact. Aliases are
 case-insensitive and can be mixed freely with full names.
@@ -71,7 +71,9 @@ case-insensitive and can be mixed freely with full names.
 | `arc` | `a` | `showcornerxy` | `sxy` |
 | `arrow` | `aw` | `moveto` | `mto` |
 | `point` | `p` | `lineto` | `lto` |
-| `label` | `lb` | | |
+| `label` | `lb` | `textstyle` | `tstyle` |
+| `textline` | `txl` | `textbreak` | `txbr` |
+| `textbox` | `tbox` | `textappend` | `tapp` |
 
 ```
 dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
@@ -79,7 +81,7 @@ eid off; dim off
 p C=red A=3,3; p C=blue A=5,5
 ```
 
-### Measurements
+#### Measurements
 
 Dimensions are in **feet** unless a unit suffix is given.
 
@@ -93,14 +95,14 @@ Dimensions are in **feet** unless a unit suffix is given.
 | `2px` | 2 SVG pixels — **line weight only** |
 | `0px` | Invisible — element occupies space and advances the cursor, but nothing is drawn and no annotations are shown |
 
-### Drawing cursor
+#### Drawing cursor
 
 Elements are placed one after another starting from the **canvas origin** (the
 top-left of the first element). Each element advances the cursor by its length
 in the current drawing direction. The cursor position becomes the start point
 of the next element.
 
-### Drawing direction
+#### Drawing direction
 
 ```
 direction <degrees>
@@ -117,7 +119,7 @@ Sets the compass direction for subsequent elements.
 
 `direction` can appear anywhere in the file and takes effect immediately.
 
-### Include
+#### Include
 
 ```
 include <filename>
@@ -138,7 +140,7 @@ include walls.dsl
 include fixtures.dsl
 ```
 
-### Variables
+#### Variables
 
 Numeric variables let you name dimensions and positions for reuse and calculation.
 
@@ -217,7 +219,7 @@ Variables are shared across `include` files.
 
 ---
 
-### Display directives
+#### Display directives
 
 ```
 elementid on|off
@@ -231,7 +233,7 @@ markers independently. `elementid` and `dimensions` are `on` by default;
 and applies to elements that follow it; elements placed before the directive
 are unaffected.
 
-#### `showcornerxy`
+##### `showcornerxy`
 
 When `on`, a coordinate marker is added at each point where the drawing
 direction changes. The marker shows the cursor position in decimal feet at
@@ -259,7 +261,7 @@ direction 180       # no marker — showcornerxy is off
 `showcornerxy` is useful during drawing development to verify that walls meet
 at the correct coordinates.
 
-### Color
+#### Color
 
 ```
 color <value>
@@ -292,7 +294,7 @@ line 12 C=blue dashed
 
 `C=` uses the same color values as the `color` directive. It overrides the current directive color for that one element only.
 
-### Absolute placement
+#### Absolute placement
 
 Any element can be placed at a fixed position by appending `A=<h>,<v>`, where
 `h` and `v` are feet from the canvas origin to the element's top-left corner.
@@ -305,9 +307,9 @@ door 3 right A=2,10      # place door at (2ft, 10ft) from origin
 
 ---
 
-## Element types
+### Element types
 
-### `line`
+#### `line`
 
 A straight line segment in the current direction.
 
@@ -322,26 +324,27 @@ line 8'6" 2px
 
 ---
 
-### `rect`
+#### `rect`
 
 An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
 perpendicular to it.
 
 ```
-rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@name]
 ```
 
 ```
 rect 12 10
 rect 10'6" 8' "Bedroom"
 rect 14 11 2px "Master Bedroom" A=12,0
+rect 4 0.8 @panel "**Schedule**" C="lightgray"
 ```
 
-The label is centered inside the rectangle.
+The label is centered inside the rectangle. Inline markup (`*italic*`, `**bold**`) is supported in the label. A named rect can receive `textappend` rows that expand it downward.
 
 ---
 
-### `wall`
+#### `wall`
 
 A filled (solid) rectangle representing a structural wall. Default thickness
 is 6 inches.
@@ -357,7 +360,7 @@ wall 12 8"               # 12ft long, 8" thick
 
 ---
 
-### `door`
+#### `door`
 
 A door symbol: a solid line for the door slab and a dashed quarter-circle arc
 showing the swing path. The hinge is at the element's start point.
@@ -378,7 +381,7 @@ door 3 right A=2,10
 
 ---
 
-### `window`
+#### `window`
 
 Two parallel lines across a wall opening.
 
@@ -400,7 +403,7 @@ window 4 A=22,3
 
 ---
 
-### `arc`
+#### `arc`
 
 A general-purpose arc, drawn clockwise from the element's start point.
 
@@ -415,7 +418,7 @@ arc 5 180          # semicircle, 5ft radius
 
 ---
 
-### `arrow`
+#### `arrow`
 
 A line with an arrowhead at the end.
 
@@ -430,7 +433,7 @@ arrow 4 A=0,15
 
 ---
 
-### `moveto`
+#### `moveto`
 
 Moves the cursor to an absolute canvas position without drawing anything. No element ID or dimension annotation is produced.
 
@@ -450,7 +453,7 @@ mto 0 0 A=5,0       # __mltodir = 270° (leftward); cursor moves to (0, 0)
 
 ---
 
-### `lineto`
+#### `lineto`
 
 Draws a straight line from the current cursor (or from `A=sx,sy`) to the specified destination, then advances the cursor there. The element is numbered and dimensioned like any other geometry element.
 
@@ -472,7 +475,7 @@ lb "bearing: ${__mltodir}"      # show the last lineto direction
 
 ---
 
-### `point`
+#### `point`
 
 A filled circle 3 px in diameter, drawn at the current cursor position or at
 an absolute position. Useful for marking reference points, corners, or
@@ -503,27 +506,184 @@ point 0px                  # invisible — occupies no space, produces no output
 
 ---
 
-### `label`
+#### `label`
 
 A text annotation. Does not advance the cursor. Labels always render
 horizontally regardless of the current drawing direction.
 
 ```
-label "text" [left|center|right] [<size>] [A=<h>,<v>]
+label "text" [left|center|right] [<size>] [font=<family>] [A=<h>,<v>] [@name]
 ```
 
 - alignment — `left` (default), `center`, or `right`
-- `<size>` — font size in SVG pixels (default 10)
+- `<size>` — font size in SVG pixels (default 10, or the current `textstyle` size)
+- `font=<family>` — font family for this label only (e.g. `font=serif`)
+- `@name` — register this label under a name for later reference
+
+Quoted text supports **inline markup** and **line breaks** — see [Text styling](#text-styling) below.
 
 ```
 label "North" center A=10,0
 label "see detail A" left A=5,20
 label "SCALE 1:48" center 14 A=5,25
+lb "**Bold title**\nSubtitle" center 12 A=0,0
 ```
 
 ---
 
-## Common options (all elements)
+### Text styling
+
+#### Element naming
+
+Any element can be tagged with `@name` at the end of its statement. The name is used to anchor text elements to that element later.
+
+```
+line 12 @corridor
+rect 14 10 @living_room "Bedroom"
+wall 8 0.5 @north_wall
+```
+
+Names are case-sensitive identifiers. A later `@name` on a different element replaces the earlier registration.
+
+---
+
+#### Inline bold, italic, and line breaks
+
+Inside any double-quoted string you can use **Markdown-style** span markers:
+
+| What you write | What renders |
+|---|---|
+| `*text*` | *italic* |
+| `**text**` | **bold** |
+| `***text***` | ***bold italic*** |
+| `\*` | literal asterisk `*` |
+| `\n` | line break |
+
+```
+lb "Normal *italic* and **bold** text"
+lb "***Critical notice***" center 12
+lb "Price: $4.50/sq\*ft"
+lb "Room: Bedroom\nArea: 168 sq ft\nFinish: Hardwood"
+```
+
+`\n` creates a new line. A double `\n\n` leaves a blank line gap. These work in `label`, `textbox`, `textappend`, `textline`, and `textbreak`.
+
+Unclosed markup (e.g. `*only one asterisk`) is treated as literal text.
+
+---
+
+#### `textstyle` — default font
+
+Sets the default font size and family for all subsequent text elements. Works like `color` does for strokes.
+
+```
+textstyle [<size>] [font=<family>] [normal]
+```
+
+- `<size>` — default font size in SVG pixels
+- `font=<family>` — CSS font family: `sans-serif`, `serif`, `monospace`, or any CSS font name
+- `normal` — resets both to defaults (10px, sans-serif)
+
+Any text element can override locally with its own `<size>` or `font=<family>`.
+
+```
+textstyle 12 font=serif        # 12px serif for everything that follows
+textstyle font=monospace       # change family only
+textstyle normal               # back to 10px sans-serif
+lb "Title" 18                  # local override: 18px, current family
+lb "Body" font=sans-serif      # local font override only
+```
+
+---
+
+#### `textline` — text alongside a named element
+
+Places text alongside a named line or other element, rotated to match its direction. Does not advance the cursor.
+
+```
+textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+- `<name>` — a previously registered element name (via `@name`)
+- alignment — where on the element to anchor the text: `left` = at the start, `center` = centred (default), `right` = at the end
+- Text is offset slightly away from the element and rotated to stay readable
+
+```
+dir 90
+l 14 @corridor
+textline "Corridor" corridor center 10
+txl "**North Wall**" north_wall left 12 C=blue
+```
+
+---
+
+#### `textbreak` — text that visually breaks a line
+
+Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
+
+```
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+```
+l 14 @front_wall
+textbreak "Front Wall" front_wall center 10
+txbr "**Section A-A**" section_line center 12
+```
+
+---
+
+#### `textbox` — text inside a drawn rectangle
+
+A stroked rectangle with text inside. Behaves like `rect` for cursor advancement — the cursor moves forward by `length` in the current direction.
+
+```
+textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@name]
+```
+
+- `wrap` — word-wraps the text to fit within the box width using `<tspan>` elements
+- `@name` — name the box so `textappend` can add rows to it later
+
+Text supports inline markup and `\n` line breaks. With `wrap`, explicit `\n` paragraph breaks are honoured before word-wrapping is applied.
+
+```
+tbox 6 2 "Long note that wraps inside the box" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0.8 @panel "**Schedule**" C="lightgray"
+```
+
+A `textbox` with `width=0` starts at zero height and grows downward via `textappend`.
+
+---
+
+#### `textappend` — add rows to a named rect or textbox
+
+Appends a text row below the current content of a named `rect` or `textbox`, expanding the element's border downward. Does not advance the cursor.
+
+```
+textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+
+- Each call adds one row (or more, if `\n` appears in the text)
+- An empty string `""` inserts a blank spacer row
+
+```
+rect 4 0.8 @panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel
+textappend "" panel             # blank spacer
+textappend "Updated: 2026-05" panel right 8
+
+tbox 4 0.6 @notes "**Notes**"
+tapp "Item 1\nItem 2" notes    # two rows from one call
+tapp "" notes                  # blank line
+tapp "Item 3" notes
+```
+
+---
+
+### Common options (all elements)
 
 | Option | Description |
 |---|---|
@@ -535,6 +695,8 @@ label "SCALE 1:48" center 14 A=5,25
 | `hidden` | Hidden line — short dashes (4,2) |
 | `C=<color>` | Per-element stroke color override. Named (`C=red`) or quoted CSS (`C="#ff0000"`). Does not affect subsequent elements. |
 | `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
+| `@name` | Register this element under a name for later reference by `textline`, `textbreak`, or `textappend`. |
+| `font=<family>` | *(text elements and `label` only)* Per-element font family override. |
 
 Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
 
@@ -546,7 +708,7 @@ wall 6 dotted
 
 ---
 
-## Output
+### Output
 
 The SVG is letter-size landscape (11 × 8.5 in). The drawing is automatically
 scaled to fill an 8 × 10 inch print rectangle and centered on the page.
@@ -559,7 +721,7 @@ other. Both can be toggled with the `elementid` and `dimensions` directives.
 
 ---
 
-## Example
+### Example
 
 ```
 # Two-room layout with a shared wall, door, and window

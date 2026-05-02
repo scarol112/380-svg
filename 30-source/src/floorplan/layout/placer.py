@@ -6,7 +6,9 @@ from ..dsl.ast import (
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
+    TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
+from ..dsl.parser import ParseError
 from ..model import PlacedElement
 from .cursor import DrawingCursor, direction_vector
 
@@ -36,6 +38,8 @@ class ElementPlacer:
         self._color: str = "black"
         self._show_cornerxy: bool = False
         self._mltodir: float = 0.0
+        self._named_elements: dict[str, PlacedElement] = {}
+        self._text_style: dict = {"size": 10.0, "font_family": "sans-serif"}
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -57,6 +61,8 @@ class ElementPlacer:
                     self._show_dims = node.enabled
             case ColorDirective():
                 self._color = node.color
+            case TextStyleDirective():
+                self._handle_textstyle(node)
             case LineElem():
                 self._place_line(node)
             case RectElem():
@@ -79,6 +85,14 @@ class ElementPlacer:
                 self._place_moveto(node)
             case LineToElem():
                 self._place_lineto(node)
+            case TextLineElem():
+                self._place_textline(node)
+            case TextBreakElem():
+                self._place_textbreak(node)
+            case TextBoxElem():
+                self._place_textbox(node)
+            case TextAppendElem():
+                self._place_textappend(node)
 
     # ── coordinate helpers ────────────────────────────────────────────────────
 
@@ -108,94 +122,126 @@ class ElementPlacer:
     def _resolve_color(self, elem_color: str | None) -> str:
         return elem_color if elem_color is not None else self._color
 
+    def _register_name(self, pe: PlacedElement, name: str | None) -> None:
+        if name:
+            self._named_elements[name] = pe
+
+    def _text_font_size(self, override: float | None) -> float:
+        return override if override is not None else self._text_style["size"]
+
+    def _text_font_family(self, override: str | None) -> str:
+        return override if override is not None else self._text_style["font_family"]
+
+    # ── directive handlers ────────────────────────────────────────────────────
+
+    def _handle_textstyle(self, elem: TextStyleDirective) -> None:
+        if elem.size is not None:
+            self._text_style["size"] = elem.size
+        if elem.font_family is not None:
+            self._text_style["font_family"] = elem.font_family
+
     # ── element placers ───────────────────────────────────────────────────────
 
     def _place_line(self, elem: LineElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_rect(self, elem: RectElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=elem.label,
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_wall(self, elem: WallElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"thickness": elem.thickness},
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_door(self, elem: DoorElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"swing": elem.swing},
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.width)
 
     def _place_window(self, elem: WindowElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"depth": elem.depth},
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.width)
 
     def _place_arc(self, elem: ArcElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep},
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.radius * 2)
 
     def _place_arrow(self, elem: ArrowElem) -> None:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._move_cursor_to_end(x, y, elem.length)
 
     def _emit_cornerxy(self, x: float, y: float) -> None:
@@ -212,13 +258,15 @@ class ElementPlacer:
         x, y = self._resolve_position(elem.absolute)
         self._set_canvas_origin_if_needed(x, y)
         lw = elem.lw if elem.lw is not None else 1.0
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="point", number=self._next_number(),
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
             lw=lw, dash=None, color=self._resolve_color(elem.color), label=None,
             show_id=self._show_id, show_dims=False, source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         # cursor does not advance — point marks a location without disrupting flow
         if self._show_cornerxy:
             self._emit_cornerxy(x, y)
@@ -229,14 +277,18 @@ class ElementPlacer:
         extra: dict = {"align": elem.align}
         if elem.font_size is not None:
             extra["font_size"] = elem.font_size
-        self._elements.append(PlacedElement(
+        if elem.font_family is not None:
+            extra["font_family"] = elem.font_family
+        pe = PlacedElement(
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
             lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
             extra=extra,
             source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
 
     def _place_moveto(self, elem: MoveToElem) -> None:
         ox, oy = self._canvas_origin
@@ -274,12 +326,105 @@ class ElementPlacer:
             bearing = self._cursor.direction
         self._mltodir = bearing
         length = math.sqrt(ddx * ddx + ddy * ddy)
-        self._elements.append(PlacedElement(
+        pe = PlacedElement(
             kind="lineto", number=self._next_number(),
             x=start_x, y=start_y, length=length, width=0.0,
             direction=bearing,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             **self._flags(), source_line=elem.source_line,
-        ))
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
         self._cursor.x = dest_x
         self._cursor.y = dest_y
+
+    # ── text element placers ──────────────────────────────────────────────────
+
+    def _place_textline(self, elem: TextLineElem) -> None:
+        target = self._named_elements.get(elem.element_name)
+        if target is None:
+            raise ParseError(
+                f"Line {elem.source_line}: textline: element '{elem.element_name}' not found"
+            )
+        # Bake the reference element's geometry into this PlacedElement so the
+        # renderer needs no lookup at draw time.
+        pe = PlacedElement(
+            kind="textline", number=None,
+            x=target.x, y=target.y,
+            length=target.length, width=0.0,
+            direction=target.direction,
+            lw=DEFAULT_LW, dash=None,
+            color=self._resolve_color(elem.color),
+            label=elem.text,
+            extra={
+                "align": elem.align,
+                "font_size": self._text_font_size(elem.font_size),
+                "font_family": self._text_font_family(elem.font_family),
+            },
+            show_id=False, show_dims=False,
+            source_line=elem.source_line,
+        )
+        self._elements.append(pe)
+
+    def _place_textbreak(self, elem: TextBreakElem) -> None:
+        target = self._named_elements.get(elem.element_name)
+        if target is None:
+            raise ParseError(
+                f"Line {elem.source_line}: textbreak: element '{elem.element_name}' not found"
+            )
+        pe = PlacedElement(
+            kind="textbreak", number=None,
+            x=target.x, y=target.y,
+            length=target.length, width=0.0,
+            direction=target.direction,
+            lw=DEFAULT_LW, dash=None,
+            color=self._resolve_color(elem.color),
+            label=elem.text,
+            extra={
+                "align": elem.align,
+                "font_size": self._text_font_size(elem.font_size),
+                "font_family": self._text_font_family(elem.font_family),
+            },
+            show_id=False, show_dims=False,
+            source_line=elem.source_line,
+        )
+        self._elements.append(pe)
+
+    def _place_textbox(self, elem: TextBoxElem) -> None:
+        x, y = self._resolve_position(elem.absolute)
+        self._set_canvas_origin_if_needed(x, y)
+        pe = PlacedElement(
+            kind="textbox", number=self._next_number(),
+            x=x, y=y, length=elem.length, width=elem.width,
+            direction=self._cursor.direction,
+            lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color),
+            label=elem.text or None,
+            extra={
+                "align": elem.align,
+                "wrap": elem.wrap,
+                "font_size": self._text_font_size(elem.font_size),
+                "font_family": self._text_font_family(elem.font_family),
+                "text_rows": [],
+            },
+            **self._flags(),
+            source_line=elem.source_line,
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
+        self._move_cursor_to_end(x, y, elem.length)
+
+    def _place_textappend(self, elem: TextAppendElem) -> None:
+        target = self._named_elements.get(elem.element_name)
+        if target is None:
+            raise ParseError(
+                f"Line {elem.source_line}: textappend: element '{elem.element_name}' not found"
+            )
+        if "text_rows" not in target.extra:
+            target.extra["text_rows"] = []
+        target.extra["text_rows"].append({
+            "text": elem.text,
+            "align": elem.align,
+            "font_size": self._text_font_size(elem.font_size),
+            "font_family": self._text_font_family(elem.font_family),
+            "color": self._resolve_color(elem.color),
+        })

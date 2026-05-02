@@ -44,7 +44,8 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
 
         m = _QUOTED.match(raw, i)
         if m:
-            tokens.append(Token("QUOTED", m.group(1), lineno))
+            content = m.group(1).replace('\\n', '\n')
+            tokens.append(Token("QUOTED", content, lineno))
             i = m.end()
             continue
 
