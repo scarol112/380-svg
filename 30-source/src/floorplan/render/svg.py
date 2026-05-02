@@ -34,7 +34,8 @@ _DIAGONALS: list[tuple[float, float, str]] = [
 ]
 
 
-_LABEL_CHAR_W = 0.55
+_LABEL_CHAR_W = 0.55  # conservative estimate used for collision-detection bboxes
+_WRAP_CHAR_W  = 0.45  # more accurate average for proportional sans-serif word-wrap
 _LABEL_LINE_H = 1.4
 
 # ── inline markup ─────────────────────────────────────────────────────────────
@@ -156,7 +157,7 @@ def _plain_len(text: str) -> int:
 
 def _wrap_text(raw: str, available_px: float, font_size: float) -> list[str]:
     """Break text into lines fitting available_px, wrapping at word boundaries."""
-    chars = max(1, int(available_px / (font_size * _LABEL_CHAR_W)))
+    chars = max(1, int(available_px / (font_size * _WRAP_CHAR_W)))
     lines = textwrap.wrap(raw, width=chars, break_long_words=True)
     return lines or [raw]
 
@@ -527,24 +528,60 @@ def _label_for_rect(elem: PlacedElement, scale: float, tx: float, ty: float) -> 
                          dominant_baseline="central")
 
 
+def _textbox_text_width_px(elem: PlacedElement, scale: float) -> float:
+    """Horizontal text-area width of a textbox in SVG pixels."""
+    d = elem.direction % 360
+    return elem.length * scale if d in (90, 270) else elem.width * scale
+
+
+def _textbox_content_height_px(elem: PlacedElement, rw: float) -> float:
+    """Pixel height occupied by the textbox's main label after word-wrapping."""
+    if not elem.label:
+        return 0.0
+    font_size = elem.extra.get("font_size", LABEL_FONT)
+    available = rw - 2 * (font_size * 0.4)  # subtract actual left+right margins
+    count = 0
+    for para in (elem.label or "").split('\n'):
+        if para:
+            count += len(_wrap_text(para, available, font_size))
+        else:
+            count += 1  # blank-line spacer
+    return count * font_size * _LABEL_LINE_H
+
+
+def _textbox_rows_height_px(elem: PlacedElement, rw: float = 0.0) -> float:
+    """Height of textappend rows. Pass rw>0 for word-wrap-aware counting."""
+    total = 0.0
+    for r in elem.extra.get("text_rows", []):
+        fs = r["font_size"]
+        available = rw - 2 * (fs * 0.4) if rw > 0 else 0.0
+        for sub_line in r["text"].split('\n'):
+            if sub_line and available > 0:
+                total += fs * _LABEL_LINE_H * len(_wrap_text(sub_line, available, fs))
+            else:
+                total += fs * _LABEL_LINE_H
+    return total
+
+
 def _textbox_border_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
-    rows_h = sum(
-        r["font_size"] * _LABEL_LINE_H * len(r["text"].split('\n'))
-        for r in elem.extra.get("text_rows", [])
-    )
-    rx, ry, rw, rh = _rect_box(elem, scale, tx, ty, extra_h=rows_h)
+    rw = _textbox_text_width_px(elem, scale)
+    content_h = _textbox_content_height_px(elem, rw)
+    initial_h = elem.width * scale
+    rows_h = _textbox_rows_height_px(elem, rw)
+    # Border is at least initial_h; grows if content + appended rows need more space.
+    extra_h = max(0.0, content_h + rows_h - initial_h)
+    rx, ry, rw_box, rh = _rect_box(elem, scale, tx, ty, extra_h=extra_h)
     return (
-        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
+        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw_box:.1f}" height="{rh:.1f}" '
         f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
 def _textbox_label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
-    """Render the main label text inside a textbox (word-wrapped if requested)."""
+    """Render the main label text inside a textbox, always word-wrapped."""
     font_size = elem.extra.get("font_size", LABEL_FONT)
     font_family = elem.extra.get("font_family", "sans-serif")
     align = elem.extra.get("align", "left")
-    wrap = elem.extra.get("wrap", False)
     anchor_map = {"left": "start", "center": "middle", "right": "end"}
     anchor = anchor_map.get(align, "start")
 
@@ -558,15 +595,14 @@ def _textbox_label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) 
     else:
         text_x = rx + rw / 2
 
-    # Split on explicit \n first, then optionally word-wrap each non-empty segment
-    raw = elem.label or ""
-    paragraphs = raw.split('\n')
+    # Split on explicit \n, then word-wrap each non-empty paragraph.
+    available = rw - 2 * x_margin  # actual usable text width
     all_lines: list[str] = []
-    for para in paragraphs:
+    for para in (elem.label or "").split('\n'):
         if para:
-            all_lines.extend(_wrap_text(para, rw * 0.9, font_size) if wrap else [para])
+            all_lines.extend(_wrap_text(para, available, font_size))
         else:
-            all_lines.append('')  # blank line preserved as spacer
+            all_lines.append('')  # blank-line spacer
 
     parts: list[str] = []
     for i, line in enumerate(all_lines):
@@ -575,7 +611,6 @@ def _textbox_label_svg(elem: PlacedElement, scale: float, tx: float, ty: float) 
             spans = _parse_inline_markup(line)
             parts.append(_spans_to_svg(spans, text_x, y_pos, font_size, font_family,
                                        anchor, color=elem.color))
-        # blank lines advance y but produce no element
     return "\n    ".join(parts)
 
 
@@ -586,16 +621,24 @@ def _text_rows_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
         return ""
 
     rx, ry, rw, rh_base = _rect_box(elem, scale, tx, ty)
-    # rh_base is the original rect height without any appended rows
     anchor_map = {"left": "start", "center": "middle", "right": "end"}
 
+    # For textbox: rows follow immediately after the text content (inside the rect).
+    # For rect: rows follow after the fixed initial height (below the rect border).
+    if elem.kind == "textbox" and elem.label:
+        rw_text = _textbox_text_width_px(elem, scale)
+        content_h = _textbox_content_height_px(elem, rw_text)
+        row_top = ry + content_h
+    else:
+        row_top = ry + rh_base
+
     parts: list[str] = []
-    row_top = ry + rh_base  # top of first text row (below original rect)
     for row in text_rows:
         fs = row["font_size"]
         row_align = row.get("align", "left")
         anchor = anchor_map.get(row_align, "start")
         x_margin = fs * 0.4
+        available = rw - 2 * x_margin
         if row_align == "left":
             row_x = rx + x_margin
         elif row_align == "right":
@@ -605,12 +648,16 @@ def _text_rows_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
         font_family = row.get("font_family", "sans-serif")
         color = row.get("color", "black")
         for sub_line in row["text"].split('\n'):
-            baseline = row_top + fs
             if sub_line:
-                spans = _parse_inline_markup(sub_line)
-                parts.append(_spans_to_svg(spans, row_x, baseline, fs,
-                                           font_family, anchor, color=color))
-            row_top += fs * _LABEL_LINE_H
+                wrapped = _wrap_text(sub_line, available, fs) if elem.kind == "textbox" else [sub_line]
+                for wline in wrapped:
+                    baseline = row_top + fs
+                    spans = _parse_inline_markup(wline)
+                    parts.append(_spans_to_svg(spans, row_x, baseline, fs,
+                                               font_family, anchor, color=color))
+                    row_top += fs * _LABEL_LINE_H
+            else:
+                row_top += fs * _LABEL_LINE_H
 
     return "\n    ".join(parts)
 

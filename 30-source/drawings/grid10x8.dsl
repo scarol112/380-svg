@@ -2,6 +2,7 @@
 eid off
 dim off
 sxy off
+mto 0 0
 dir 90
 color Gainsboro
 l 10 A=0,0
@@ -26,3 +27,4 @@ l 8 A=7,0
 l 8 A=8,0
 l 8 A=9,0
 l 8 A=10,0
+mto 0 0

@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.01.19.51.47;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@*** empty log message ***
 @
 text
 @# CLAUDE.md
@@ -62,5 +67,16 @@ The broader project root (`/srv/380-svg/`) contains sibling directories for rese
 
 Early stage — no implementation exists yet. The `src/` directory is empty. No build system, test runner, or linter is configured.
 
+## Design decisions are documented in docs/design-guide.md - update that file when new features or design decisions are made.
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d41 1
+a41 1
 ## Design decisions are documented in docs/design.md - update that file whenh new features or designh decisions are made.
 @

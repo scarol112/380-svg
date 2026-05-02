@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -54,31 +54,6 @@ separators:
 
 ```
 label "hello; world"   # label text is  hello; world
-```
-
-#### Aliases
-
-Every keyword has a short alias so common sequences stay compact. Aliases are
-case-insensitive and can be mixed freely with full names.
-
-| Full name | Alias | Full name | Alias |
-|---|---|---|---|
-| `line` | `l` | `direction` | `dir` |
-| `rect` | `r` | `elementid` | `eid` |
-| `wall` | `w` | `dimensions` | `dim` |
-| `door` | `d` | `color` | `col` |
-| `window` | `wi` | `include` | `inc` |
-| `arc` | `a` | `showcornerxy` | `sxy` |
-| `arrow` | `aw` | `moveto` | `mto` |
-| `point` | `p` | `lineto` | `lto` |
-| `label` | `lb` | `textstyle` | `tstyle` |
-| `textline` | `txl` | `textbreak` | `txbr` |
-| `textbox` | `tbox` | `textappend` | `tapp` |
-
-```
-dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
-eid off; dim off
-p C=red A=3,3; p C=blue A=5,5
 ```
 
 #### Measurements
@@ -309,7 +284,7 @@ door 3 right A=2,10      # place door at (2ft, 10ft) from origin
 
 ### Element types
 
-#### `line`
+#### `line` / `l`
 
 A straight line segment in the current direction.
 
@@ -324,7 +299,7 @@ line 8'6" 2px
 
 ---
 
-#### `rect`
+#### `rect` / `r`
 
 An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
 perpendicular to it.
@@ -344,7 +319,7 @@ The label is centered inside the rectangle. Inline markup (`*italic*`, `**bold**
 
 ---
 
-#### `wall`
+#### `wall` / `w`
 
 A filled (solid) rectangle representing a structural wall. Default thickness
 is 6 inches.
@@ -360,7 +335,7 @@ wall 12 8"               # 12ft long, 8" thick
 
 ---
 
-#### `door`
+#### `door` / `d`
 
 A door symbol: a solid line for the door slab and a dashed quarter-circle arc
 showing the swing path. The hinge is at the element's start point.
@@ -381,7 +356,7 @@ door 3 right A=2,10
 
 ---
 
-#### `window`
+#### `window` / `wi`
 
 Two parallel lines across a wall opening.
 
@@ -403,7 +378,7 @@ window 4 A=22,3
 
 ---
 
-#### `arc`
+#### `arc` / `a`
 
 A general-purpose arc, drawn clockwise from the element's start point.
 
@@ -418,7 +393,7 @@ arc 5 180          # semicircle, 5ft radius
 
 ---
 
-#### `arrow`
+#### `arrow` / `aw`
 
 A line with an arrowhead at the end.
 
@@ -433,7 +408,7 @@ arrow 4 A=0,15
 
 ---
 
-#### `moveto`
+#### `moveto` / `mto`
 
 Moves the cursor to an absolute canvas position without drawing anything. No element ID or dimension annotation is produced.
 
@@ -453,7 +428,7 @@ mto 0 0 A=5,0       # __mltodir = 270° (leftward); cursor moves to (0, 0)
 
 ---
 
-#### `lineto`
+#### `lineto` / `lto`
 
 Draws a straight line from the current cursor (or from `A=sx,sy`) to the specified destination, then advances the cursor there. The element is numbered and dimensioned like any other geometry element.
 
@@ -475,7 +450,7 @@ lb "bearing: ${__mltodir}"      # show the last lineto direction
 
 ---
 
-#### `point`
+#### `point` / `p`
 
 A filled circle 3 px in diameter, drawn at the current cursor position or at
 an absolute position. Useful for marking reference points, corners, or
@@ -506,7 +481,7 @@ point 0px                  # invisible — occupies no space, produces no output
 
 ---
 
-#### `label`
+#### `label` / `lb`
 
 A text annotation. Does not advance the cursor. Labels always render
 horizontally regardless of the current drawing direction.
@@ -572,7 +547,7 @@ Unclosed markup (e.g. `*only one asterisk`) is treated as literal text.
 
 ---
 
-#### `textstyle` — default font
+#### `textstyle` / `tstyle` — default font
 
 Sets the default font size and family for all subsequent text elements. Works like `color` does for strokes.
 
@@ -596,7 +571,7 @@ lb "Body" font=sans-serif      # local font override only
 
 ---
 
-#### `textline` — text alongside a named element
+#### `textline` / `txl` — text alongside a named element
 
 Places text alongside a named line or other element, rotated to match its direction. Does not advance the cursor.
 
@@ -617,7 +592,7 @@ txl "**North Wall**" north_wall left 12 C=blue
 
 ---
 
-#### `textbreak` — text that visually breaks a line
+#### `textbreak` / `txbr` — text that visually breaks a line
 
 Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
 
@@ -633,7 +608,7 @@ txbr "**Section A-A**" section_line center 12
 
 ---
 
-#### `textbox` — text inside a drawn rectangle
+#### `textbox` / `tbox` — text inside a drawn rectangle
 
 A stroked rectangle with text inside. Behaves like `rect` for cursor advancement — the cursor moves forward by `length` in the current direction.
 
@@ -657,7 +632,7 @@ A `textbox` with `width=0` starts at zero height and grows downward via `textapp
 
 ---
 
-#### `textappend` — add rows to a named rect or textbox
+#### `textappend` / `tapp` — add rows to a named rect or textbox
 
 Appends a text row below the current content of a named `rect` or `textbox`, expanding the element's border downward. Does not advance the cursor.
 

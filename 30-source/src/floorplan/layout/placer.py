@@ -106,10 +106,21 @@ class ElementPlacer:
             return ox + absolute[0], oy + absolute[1]
         return self._cursor.x, self._cursor.y
 
-    def _set_canvas_origin_if_needed(self, x: float, y: float) -> None:
+    def _set_canvas_origin_if_needed(
+        self, x: float, y: float, has_absolute: bool = False
+    ) -> None:
         if not self._canvas_origin_set:
-            self._canvas_origin = (x, y)
+            # When the first element uses A=, the A= coordinate is already
+            # relative to an implied (0,0) origin.  Setting the origin to the
+            # resolved position would corrupt all subsequent A= values.
+            self._canvas_origin = (0.0, 0.0) if has_absolute else (x, y)
             self._canvas_origin_set = True
+
+    def _place_start(self, absolute: tuple[float, float] | None) -> tuple[float, float]:
+        """Resolve element position and establish canvas origin on first call."""
+        x, y = self._resolve_position(absolute)
+        self._set_canvas_origin_if_needed(x, y, has_absolute=absolute is not None)
+        return x, y
 
     def _move_cursor_to_end(self, x: float, y: float, length: float) -> None:
         dx, dy = direction_vector(self._cursor.direction)
@@ -143,8 +154,7 @@ class ElementPlacer:
     # ── element placers ───────────────────────────────────────────────────────
 
     def _place_line(self, elem: LineElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="line", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
@@ -157,8 +167,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_rect(self, elem: RectElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="rect", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
@@ -171,8 +180,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_wall(self, elem: WallElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="wall", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.thickness,
@@ -186,8 +194,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.length)
 
     def _place_door(self, elem: DoorElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="door", number=self._next_number(),
             x=x, y=y, length=elem.width, width=0.0,
@@ -201,8 +208,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.width)
 
     def _place_window(self, elem: WindowElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="window", number=self._next_number(),
             x=x, y=y, length=elem.width, width=elem.depth,
@@ -216,8 +222,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.width)
 
     def _place_arc(self, elem: ArcElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="arc", number=self._next_number(),
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
@@ -231,8 +236,7 @@ class ElementPlacer:
         self._move_cursor_to_end(x, y, elem.radius * 2)
 
     def _place_arrow(self, elem: ArrowElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="arrow", number=self._next_number(),
             x=x, y=y, length=elem.length, width=0.0,
@@ -255,8 +259,7 @@ class ElementPlacer:
         ))
 
     def _place_point(self, elem: PointElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         lw = elem.lw if elem.lw is not None else 1.0
         pe = PlacedElement(
             kind="point", number=self._next_number(),
@@ -272,8 +275,7 @@ class ElementPlacer:
             self._emit_cornerxy(x, y)
 
     def _place_label(self, elem: LabelElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         extra: dict = {"align": elem.align}
         if elem.font_size is not None:
             extra["font_size"] = elem.font_size
@@ -317,7 +319,7 @@ class ElementPlacer:
             start_y = self._cursor.y
         dest_x = ox + elem.dest_x
         dest_y = oy + elem.dest_y
-        self._set_canvas_origin_if_needed(start_x, start_y)
+        self._set_canvas_origin_if_needed(start_x, start_y, has_absolute=elem.absolute is not None)
         ddx = dest_x - start_x
         ddy = dest_y - start_y
         if ddx != 0.0 or ddy != 0.0:
@@ -391,8 +393,7 @@ class ElementPlacer:
         self._elements.append(pe)
 
     def _place_textbox(self, elem: TextBoxElem) -> None:
-        x, y = self._resolve_position(elem.absolute)
-        self._set_canvas_origin_if_needed(x, y)
+        x, y = self._place_start(elem.absolute)
         pe = PlacedElement(
             kind="textbox", number=self._next_number(),
             x=x, y=y, length=elem.length, width=elem.width,
