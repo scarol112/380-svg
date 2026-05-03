@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.19 $ $Date: 2026/05/03 01:57:48 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -597,13 +597,16 @@ txl "**North Wall**" north_wall left 12 C=blue
 Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
 
 ```
-textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [<lw>px] [C=<color>]
 ```
+
+- `<lw>px` — border box stroke width (default 1px); use `0px` to hide the border box while keeping the white mask and text
 
 ```
 l 14 @front_wall
 textbreak "Front Wall" front_wall center 10
 txbr "**Section A-A**" section_line center 12
+txbr "No box" section_line center 10 0px    # invisible border, but white mask and text visible
 ```
 
 ---

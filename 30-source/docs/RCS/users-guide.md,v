@@ -1,10 +1,15 @@
-head	1.18;
+head	1.19;
 access;
 symbols;
 locks
-	scarol:1.18; strict;
+	scarol:1.19; strict;
 comment	@# @;
 
+
+1.19
+date	2026.05.03.01.57.48;	author scarol;	state Exp;
+branches;
+next	1.18;
 
 1.18
 date	2026.05.02.17.29.56;	author scarol;	state Exp;
@@ -101,12 +106,12 @@ desc
 @@
 
 
-1.18
+1.19
 log
-@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
+@*** empty log message ***
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -162,31 +167,6 @@ separators:
 
 ```
 label "hello; world"   # label text is  hello; world
-```
-
-#### Aliases
-
-Every keyword has a short alias so common sequences stay compact. Aliases are
-case-insensitive and can be mixed freely with full names.
-
-| Full name | Alias | Full name | Alias |
-|---|---|---|---|
-| `line` | `l` | `direction` | `dir` |
-| `rect` | `r` | `elementid` | `eid` |
-| `wall` | `w` | `dimensions` | `dim` |
-| `door` | `d` | `color` | `col` |
-| `window` | `wi` | `include` | `inc` |
-| `arc` | `a` | `showcornerxy` | `sxy` |
-| `arrow` | `aw` | `moveto` | `mto` |
-| `point` | `p` | `lineto` | `lto` |
-| `label` | `lb` | `textstyle` | `tstyle` |
-| `textline` | `txl` | `textbreak` | `txbr` |
-| `textbox` | `tbox` | `textappend` | `tapp` |
-
-```
-dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
-eid off; dim off
-p C=red A=3,3; p C=blue A=5,5
 ```
 
 #### Measurements
@@ -730,13 +710,16 @@ txl "**North Wall**" north_wall left 12 C=blue
 Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
 
 ```
-textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [<lw>px] [C=<color>]
 ```
+
+- `<lw>px` — border box stroke width (default 1px); use `0px` to hide the border box while keeping the white mask and text
 
 ```
 l 14 @@front_wall
 textbreak "Front Wall" front_wall center 10
 txbr "**Section A-A**" section_line center 12
+txbr "No box" section_line center 10 0px    # invisible border, but white mask and text visible
 ```
 
 ---
@@ -851,6 +834,48 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.18
+log
+@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
+a58 25
+#### Aliases
+
+Every keyword has a short alias so common sequences stay compact. Aliases are
+case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias | Full name | Alias |
+|---|---|---|---|
+| `line` | `l` | `direction` | `dir` |
+| `rect` | `r` | `elementid` | `eid` |
+| `wall` | `w` | `dimensions` | `dim` |
+| `door` | `d` | `color` | `col` |
+| `window` | `wi` | `include` | `inc` |
+| `arc` | `a` | `showcornerxy` | `sxy` |
+| `arrow` | `aw` | `moveto` | `mto` |
+| `point` | `p` | `lineto` | `lto` |
+| `label` | `lb` | `textstyle` | `tstyle` |
+| `textline` | `txl` | `textbreak` | `txbr` |
+| `textbox` | `tbox` | `textappend` | `tapp` |
+
+```
+dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
+eid off; dim off
+p C=red A=3,3; p C=blue A=5,5
+```
+
+d600 1
+a600 1
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+d603 2
+d609 1
 @
 
 
