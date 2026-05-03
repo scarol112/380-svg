@@ -1,10 +1,15 @@
-head	1.13;
+head	1.14;
 access;
 symbols;
 locks
-	scarol:1.13; strict;
+	scarol:1.14; strict;
 comment	@# @;
 
+
+1.14
+date	2026.05.03.01.50.02;	author scarol;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2026.05.02.18.08.57;	author scarol;	state Exp;
@@ -77,7 +82,7 @@ desc
 @
 
 
-1.13
+1.14
 log
 @*** empty log message ***
 @
@@ -397,7 +402,7 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
                 registry.register_box(*bbox)
 
     for elem in elements:
-        if elem.lw == 0.0:
+        if elem.lw == 0.0 and elem.kind != "textbreak":
             continue
         if elem.number is not None and elem.show_id:
             lines.append(f"    {element_number_svg(elem, scale, tx, ty, registry)}")
@@ -824,13 +829,31 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts = [
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
         f'fill="white"{ta}/>',
-        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
-        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>',
     ]
+    if elem.lw > 0:
+        parts.append(
+            f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
+            f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>'
+        )
     spans = _parse_inline_markup(elem.label or "")
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))
     return "\n    ".join(parts)
+@
+
+
+1.13
+log
+@*** empty log message ***
+@
+text
+@d316 1
+a316 1
+        if elem.lw == 0.0:
+a742 2
+        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
+        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>',
+d744 5
 @
 
 

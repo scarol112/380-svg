@@ -471,12 +471,13 @@ def _parse_textline(tokens: list[Token], lineno: int) -> TextLineElem:
 
 
 def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
-    """textbreak "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+    """textbreak "text" <element_name> [left|center|right] [<size>] [<lw>] [font=<family>] [C=<color>]"""
     text = ""
     element_name = ""
     align = "center"
     font_size = None
     font_family = None
+    lw = None
     color = None
     text_found = False
     name_found = False
@@ -486,6 +487,8 @@ def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
             text_found = True
         elif tok.kind == "COLOR_ELEM":
             color = tok.value
+        elif tok.kind == "PX":
+            lw = float(tok.value)
         elif tok.kind == "NUMBER" and font_size is None:
             font_size = float(tok.value)
         elif tok.kind == "WORD":
@@ -500,7 +503,7 @@ def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
     if not element_name:
         raise ParseError(f"Line {lineno}: textbreak requires an element name")
     return TextBreakElem(text=text, element_name=element_name, align=align,
-                         font_size=font_size, font_family=font_family, color=color,
+                         font_size=font_size, font_family=font_family, lw=lw, color=color,
                          source_line=lineno)
 
 

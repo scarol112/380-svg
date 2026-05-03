@@ -313,7 +313,7 @@ def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float
                 registry.register_box(*bbox)
 
     for elem in elements:
-        if elem.lw == 0.0:
+        if elem.lw == 0.0 and elem.kind != "textbreak":
             continue
         if elem.number is not None and elem.show_id:
             lines.append(f"    {element_number_svg(elem, scale, tx, ty, registry)}")
@@ -740,9 +740,12 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts = [
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
         f'fill="white"{ta}/>',
-        f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
-        f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>',
     ]
+    if elem.lw > 0:
+        parts.append(
+            f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{box_w:.1f}" height="{box_h:.1f}" '
+            f'fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"{ta}/>'
+        )
     spans = _parse_inline_markup(elem.label or "")
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))

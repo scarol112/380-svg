@@ -1,10 +1,15 @@
-head	1.10;
+head	1.11;
 access;
 symbols;
 locks
-	scarol:1.10; strict;
+	scarol:1.11; strict;
 comment	@# @;
 
+
+1.11
+date	2026.05.03.01.50.02;	author scarol;	state Exp;
+branches;
+next	1.10;
 
 1.10
 date	2026.05.02.11.15.05;	author scarol;	state Exp;
@@ -62,9 +67,9 @@ desc
 @
 
 
-1.10
+1.11
 log
-@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@*** empty log message ***
 @
 text
 @from dataclasses import dataclass, field
@@ -254,6 +259,7 @@ class TextBreakElem:
     align: str = "center"
     font_size: float | None = None
     font_family: str | None = None
+    lw: float | None = None
     color: str | None = None
     source_line: int = 0
 
@@ -310,6 +316,15 @@ ASTNode = (
     | TextBoxElem
     | TextAppendElem
 )
+@
+
+
+1.10
+log
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@
+text
+@d188 1
 @
 
 

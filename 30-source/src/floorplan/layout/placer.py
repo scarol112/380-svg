@@ -379,7 +379,7 @@ class ElementPlacer:
             x=target.x, y=target.y,
             length=target.length, width=0.0,
             direction=target.direction,
-            lw=DEFAULT_LW, dash=None,
+            lw=DEFAULT_LW if elem.lw is None else elem.lw, dash=None,
             color=self._resolve_color(elem.color),
             label=elem.text,
             extra={

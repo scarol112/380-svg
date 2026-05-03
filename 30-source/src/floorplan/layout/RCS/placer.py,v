@@ -1,10 +1,15 @@
-head	1.11;
+head	1.12;
 access;
 symbols;
 locks
-	scarol:1.11; strict;
+	scarol:1.12; strict;
 comment	@# @;
 
+
+1.12
+date	2026.05.03.01.50.02;	author scarol;	state Exp;
+branches;
+next	1.11;
 
 1.11
 date	2026.05.02.17.29.56;	author scarol;	state Exp;
@@ -67,9 +72,9 @@ desc
 @
 
 
-1.11
+1.12
 log
-@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
+@*** empty log message ***
 @
 text
 @import math
@@ -453,7 +458,7 @@ class ElementPlacer:
             x=target.x, y=target.y,
             length=target.length, width=0.0,
             direction=target.direction,
-            lw=DEFAULT_LW, dash=None,
+            lw=DEFAULT_LW if elem.lw is None else elem.lw, dash=None,
             color=self._resolve_color(elem.color),
             label=elem.text,
             extra={
@@ -503,6 +508,17 @@ class ElementPlacer:
             "font_family": self._text_font_family(elem.font_family),
             "color": self._resolve_color(elem.color),
         })
+@
+
+
+1.11
+log
+@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
+@
+text
+@d382 1
+a382 1
+            lw=DEFAULT_LW, dash=None,
 @
 
 

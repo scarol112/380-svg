@@ -185,6 +185,7 @@ class TextBreakElem:
     align: str = "center"
     font_size: float | None = None
     font_family: str | None = None
+    lw: float | None = None
     color: str | None = None
     source_line: int = 0
 

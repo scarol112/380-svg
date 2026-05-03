@@ -1,10 +1,15 @@
-head	1.13;
+head	1.14;
 access;
 symbols;
 locks
-	scarol:1.13; strict;
+	scarol:1.14; strict;
 comment	@# @;
 
+
+1.14
+date	2026.05.03.01.50.02;	author scarol;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2026.05.02.11.15.05;	author scarol;	state Exp;
@@ -77,9 +82,9 @@ desc
 @
 
 
-1.13
+1.14
 log
-@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@*** empty log message ***
 @
 text
 @from pathlib import Path
@@ -555,12 +560,13 @@ def _parse_textline(tokens: list[Token], lineno: int) -> TextLineElem:
 
 
 def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
-    """textbreak "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+    """textbreak "text" <element_name> [left|center|right] [<size>] [<lw>] [font=<family>] [C=<color>]"""
     text = ""
     element_name = ""
     align = "center"
     font_size = None
     font_family = None
+    lw = None
     color = None
     text_found = False
     name_found = False
@@ -570,6 +576,8 @@ def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
             text_found = True
         elif tok.kind == "COLOR_ELEM":
             color = tok.value
+        elif tok.kind == "PX":
+            lw = float(tok.value)
         elif tok.kind == "NUMBER" and font_size is None:
             font_size = float(tok.value)
         elif tok.kind == "WORD":
@@ -584,7 +592,7 @@ def _parse_textbreak(tokens: list[Token], lineno: int) -> TextBreakElem:
     if not element_name:
         raise ParseError(f"Line {lineno}: textbreak requires an element name")
     return TextBreakElem(text=text, element_name=element_name, align=align,
-                         font_size=font_size, font_family=font_family, color=color,
+                         font_size=font_size, font_family=font_family, lw=lw, color=color,
                          source_line=lineno)
 
 
@@ -657,6 +665,22 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.13
+log
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@
+text
+@d474 1
+a474 1
+    """textbreak "text" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]"""
+d480 1
+d490 2
+d506 1
+a506 1
+                         font_size=font_size, font_family=font_family, color=color,
 @
 
 
