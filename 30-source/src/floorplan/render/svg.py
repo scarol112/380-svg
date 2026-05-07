@@ -34,7 +34,7 @@ _DIAGONALS: list[tuple[float, float, str]] = [
 ]
 
 
-_LABEL_CHAR_W = 0.55  # conservative estimate used for collision-detection bboxes
+_LABEL_CHAR_W = 0.47  # estimated average char width as fraction of font size
 _WRAP_CHAR_W  = 0.45  # more accurate average for proportional sans-serif word-wrap
 _LABEL_LINE_H = 1.4
 
@@ -707,26 +707,31 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     x0 = _px(elem.x, scale, tx)
     y0 = _px(elem.y, scale, ty)
 
-    if align == "left":
-        ax, ay = x0, y0
-        anchor = "start"
-    elif align == "right":
-        ax = _px(elem.x + dx * elem.length, scale, tx)
-        ay = _px(elem.y + dy * elem.length, scale, ty)
-        anchor = "end"
-    else:
-        ax = _px(elem.x + dx * elem.length / 2, scale, tx)
-        ay = _px(elem.y + dy * elem.length / 2, scale, ty)
-        anchor = "middle"
-
     raw_len = _plain_len(elem.label or "")
     text_w = raw_len * font_size * _LABEL_CHAR_W
     text_h = font_size * _LABEL_LINE_H
-    pad = font_size * 0.4
-    box_w = text_w + pad * 2
+    pad = 4
     box_h = text_h + pad * 2
+    box_w = text_w + pad * 2
 
-    # Box centered on anchor point
+    # Work in line-local coordinates (u=0 at line start, u=L at line end).
+    # For left/right alignment, leave 6px of the near tip visible.
+    L = elem.length * scale
+    if align == "left":
+        u_left = 6
+        u_right = u_left + box_w
+    elif align == "right":
+        u_right = L - 6
+        u_left = u_right - box_w
+    else:
+        u_left = L / 2 - box_w / 2
+        u_right = L / 2 + box_w / 2
+
+    center_u = (u_left + u_right) / 2
+
+    # Convert local centre to screen coordinates
+    ax = x0 + dx * center_u
+    ay = y0 + dy * center_u
     rx = ax - box_w / 2
     ry = ay - box_h / 2
 
