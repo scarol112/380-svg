@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.19 $ $Date: 2026/05/03 01:57:48 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.20 $ $Date: 2026/05/07 02:53:09 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -178,8 +178,10 @@ Two reference forms, identical behavior:
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
+| `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
+| `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
 
-All system variables update after every statement.
+Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
 
 ```
 dir 90

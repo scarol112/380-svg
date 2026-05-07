@@ -2,8 +2,9 @@
 eid off
 dim off
 sxy off
+mto 0 0
 dir 90
-color cyan
+color Gainsboro
 l 20 A=0,0
 l 20 A=0,1
 l 20 A=0,2
@@ -44,3 +45,5 @@ l 16 A=17,0
 l 16 A=18,0
 l 16 A=19,0
 l 16 A=20,0
+mto 0 0
+dir 90

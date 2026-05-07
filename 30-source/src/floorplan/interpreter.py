@@ -28,11 +28,13 @@ def execute_dsl(
     text: str,
     source_path: Path | None = None,
 ) -> list[PlacedElement]:
-    vars_: dict[str, float] = {
+    vars_: dict[str, float | str] = {
         "__cursorx": 0.0, "__cursory": 0.0,
         "__cx": 0.0,      "__cy": 0.0,
         "__dir": 90.0,
         "__mltodir": 0.0,
+        "__dsl_filename": "",
+        "__dsl_file_lineno": 0.0,
     }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
@@ -45,10 +47,14 @@ def execute_dsl(
 def _execute_text(
     text: str,
     source_path: Path | None,
-    vars_: dict[str, float],
+    vars_: dict[str, float | str],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
+    # Set filename context for this file
+    filename = source_path.name if source_path else ""
+    vars_["__dsl_filename"] = filename
+
     for lineno, raw_line in enumerate(text.splitlines(), start=1):
         line = _strip_comment(raw_line)
         if not line:
@@ -64,10 +70,13 @@ def _execute_stmt(
     stmt: str,
     lineno: int,
     source_path: Path | None,
-    vars_: dict[str, float],
+    vars_: dict[str, float | str],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
+    # Update line number for this statement
+    vars_["__dsl_file_lineno"] = float(lineno)
+
     parts = stmt.split()
     if not parts:
         return
@@ -118,7 +127,7 @@ def _execute_include(
     tokens: list,
     lineno: int,
     source_path: Path | None,
-    vars_: dict[str, float],
+    vars_: dict[str, float | str],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -139,19 +148,26 @@ def _execute_include(
     if not inc_path.exists():
         raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
 
+    # Save current filename context
+    saved_filename = vars_["__dsl_filename"]
     _execute_text(inc_path.read_text(), inc_path, vars_, placer, seen | {inc_path})
+    # Restore previous filename context
+    vars_["__dsl_filename"] = saved_filename
 
 
-def _substitute_vars(text: str, vars_: dict[str, float], lineno: int) -> str:
+def _substitute_vars(text: str, vars_: dict[str, float | str], lineno: int) -> str:
     def replace(m: re.Match) -> str:  # type: ignore[type-arg]
         name = m.group(1) if m.group(1) is not None else m.group(2)
         if name not in vars_:
             raise ParseError(f"Line {lineno}: undefined variable '${name}'")
-        return f"{vars_[name]:g}"
+        val = vars_[name]
+        if isinstance(val, str):
+            return val
+        return f"{val:g}"
     return _VARREF_RE.sub(replace, text)
 
 
-def _evaluate_inline_exprs(text: str, vars_: dict[str, float], lineno: int) -> str:
+def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int) -> str:
     """Replace each (expr) group outside quoted strings with its evaluated value.
 
     Bare identifiers inside parentheses are variable references.

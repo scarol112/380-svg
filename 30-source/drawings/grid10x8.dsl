@@ -1,4 +1,4 @@
-# 10x10 grid
+# 10x8 grid
 eid off
 dim off
 sxy off
@@ -28,3 +28,4 @@ l 8 A=8,0
 l 8 A=9,0
 l 8 A=10,0
 mto 0 0
+dir 90

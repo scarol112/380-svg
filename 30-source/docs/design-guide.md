@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.2 $ $Date: 2026/05/02 11:15:05 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.3 $ $Date: 2026/05/07 02:53:09 $ -->
 # App working title: svg
 
 ## Project tools
@@ -134,8 +134,10 @@ point A=$cursorx,$cursory
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, …) |
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
+| `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
+| `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
 
-All three update after every placed element or directive.
+Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
 
 **Arithmetic**: `+ - * /` with standard operator precedence are supported in expressions. References to other variables are written with `$`.
 
