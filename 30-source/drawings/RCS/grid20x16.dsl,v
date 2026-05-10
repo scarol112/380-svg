@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.07.02.53.09;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.29.15.03.19;	author scarol;	state Exp;
@@ -16,17 +21,18 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Initial revision
+@*** empty log message ***
 @
 text
 @# 20x16 grid
 eid off
 dim off
 sxy off
+mto 0 0
 dir 90
-color cyan
+color Gainsboro
 l 20 A=0,0
 l 20 A=0,1
 l 20 A=0,2
@@ -67,4 +73,19 @@ l 16 A=17,0
 l 16 A=18,0
 l 16 A=19,0
 l 16 A=20,0
+mto 0 0
+dir 90
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 1
+d7 1
+a7 1
+color cyan
+d48 2
 @
