@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from pathlib import Path
 
 from .dsl.lexer import tokenize
@@ -35,6 +36,7 @@ def execute_dsl(
         "__mltodir": 0.0,
         "__dsl_filename": "",
         "__dsl_file_lineno": 0.0,
+        "__date": datetime.now().strftime("%Y-%m-%d"),
     }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
