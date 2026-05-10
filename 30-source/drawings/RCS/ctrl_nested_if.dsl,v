@@ -1,0 +1,43 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.10.22.46.13;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@DSL control-flow verification
+@
+
+
+1.1
+log
+@Initial: control-flow verification
+@
+text
+@# Nested if/elif/else chain — outer if contains an inner if/elif/else chain.
+# Tests that _find_matching_close correctly tracks depth across `} elif {` and
+# `} else {` lines at nested depth.
+a = 1
+b = 2
+direction 90
+if (a == 1) {
+    if (b == 1) {
+        line 1
+    } elif (b == 2) {
+        line 2
+    } else {
+        line 99
+    }
+} else {
+    line 50
+}
+# Expected: 1 line of length 2 (a==1 branch, b==2 branch)
+@

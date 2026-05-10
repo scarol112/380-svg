@@ -1,10 +1,20 @@
-head	1.19;
+head	1.21;
 access;
 symbols;
 locks
-	scarol:1.19; strict;
+	scarol:1.21; strict;
 comment	@# @;
 
+
+1.21
+date	2026.05.10.22.46.09;	author scarol;	state Exp;
+branches;
+next	1.20;
+
+1.20
+date	2026.05.07.02.53.09;	author scarol;	state Exp;
+branches;
+next	1.19;
 
 1.19
 date	2026.05.03.01.57.48;	author scarol;	state Exp;
@@ -106,12 +116,12 @@ desc
 @@
 
 
-1.19
+1.21
 log
-@*** empty log message ***
+@Document control-flow features: if/for/blocks/True/False
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.20 $ $Date: 2026/05/07 02:53:09 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -291,8 +301,10 @@ Two reference forms, identical behavior:
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
+| `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
+| `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
 
-All system variables update after every statement.
+Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
 
 ```
 dir 90
@@ -304,6 +316,111 @@ lb "__dir=${__dir}" A=0,1       # label showing current direction
 ```
 
 Variables are shared across `include` files.
+
+---
+
+#### Control flow
+
+##### Brace placement rule
+
+An opening `{` must be the **last non-whitespace character** of its header line.
+A closing `}` must be the **first non-whitespace character** of its own line, optionally followed by `elif` or `else`.
+Braces inside quoted strings (`"hello {world}"`) and `${varname}` references are never treated as block delimiters.
+
+##### Bare blocks
+
+```
+{
+    stmt1
+    stmt2
+}
+```
+
+Groups statements visually. No new scope — variables assigned inside are visible outside.
+
+##### `if / elif / else`
+
+```
+if (<condition>) {
+    ...
+} elif (<condition>) {
+    ...
+} else {
+    ...
+}
+```
+
+Any number of `elif` branches (including zero) and an optional `else`. Only the first matching branch executes.
+
+Conditions support comparison operators `== != < > <= >=` and logical operators `and or not`.
+
+```
+n = 3
+if (n == 3) {
+    color red
+} elif (n == 2) {
+    color blue
+} else {
+    color green
+}
+line 5
+```
+
+```
+flag = True
+if (flag and not (n > 5)) {
+    line 3
+}
+```
+
+##### `True` and `False`
+
+`True` evaluates to `1.0`; `False` evaluates to `0.0`. Both are reserved keywords and cannot be reassigned.
+
+##### `for` loops
+
+```
+for <var> = <start> to <end> [step <step>] {
+    ...
+}
+```
+
+- Both endpoints are **inclusive**.
+- Default step is `1`. A negative step counts down.
+- The loop variable persists after the loop with its last value.
+- A loop with a direction mismatch (e.g. `for i = 5 to 0 step 1`) executes zero times.
+- Maximum 100 000 iterations; exceeding this is a parse error.
+
+```
+direction 90
+for i = 0 to 5 {
+    line 1
+}
+# draws 6 line segments (i = 0, 1, 2, 3, 4, 5)
+
+for x = 10 to 0 step -2 {
+    line $x
+}
+# draws 6 segments with lengths 10, 8, 6, 4, 2, 0
+
+for row = 0 to 2 {
+    for col = 0 to 3 {
+        point A=$col,$row
+    }
+}
+# nested loops: 4×3 = 12 points
+```
+
+Expressions are allowed in `start`, `end`, and `step`:
+
+```
+n = 5
+for i = 0 to (n - 1) {
+    line 1
+}
+```
+
+`include` works inside a loop body; the included file executes once per iteration with the loop variable in scope.
 
 ---
 
@@ -834,6 +951,33 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.20
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.19 $ $Date: 2026/05/03 01:57:48 $ -->
+d196 105
+@
+
+
+1.19
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
+d181 2
+d184 1
+a184 1
+All system variables update after every statement.
 @
 
 

@@ -1,0 +1,32 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.10.22.46.13;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@DSL control-flow verification
+@
+
+
+1.1
+log
+@Initial: control-flow verification
+@
+text
+@# ctrl_for_nested.dsl — 4x3 grid of points (12 points)
+direction 90
+for row = 0 to 2 {
+    for col = 0 to 3 {
+        point A=$col,$row
+    }
+}
+@

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 from datetime import datetime
 from pathlib import Path
@@ -15,15 +16,35 @@ _ALL_KEYWORDS = {
     "label", "direction", "elementid", "dimensions", "showcornerxy",
     "color", "include", "moveto", "lineto",
     "textstyle", "textline", "textbreak", "textbox", "textappend",
+    "if", "elif", "else", "for", "to", "step",
+    "True", "False", "and", "or", "not",
 }
+
+_RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
 
 # Matches ${name} (brace form) or $name (bare form); brace form tried first
 _VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
 _ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(\+|-)?=\s*(.+)$')
-_SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()]+$')
+_SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()<>=!A-Za-z_]+$')
 # (expr) inline arithmetic — bare identifiers inside are variable references
 _INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
 _BARE_ID_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
+
+# Block brace detection — only match { at end of line or } at start of line
+_OPEN_TRAILING_RE = re.compile(r'\{\s*$')
+_CLOSE_LEADING_RE = re.compile(r'^\}\s*(.*)$')
+
+# Control-flow header regexes (match after _strip_comment)
+_FOR_HDR_RE = re.compile(
+    r'^for\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+?)\s+to\s+(.+?)(?:\s+step\s+(.+?))?\s*\{\s*$',
+    re.IGNORECASE,
+)
+_IF_HDR_RE   = re.compile(r'^if\s*\((.+)\)\s*\{\s*$', re.IGNORECASE)
+# } closes previous body; elif/else opens next — all on one line
+_ELIF_HDR_RE = re.compile(r'^\}\s*elif\s*\((.+)\)\s*\{\s*$', re.IGNORECASE)
+_ELSE_HDR_RE = re.compile(r'^\}\s*else\s*\{\s*$', re.IGNORECASE)
+_BARE_OPEN_RE = re.compile(r'^\{\s*$')
+
 
 def execute_dsl(
     text: str,
@@ -53,19 +74,217 @@ def _execute_text(
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
-    # Set filename context for this file
     filename = source_path.name if source_path else ""
     vars_["__dsl_filename"] = filename
 
-    for lineno, raw_line in enumerate(text.splitlines(), start=1):
-        line = _strip_comment(raw_line)
+    lines: list[tuple[int, str]] = list(enumerate(text.splitlines(), start=1))
+    _execute_block(lines, 0, len(lines), source_path, vars_, placer, seen)
+
+
+def _execute_block(
+    lines: list[tuple[int, str]],
+    start: int,
+    end: int,
+    source_path: Path | None,
+    vars_: dict[str, float | str],
+    placer: ElementPlacer,
+    seen: frozenset[Path],
+) -> None:
+    i = start
+    while i < end:
+        lineno, raw = lines[i]
+        line = _strip_comment(raw)
         if not line:
+            i += 1
             continue
+
+        m_for = _FOR_HDR_RE.match(line)
+        if m_for:
+            var = m_for.group(1)
+            s_expr = m_for.group(2).strip()
+            e_expr = m_for.group(3).strip()
+            step_expr = m_for.group(4).strip() if m_for.group(4) else "1"
+            body_end = _find_matching_close(lines, i, lineno)
+            body_lines = _capture_body(lines, i + 1, body_end)
+            _execute_for(var, s_expr, e_expr, step_expr, body_lines,
+                         lineno, source_path, vars_, placer, seen)
+            i = body_end + 1
+            continue
+
+        m_if = _IF_HDR_RE.match(line)
+        if m_if:
+            chain, after = _collect_if_chain(lines, i, lineno)
+            for cond, b_start, b_end in chain:
+                if cond is None or _eval_condition(cond, vars_, lineno):
+                    _execute_block(lines, b_start, b_end, source_path, vars_, placer, seen)
+                    break
+            i = after
+            continue
+
+        m_bare = _BARE_OPEN_RE.match(line)
+        if m_bare:
+            body_end = _find_matching_close(lines, i, lineno)
+            _execute_block(lines, i + 1, body_end, source_path, vars_, placer, seen)
+            i = body_end + 1
+            continue
+
+        # Reject stray } or elif/else at top level of this block
+        m_close = _CLOSE_LEADING_RE.match(line)
+        if m_close:
+            raise ParseError(f"Line {lineno}: unexpected '}}' (no matching opening brace)")
+
         for stmt in _split_statements(line):
             stmt = stmt.strip()
-            if not stmt:
-                continue
-            _execute_stmt(stmt, lineno, source_path, vars_, placer, seen)
+            if stmt:
+                _execute_stmt(stmt, lineno, source_path, vars_, placer, seen)
+        i += 1
+
+
+def _find_matching_close(
+    lines: list[tuple[int, str]],
+    open_idx: int,
+    open_lineno: int,
+) -> int:
+    """Return the index in `lines` of the closing `}` for the block opened at open_idx.
+
+    Depth is tracked only against line-level patterns:
+      open:  { as the last non-whitespace char of a stripped line
+      close: } as the first non-whitespace char of a stripped line
+    This avoids false matches against ${varname} or braces in quoted strings.
+    """
+    depth = 1
+    i = open_idx + 1
+    while i < len(lines):
+        _, raw = lines[i]
+        stripped = _strip_comment(raw)
+        if not stripped:
+            i += 1
+            continue
+        # A line may both close and open (e.g. `} else {`, `} elif (c) {`).
+        # When we are looking for the *first* close at depth 0, return on the
+        # close; otherwise count both so net-zero lines preserve depth.
+        if _CLOSE_LEADING_RE.match(stripped):
+            depth -= 1
+            if depth == 0:
+                return i
+        if _OPEN_TRAILING_RE.search(stripped):
+            depth += 1
+        i += 1
+    raise ParseError(f"Line {open_lineno}: unclosed '{{' — no matching '}}'")
+
+
+def _capture_body(
+    lines: list[tuple[int, str]],
+    body_start: int,
+    body_end: int,
+) -> list[tuple[int, str]]:
+    """Return a slice of lines from body_start up to (not including) body_end."""
+    return lines[body_start:body_end]
+
+
+def _collect_if_chain(
+    lines: list[tuple[int, str]],
+    start_idx: int,
+    start_lineno: int,
+) -> tuple[list[tuple[str | None, int, int]], int]:
+    """Parse a full if/elif/else chain starting at start_idx.
+
+    Returns (chain, after_idx) where chain is a list of
+    (condition_str_or_None, body_start_idx, body_end_idx).
+    after_idx is the index after the final closing '}'.
+
+    `} elif` and `} else` are written as a single line: the `}` closes the
+    previous body and the `elif`/`else` header opens the next one.  After
+    _find_matching_close returns body_end pointing at that combined line, we
+    re-examine it (i = body_end, not body_end+1) to pick up the continuation.
+    """
+    chain: list[tuple[str | None, int, int]] = []
+    i = start_idx
+
+    while i < len(lines):
+        _, raw = lines[i]
+        line = _strip_comment(raw)
+        if not line:
+            i += 1
+            continue
+
+        m_if   = _IF_HDR_RE.match(line)
+        m_elif = _ELIF_HDR_RE.match(line)
+        m_else = _ELSE_HDR_RE.match(line)
+
+        if m_if and i == start_idx:
+            cond = m_if.group(1).strip()
+            body_end = _find_matching_close(lines, i, lines[i][0])
+            chain.append((cond, i + 1, body_end))
+            # body_end may point at "} elif" or "} else" — re-examine it
+            i = body_end
+        elif m_elif and chain:
+            cond = m_elif.group(1).strip()
+            body_end = _find_matching_close(lines, i, lines[i][0])
+            chain.append((cond, i + 1, body_end))
+            i = body_end
+        elif m_else and chain:
+            body_end = _find_matching_close(lines, i, lines[i][0])
+            chain.append((None, i + 1, body_end))
+            i = body_end + 1
+            break
+        else:
+            # bare } closes the last body (no elif/else follows)
+            i += 1
+            break
+
+    return chain, i
+
+
+def _eval_condition(expr_text: str, vars_: dict[str, float | str], lineno: int) -> bool:
+    expr_sub = _substitute_vars(expr_text, vars_, lineno)
+    expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, lineno)
+    result = _eval_expr(expr_sub, lineno)
+    return bool(result)
+
+
+def _execute_for(
+    var: str,
+    s_expr: str,
+    e_expr: str,
+    step_expr: str,
+    body_lines: list[tuple[int, str]],
+    lineno: int,
+    source_path: Path | None,
+    vars_: dict[str, float | str],
+    placer: ElementPlacer,
+    seen: frozenset[Path],
+) -> None:
+    start_val = _eval_expr(
+        _evaluate_inline_exprs_bare(_substitute_vars(s_expr, vars_, lineno), vars_, lineno),
+        lineno,
+    )
+    end_val = _eval_expr(
+        _evaluate_inline_exprs_bare(_substitute_vars(e_expr, vars_, lineno), vars_, lineno),
+        lineno,
+    )
+    step_val = _eval_expr(
+        _evaluate_inline_exprs_bare(_substitute_vars(step_expr, vars_, lineno), vars_, lineno),
+        lineno,
+    )
+
+    if step_val == 0:
+        raise ParseError(f"Line {lineno}: for-loop step cannot be zero")
+
+    raw = (end_val - start_val) / step_val
+    if raw < -1e-9:
+        n = 0
+    else:
+        n = int(math.floor(raw + 1e-9)) + 1
+
+    if n > 100_000:
+        raise ParseError(
+            f"Line {lineno}: for-loop iteration count {n} exceeds limit of 100000"
+        )
+
+    for k in range(n):
+        vars_[var] = start_val + k * step_val
+        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, placer, seen)
 
 
 def _execute_stmt(
@@ -76,7 +295,6 @@ def _execute_stmt(
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
-    # Update line number for this statement
     vars_["__dsl_file_lineno"] = float(lineno)
 
     parts = stmt.split()
@@ -85,20 +303,18 @@ def _execute_stmt(
     first_word = parts[0].lower()
     canonical = _ALIASES.get(first_word, first_word)
 
-    # Include: resolve path before any var substitution
     if canonical == "include":
         tokens = tokenize(stmt, lineno)
         _execute_include(tokens, lineno, source_path, vars_, placer, seen)
         return
 
-    # Assignment wins when the statement is IDENTIFIER = expr, regardless of
-    # whether the name happens to be a keyword alias (e.g. "w = 10" assigns a
-    # variable; "w 10" is still a wall because there is no "=").
     m = _ASSIGNMENT_RE.match(stmt)
     if m:
         name, op, expr_raw = m.group(1), m.group(2), m.group(3).strip()
         if name.startswith('__'):
             raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
+        if name in _ALL_KEYWORDS:
+            raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
         expr_sub = _substitute_vars(expr_raw, vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         value = _eval_expr(expr_sub, lineno)
@@ -113,7 +329,6 @@ def _execute_stmt(
                 vars_[name] -= value
         return
 
-    # Element or directive: substitute $vars, evaluate (expr), tokenize, parse, dispatch
     sub_stmt = _substitute_vars(stmt, vars_, lineno)
     sub_stmt = _evaluate_inline_exprs(sub_stmt, vars_, lineno)
     tokens = tokenize(sub_stmt, lineno)
@@ -150,10 +365,8 @@ def _execute_include(
     if not inc_path.exists():
         raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
 
-    # Save current filename context
     saved_filename = vars_["__dsl_filename"]
     _execute_text(inc_path.read_text(), inc_path, vars_, placer, seen | {inc_path})
-    # Restore previous filename context
     vars_["__dsl_filename"] = saved_filename
 
 
@@ -185,7 +398,6 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
             result.append(ch)
             i += 1
         elif ch == '(' and not in_quote:
-            # Find matching ) by tracking depth, so nested parens work
             j = i + 1
             depth = 1
             while j < len(text) and depth > 0:
@@ -201,6 +413,8 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
                 inner = text[i + 1:j - 1]
                 def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
                     name = m.group()
+                    if name in _RESERVED_EXPR_NAMES:
+                        return name
                     if name not in _v:
                         raise ParseError(f"Line {_l}: undefined variable '{name}' in expression")
                     return f"{_v[name]:g}"
@@ -213,11 +427,30 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
     return ''.join(result)
 
 
+def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno: int) -> str:
+    """Like _evaluate_inline_exprs but also substitutes bare identifiers at the top level.
+
+    Used for evaluating condition expressions and for/step bounds that are not
+    wrapped in parentheses.
+    """
+    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+        name = m.group()
+        if name in _RESERVED_EXPR_NAMES:
+            return name
+        if name not in _v:
+            raise ParseError(f"Line {_l}: undefined variable '{name}' in expression")
+        val = _v[name]
+        if isinstance(val, str):
+            raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
+        return f"{val:g}"
+    return _BARE_ID_RE.sub(sub_id, text)
+
+
 def _eval_expr(expr: str, lineno: int) -> float:
     if not _SAFE_EXPR_RE.match(expr):
         raise ParseError(f"Line {lineno}: invalid expression: {expr!r}")
     try:
-        result = eval(expr, {"__builtins__": {}}, {})
+        result = eval(expr, {"__builtins__": {}, "True": True, "False": False}, {})
         return float(result)
     except ZeroDivisionError:
         raise ParseError(f"Line {lineno}: division by zero in: {expr!r}")

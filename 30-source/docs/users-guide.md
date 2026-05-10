@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.20 $ $Date: 2026/05/07 02:53:09 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.21 $ $Date: 2026/05/10 22:46:09 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -193,6 +193,111 @@ lb "__dir=${__dir}" A=0,1       # label showing current direction
 ```
 
 Variables are shared across `include` files.
+
+---
+
+#### Control flow
+
+##### Brace placement rule
+
+An opening `{` must be the **last non-whitespace character** of its header line.
+A closing `}` must be the **first non-whitespace character** of its own line, optionally followed by `elif` or `else`.
+Braces inside quoted strings (`"hello {world}"`) and `${varname}` references are never treated as block delimiters.
+
+##### Bare blocks
+
+```
+{
+    stmt1
+    stmt2
+}
+```
+
+Groups statements visually. No new scope — variables assigned inside are visible outside.
+
+##### `if / elif / else`
+
+```
+if (<condition>) {
+    ...
+} elif (<condition>) {
+    ...
+} else {
+    ...
+}
+```
+
+Any number of `elif` branches (including zero) and an optional `else`. Only the first matching branch executes.
+
+Conditions support comparison operators `== != < > <= >=` and logical operators `and or not`.
+
+```
+n = 3
+if (n == 3) {
+    color red
+} elif (n == 2) {
+    color blue
+} else {
+    color green
+}
+line 5
+```
+
+```
+flag = True
+if (flag and not (n > 5)) {
+    line 3
+}
+```
+
+##### `True` and `False`
+
+`True` evaluates to `1.0`; `False` evaluates to `0.0`. Both are reserved keywords and cannot be reassigned.
+
+##### `for` loops
+
+```
+for <var> = <start> to <end> [step <step>] {
+    ...
+}
+```
+
+- Both endpoints are **inclusive**.
+- Default step is `1`. A negative step counts down.
+- The loop variable persists after the loop with its last value.
+- A loop with a direction mismatch (e.g. `for i = 5 to 0 step 1`) executes zero times.
+- Maximum 100 000 iterations; exceeding this is a parse error.
+
+```
+direction 90
+for i = 0 to 5 {
+    line 1
+}
+# draws 6 line segments (i = 0, 1, 2, 3, 4, 5)
+
+for x = 10 to 0 step -2 {
+    line $x
+}
+# draws 6 segments with lengths 10, 8, 6, 4, 2, 0
+
+for row = 0 to 2 {
+    for col = 0 to 3 {
+        point A=$col,$row
+    }
+}
+# nested loops: 4×3 = 12 points
+```
+
+Expressions are allowed in `start`, `end`, and `step`:
+
+```
+n = 5
+for i = 0 to (n - 1) {
+    line 1
+}
+```
+
+`include` works inside a loop body; the included file executes once per iteration with the loop variable in scope.
 
 ---
 

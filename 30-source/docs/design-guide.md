@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.3 $ $Date: 2026/05/07 02:53:09 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.4 $ $Date: 2026/05/10 22:46:09 $ -->
 # App working title: svg
 
 ## Project tools
@@ -154,6 +154,54 @@ lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
 **Scope**: variables are shared across `include` files — one table for the entire drawing.
 
 **Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
+
+### Control flow (`if`, `for`, bare blocks)
+
+Control flow is handled entirely in `interpreter.py` via a recursive block walker (`_execute_block`). The AST and parser layers (`dsl/parser.py`, `dsl/ast.py`, `dsl/lexer.py`) are unchanged — block detection happens before tokenisation, by regex on raw lines.
+
+**Rationale for interpreter-level approach**: a two-phase parse-then-walk refactor would need to represent `if`/`for` nodes in the AST, add include machinery into the walk pass, and handle re-evaluation of variable references across iterations. Keeping it in the interpreter avoids all of that while staying consistent with the existing interleaved parse+place model.
+
+#### Brace placement rule
+
+Opening `{` must be the last non-whitespace character of its header line. Closing `}` must be the first non-whitespace character of its own line. Detection uses two regexes:
+
+```python
+_OPEN_TRAILING_RE = re.compile(r'\{\s*$')
+_CLOSE_LEADING_RE = re.compile(r'^\}\s*(.*)$')
+```
+
+`_find_matching_close` tracks depth only against these line-level patterns — it never scans character-by-character — so `${varname}` and braces inside quoted strings are naturally ignored.
+
+`} elif (cond) {` and `} else {` are combined lines: the `}` closes the previous body and the continuation header opens the next. `_collect_if_chain` handles this by re-examining the `body_end` line (setting `i = body_end`, not `body_end + 1`) to detect the continuation.
+
+#### `_RESERVED_EXPR_NAMES` passthrough
+
+`_evaluate_inline_exprs` substitutes bare identifiers inside `(...)` with their numeric values. The names `True`, `False`, `and`, `or`, `not` are in `_RESERVED_EXPR_NAMES` and are passed through un-substituted so Python `eval()` treats them as literals/operators. `_eval_expr` passes `{"True": True, "False": False}` into the eval globals. `_SAFE_EXPR_RE` is widened to permit `<>=!` and alphabetic characters so comparison and logical expressions pass validation.
+
+#### For-loop float safety
+
+Naive `i += step` accumulation drifts for non-integer steps (e.g. `0 to 1 step 0.1` gives 10 or 12 iterations depending on float rounding). The implementation uses integer iteration count:
+
+```python
+raw = (end - start) / step
+n = int(math.floor(raw + 1e-9)) + 1  # inclusive count
+for k in range(n):
+    vars_[var] = start + k * step
+```
+
+This ensures `for i = 0 to 1 step 0.1` gives exactly 11 iterations.
+
+#### Safety cap
+
+For-loops are limited to 100 000 iterations. Exceeding this limit raises `ParseError`. Direction mismatch (e.g. `for i = 5 to 0 step 1`) produces zero iterations without an error.
+
+#### `_capture_body` helper
+
+`_capture_body(lines, body_start, body_end)` slices the lines list and returns it. It is a thin named helper to leave the door open for future use (e.g. named function/macro definitions) without changing the for-loop call site.
+
+#### Keywords reserved against assignment
+
+`_ALL_KEYWORDS` is extended with `if elif else for to step True False and or not`. Any attempt to assign to these names (or any name starting with `__`) raises `ParseError`.
 
 ### Element naming
 
