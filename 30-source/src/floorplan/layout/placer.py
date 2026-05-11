@@ -33,8 +33,8 @@ class ElementPlacer:
         self._elem_counter = 0
         self._canvas_origin_set = False
         self._canvas_origin: tuple[float, float] = (0.0, 0.0)
-        self._show_id: bool = True
-        self._show_dims: bool = True
+        self._show_id: bool = False
+        self._show_dims: bool = False
         self._color: str = "black"
         self._show_cornerxy: bool = False
         self._mltodir: float = 0.0

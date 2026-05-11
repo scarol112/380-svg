@@ -15,6 +15,6 @@ class PlacedElement:
     color: str         # CSS stroke color; default "black"
     label: str | None
     extra: dict = field(default_factory=dict)  # element-specific extras (swing, align, etc.)
-    show_id: bool = True
-    show_dims: bool = True
+    show_id: bool = False
+    show_dims: bool = False
     source_line: int = 0

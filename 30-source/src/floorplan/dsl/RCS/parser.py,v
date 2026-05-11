@@ -1,10 +1,15 @@
-head	1.15;
+head	1.16;
 access;
 symbols;
 locks
-	scarol:1.15; strict;
+	scarol:1.16; strict;
 comment	@# @;
 
+
+1.16
+date	2026.05.11.19.13.39;	author scarol;	state Exp;
+branches;
+next	1.15;
 
 1.15
 date	2026.05.07.10.49.45;	author scarol;	state Exp;
@@ -87,7 +92,7 @@ desc
 @
 
 
-1.15
+1.16
 log
 @*** empty log message ***
 @
@@ -349,8 +354,6 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
             lv = tok.value.lower()
             if lv in _DASH_STYLES:
                 result["dash"] = lv
-            elif tok.value.startswith("@@@@") and len(tok.value) > 2:
-                result["name"] = tok.value[2:]
             elif tok.value.startswith("@@") and len(tok.value) > 1:
                 result["name"] = tok.value[1:]
             elif lv.startswith("font=") and len(lv) > 5:
@@ -468,8 +471,6 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
             lv = tok.value.lower()
             if lv in _ALIGN_WORDS:
                 align = lv
-            elif tok.value.startswith("@@@@") and len(tok.value) > 2:
-                name = tok.value[2:]
             elif tok.value.startswith("@@") and len(tok.value) > 1:
                 name = tok.value[1:]
             elif lv.startswith("font=") and len(lv) > 5:
@@ -674,6 +675,20 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.15
+log
+@*** empty log message ***
+@
+text
+@a257 2
+            elif tok.value.startswith("@@@@") and len(tok.value) > 2:
+                result["name"] = tok.value[2:]
+a374 2
+            elif tok.value.startswith("@@@@") and len(tok.value) > 2:
+                name = tok.value[2:]
 @
 
 

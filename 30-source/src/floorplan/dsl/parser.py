@@ -255,8 +255,6 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
             lv = tok.value.lower()
             if lv in _DASH_STYLES:
                 result["dash"] = lv
-            elif tok.value.startswith("@@") and len(tok.value) > 2:
-                result["name"] = tok.value[2:]
             elif tok.value.startswith("@") and len(tok.value) > 1:
                 result["name"] = tok.value[1:]
             elif lv.startswith("font=") and len(lv) > 5:
@@ -374,8 +372,6 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
             lv = tok.value.lower()
             if lv in _ALIGN_WORDS:
                 align = lv
-            elif tok.value.startswith("@@") and len(tok.value) > 2:
-                name = tok.value[2:]
             elif tok.value.startswith("@") and len(tok.value) > 1:
                 name = tok.value[1:]
             elif lv.startswith("font=") and len(lv) > 5:

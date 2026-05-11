@@ -322,7 +322,7 @@ def _execute_stmt(
             vars_[name] = value
         else:
             if name not in vars_:
-                raise ParseError(f"Line {lineno}: '{name}' is not defined (cannot use {op}=)")
+                vars_[name] = 0.0
             if op == '+':
                 vars_[name] += value
             else:
@@ -373,9 +373,7 @@ def _execute_include(
 def _substitute_vars(text: str, vars_: dict[str, float | str], lineno: int) -> str:
     def replace(m: re.Match) -> str:  # type: ignore[type-arg]
         name = m.group(1) if m.group(1) is not None else m.group(2)
-        if name not in vars_:
-            raise ParseError(f"Line {lineno}: undefined variable '${name}'")
-        val = vars_[name]
+        val = vars_.get(name, 0.0)
         if isinstance(val, str):
             return val
         return f"{val:g}"
@@ -415,9 +413,7 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
                     name = m.group()
                     if name in _RESERVED_EXPR_NAMES:
                         return name
-                    if name not in _v:
-                        raise ParseError(f"Line {_l}: undefined variable '{name}' in expression")
-                    return f"{_v[name]:g}"
+                    return f"{_v.get(name, 0.0):g}"
                 expr = _BARE_ID_RE.sub(sub_id, inner)
                 result.append(f"{_eval_expr(expr, lineno):g}")
                 i = j
@@ -437,9 +433,7 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
         name = m.group()
         if name in _RESERVED_EXPR_NAMES:
             return name
-        if name not in _v:
-            raise ParseError(f"Line {_l}: undefined variable '{name}' in expression")
-        val = _v[name]
+        val = _v.get(name, 0.0)
         if isinstance(val, str):
             raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
         return f"{val:g}"

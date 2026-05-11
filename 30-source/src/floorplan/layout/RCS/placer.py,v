@@ -1,10 +1,15 @@
-head	1.12;
+head	1.13;
 access;
 symbols;
 locks
-	scarol:1.12; strict;
+	scarol:1.13; strict;
 comment	@# @;
 
+
+1.13
+date	2026.05.11.19.41.52;	author scarol;	state Exp;
+branches;
+next	1.12;
 
 1.12
 date	2026.05.03.01.50.02;	author scarol;	state Exp;
@@ -72,7 +77,7 @@ desc
 @
 
 
-1.12
+1.13
 log
 @*** empty log message ***
 @
@@ -112,8 +117,8 @@ class ElementPlacer:
         self._elem_counter = 0
         self._canvas_origin_set = False
         self._canvas_origin: tuple[float, float] = (0.0, 0.0)
-        self._show_id: bool = True
-        self._show_dims: bool = True
+        self._show_id: bool = False
+        self._show_dims: bool = False
         self._color: str = "black"
         self._show_cornerxy: bool = False
         self._mltodir: float = 0.0
@@ -508,6 +513,18 @@ class ElementPlacer:
             "font_family": self._text_font_family(elem.font_family),
             "color": self._resolve_color(elem.color),
         })
+@
+
+
+1.12
+log
+@*** empty log message ***
+@
+text
+@d36 2
+a37 2
+        self._show_id: bool = True
+        self._show_dims: bool = True
 @
 
 

@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.05.11.19.41.52;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.04.21.15.27.45;	author scarol;	state Exp;
@@ -32,9 +37,9 @@ desc
 @
 
 
-1.4
+1.5
 log
-@color directive: set stroke color for subsequent elements
+@*** empty log message ***
 @
 text
 @from dataclasses import dataclass, field
@@ -54,9 +59,21 @@ class PlacedElement:
     color: str         # CSS stroke color; default "black"
     label: str | None
     extra: dict = field(default_factory=dict)  # element-specific extras (swing, align, etc.)
+    show_id: bool = False
+    show_dims: bool = False
+    source_line: int = 0
+@
+
+
+1.4
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d18 2
+a19 2
     show_id: bool = True
     show_dims: bool = True
-    source_line: int = 0
 @
 
 

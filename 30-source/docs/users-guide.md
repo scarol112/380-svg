@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.21 $ $Date: 2026/05/10 22:46:09 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.23 $ $Date: 2026/05/11 19:13:39 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -68,7 +68,7 @@ Dimensions are in **feet** unless a unit suffix is given.
 | `6"` | 6 inches (0.5 ft) |
 | `12'6"` | 12 feet 6 inches |
 | `2px` | 2 SVG pixels — **line weight only** |
-| `0px` | Invisible — element occupies space and advances the cursor, but nothing is drawn and no annotations are shown |
+| `0px` | Invisible — nothing is drawn and no annotations are shown. For most elements, the cursor still advances. `point 0px` produces no output and does not advance the cursor (since `point` never advances the cursor). |
 
 #### Drawing cursor
 
@@ -77,7 +77,7 @@ top-left of the first element). Each element advances the cursor by its length
 in the current drawing direction. The cursor position becomes the start point
 of the next element.
 
-#### Drawing direction
+#### Drawing direction (`dir`)
 
 ```
 direction <degrees>
@@ -94,7 +94,7 @@ Sets the compass direction for subsequent elements.
 
 `direction` can appear anywhere in the file and takes effect immediately.
 
-#### Include
+#### Include (`inc`)
 
 ```
 include <filename>
@@ -180,6 +180,7 @@ Two reference forms, identical behavior:
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 | `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
 | `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
+| `$__date` | — | Current date in `YYYY-MM-DD` format |
 
 Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
 
@@ -301,7 +302,7 @@ for i = 0 to (n - 1) {
 
 ---
 
-#### Display directives
+#### Display directives (`eid`, `dim`, `sxy`)
 
 ```
 elementid on|off
@@ -343,7 +344,7 @@ direction 180       # no marker — showcornerxy is off
 `showcornerxy` is useful during drawing development to verify that walls meet
 at the correct coordinates.
 
-#### Color
+#### Color (`col`)
 
 ```
 color <value>
