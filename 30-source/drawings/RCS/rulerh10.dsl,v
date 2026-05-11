@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.11.22.35.56;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.29.15.03.19;	author scarol;	state Exp;
@@ -16,17 +21,14 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Initial revision
+@*** empty log message ***
 @
 text
 @#.09-unit horizontal ruler 1/2 unit marks
-eid off
-dim off
-sxy off
 dir 90
-l 0.5;  l 0.5 4px
+l 0.5 @@rh10a;  l 0.5 4px
 l 0.5;  l 0.5 4px
 l 0.5;  l 0.5 4px
 l 0.5;  l 0.5 4px
@@ -52,5 +54,23 @@ l 1 0px ; lb "8"
 l 1 0px ; lb "9"
 l 1 0px ; lb "10"
 
+textline 10 C=black "$__dsl_filename" rh10a
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@a1 3
+eid off
+dim off
+sxy off
+d3 1
+a3 1
+l 0.5;  l 0.5 4px
+d29 1
+a29 1
 
 @
