@@ -285,7 +285,7 @@ class ElementPlacer:
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
+            lw=DEFAULT_LW, dash=None, color=self._resolve_color(elem.color), label=elem.text,
             extra=extra,
             source_line=elem.source_line,
         )

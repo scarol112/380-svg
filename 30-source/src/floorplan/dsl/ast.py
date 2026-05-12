@@ -111,6 +111,7 @@ class LabelElem:
     align: str = "left"  # left | center | right
     font_size: float | None = None
     font_family: str | None = None
+    color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
     source_line: int = 0

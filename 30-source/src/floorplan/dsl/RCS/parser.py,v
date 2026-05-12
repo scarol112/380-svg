@@ -1,10 +1,15 @@
-head	1.16;
+head	1.17;
 access;
 symbols;
 locks
-	scarol:1.16; strict;
+	scarol:1.17; strict;
 comment	@# @;
 
+
+1.17
+date	2026.05.12.03.36.02;	author scarol;	state Exp;
+branches;
+next	1.16;
 
 1.16
 date	2026.05.11.19.13.39;	author scarol;	state Exp;
@@ -92,7 +97,7 @@ desc
 @
 
 
-1.16
+1.17
 log
 @*** empty log message ***
 @
@@ -462,11 +467,14 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
     align = "left"
     font_size = None
     font_family = None
+    color = None
     absolute = None
     name = None
     for tok in tokens:
         if tok.kind == "QUOTED":
             text = tok.value
+        elif tok.kind == "COLOR_ELEM":
+            color = tok.value
         elif tok.kind == "WORD":
             lv = tok.value.lower()
             if lv in _ALIGN_WORDS:
@@ -488,7 +496,7 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
                     text = tok.value
                     break
     return LabelElem(text=text, align=align, font_size=font_size, font_family=font_family,
-                     absolute=absolute, name=name, source_line=lineno)
+                     color=color, absolute=absolute, name=name, source_line=lineno)
 
 
 def _parse_moveto(tokens: list[Token], lineno: int) -> MoveToElem:
@@ -675,6 +683,19 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.16
+log
+@*** empty log message ***
+@
+text
+@d366 1
+d372 2
+d395 1
+a395 1
+                     absolute=absolute, name=name, source_line=lineno)
 @
 
 

@@ -363,11 +363,14 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
     align = "left"
     font_size = None
     font_family = None
+    color = None
     absolute = None
     name = None
     for tok in tokens:
         if tok.kind == "QUOTED":
             text = tok.value
+        elif tok.kind == "COLOR_ELEM":
+            color = tok.value
         elif tok.kind == "WORD":
             lv = tok.value.lower()
             if lv in _ALIGN_WORDS:
@@ -389,7 +392,7 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
                     text = tok.value
                     break
     return LabelElem(text=text, align=align, font_size=font_size, font_family=font_family,
-                     absolute=absolute, name=name, source_line=lineno)
+                     color=color, absolute=absolute, name=name, source_line=lineno)
 
 
 def _parse_moveto(tokens: list[Token], lineno: int) -> MoveToElem:

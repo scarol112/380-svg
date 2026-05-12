@@ -1,10 +1,15 @@
-head	1.13;
+head	1.14;
 access;
 symbols;
 locks
-	scarol:1.13; strict;
+	scarol:1.14; strict;
 comment	@# @;
 
+
+1.14
+date	2026.05.12.03.36.02;	author scarol;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2026.05.11.19.41.52;	author scarol;	state Exp;
@@ -77,7 +82,7 @@ desc
 @
 
 
-1.13
+1.14
 log
 @*** empty log message ***
 @
@@ -369,7 +374,7 @@ class ElementPlacer:
             kind="label", number=None,
             x=x, y=y, length=0.0, width=0.0,
             direction=self._cursor.direction,
-            lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
+            lw=DEFAULT_LW, dash=None, color=self._resolve_color(elem.color), label=elem.text,
             extra=extra,
             source_line=elem.source_line,
         )
@@ -513,6 +518,17 @@ class ElementPlacer:
             "font_family": self._text_font_family(elem.font_family),
             "color": self._resolve_color(elem.color),
         })
+@
+
+
+1.13
+log
+@*** empty log message ***
+@
+text
+@d288 1
+a288 1
+            lw=DEFAULT_LW, dash=None, color="black", label=elem.text,
 @
 
 
