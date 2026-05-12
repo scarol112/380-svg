@@ -1,10 +1,15 @@
-head	1.2;
+head	1.3;
 access;
 symbols;
 locks
-	scarol:1.2; strict;
+	scarol:1.3; strict;
 comment	@# @;
 
+
+1.3
+date	2026.05.12.12.02.05;	author scarol;	state Exp;
+branches;
+next	1.2;
 
 1.2
 date	2026.04.26.18.06.08;	author scarol;	state Exp;
@@ -22,9 +27,9 @@ desc
 @
 
 
-1.2
+1.3
 log
-@Resolve input path before cd so bare filenames work from any directory
+@*** empty log message ***
 @
 text
 @#!/usr/bin/env bash
@@ -40,6 +45,17 @@ fi
 
 INPUT="$(realpath "$INPUT")"
 cd "$(dirname "$0")/.."
+uv run python -m floorplan.cli "$INPUT" -o "$OUTPUT" "${@@:3}"
+@
+
+
+1.2
+log
+@Resolve input path before cd so bare filenames work from any directory
+@
+text
+@d14 1
+a14 1
 uv run python -m floorplan.cli "$INPUT" -o "$OUTPUT"
 @
 

@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.05.12.12.02.05;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.04.29.21.21.09;	author scarol;	state Exp;
@@ -32,9 +37,9 @@ desc
 @
 
 
-1.4
+1.5
 log
-@Add numeric variables, built-in cursorx/cursory, and arithmetic expressions (issue #20)
+@*** empty log message ***
 @
 text
 @import argparse
@@ -48,6 +53,11 @@ from .render.svg import render_svg
 
 _DARKORANGE = "\033[38;5;208m"
 _RESET      = "\033[0m"
+
+_PAPER_SIZES: dict[str, tuple[int, int]] = {
+    "letter":  (1056, 816),   # 11 × 8.5 in landscape @@ 96 dpi
+    "tabloid": (1632, 1056),  # 17 × 11 in landscape @@ 96 dpi
+}
 
 
 def _err(msg: str) -> None:
@@ -66,6 +76,8 @@ def main() -> None:
     )
     ap.add_argument("input", nargs="?", help="DSL input file (default: stdin)")
     ap.add_argument("-o", "--output", default="output.svg", help="SVG output file (default: output.svg)")
+    ap.add_argument("-p", "--paper", default="letter", choices=_PAPER_SIZES,
+                    help="Paper size: letter (11×8.5in, default) or tabloid (17×11in)")
     args = ap.parse_args()
 
     if args.input:
@@ -88,8 +100,9 @@ def main() -> None:
     if not elements:
         print("Warning: no elements found in input.", file=sys.stderr)
 
-    scale, tx, ty = compute_scale(elements)
-    svg = render_svg(elements, scale, tx, ty)
+    page_w, page_h = _PAPER_SIZES[args.paper]
+    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h)
+    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h)
 
     Path(args.output).write_text(svg)
     print(f"Wrote {args.output}")
@@ -97,6 +110,20 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+@
+
+
+1.4
+log
+@Add numeric variables, built-in cursorx/cursory, and arithmetic expressions (issue #20)
+@
+text
+@d13 5
+d35 2
+d59 3
+a61 2
+    scale, tx, ty = compute_scale(elements)
+    svg = render_svg(elements, scale, tx, ty)
 @
 
 

@@ -285,12 +285,16 @@ def _rect_box(
 
 # ── render pipeline ───────────────────────────────────────────────────────────
 
-def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
+def render_svg(
+    elements: list[PlacedElement],
+    scale: float, tx: float, ty: float,
+    page_w: int = PAGE_W, page_h: int = PAGE_H,
+) -> str:
     lines: list[str] = []
     lines.append(
         f'<svg xmlns="http://www.w3.org/2000/svg" '
-        f'width="{PAGE_W}" height="{PAGE_H}" '
-        f'viewBox="0 0 {PAGE_W} {PAGE_H}">'
+        f'width="{page_w}" height="{page_h}" '
+        f'viewBox="0 0 {page_w} {page_h}">'
     )
     lines.append(defs_svg())
     lines.append('  <g id="drawing">')

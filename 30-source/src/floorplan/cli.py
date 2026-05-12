@@ -10,6 +10,11 @@ from .render.svg import render_svg
 _DARKORANGE = "\033[38;5;208m"
 _RESET      = "\033[0m"
 
+_PAPER_SIZES: dict[str, tuple[int, int]] = {
+    "letter":  (1056, 816),   # 11 × 8.5 in landscape @ 96 dpi
+    "tabloid": (1632, 1056),  # 17 × 11 in landscape @ 96 dpi
+}
+
 
 def _err(msg: str) -> None:
     """Print an error message in darkorange to stderr."""
@@ -27,6 +32,8 @@ def main() -> None:
     )
     ap.add_argument("input", nargs="?", help="DSL input file (default: stdin)")
     ap.add_argument("-o", "--output", default="output.svg", help="SVG output file (default: output.svg)")
+    ap.add_argument("-p", "--paper", default="letter", choices=_PAPER_SIZES,
+                    help="Paper size: letter (11×8.5in, default) or tabloid (17×11in)")
     args = ap.parse_args()
 
     if args.input:
@@ -49,8 +56,9 @@ def main() -> None:
     if not elements:
         print("Warning: no elements found in input.", file=sys.stderr)
 
-    scale, tx, ty = compute_scale(elements)
-    svg = render_svg(elements, scale, tx, ty)
+    page_w, page_h = _PAPER_SIZES[args.paper]
+    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h)
+    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h)
 
     Path(args.output).write_text(svg)
     print(f"Wrote {args.output}")

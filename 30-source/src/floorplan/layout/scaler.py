@@ -56,25 +56,30 @@ def _cornerxy_max_extent_px(label: str) -> tuple[float, float]:
 
 
 def _scale_from_bounds(
-    min_x: float, min_y: float, max_x: float, max_y: float
+    min_x: float, min_y: float, max_x: float, max_y: float,
+    page_w: float = PRINT_W_PX, page_h: float = PRINT_H_PX,
 ) -> tuple[float, float, float]:
     width_ft  = max_x - min_x or 1.0
     height_ft = max_y - min_y or 1.0
-    usable_w  = PRINT_W_PX - 2 * MARGIN_PX
-    usable_h  = PRINT_H_PX - 2 * MARGIN_PX
+    usable_w  = page_w - 2 * MARGIN_PX
+    usable_h  = page_h - 2 * MARGIN_PX
     scale = min(usable_w / width_ft, usable_h / height_ft)
     drawing_w_px = width_ft  * scale
     drawing_h_px = height_ft * scale
-    tx = (PRINT_W_PX - drawing_w_px) / 2 - min_x * scale
-    ty = (PRINT_H_PX - drawing_h_px) / 2 - min_y * scale
+    tx = (page_w - drawing_w_px) / 2 - min_x * scale
+    ty = (page_h - drawing_h_px) / 2 - min_y * scale
     return scale, tx, ty
 
 
-def compute_scale(elements: list[PlacedElement]) -> tuple[float, float, float]:
+def compute_scale(
+    elements: list[PlacedElement],
+    page_w: float = PRINT_W_PX,
+    page_h: float = PRINT_H_PX,
+) -> tuple[float, float, float]:
     """Return (scale_ft_to_px, translate_x_px, translate_y_px).
 
-    translate values center the drawing within the 11×8.5in landscape page
-    (1056×816 SVG units).
+    translate values center the drawing within the given page dimensions
+    (default 11×8.5in landscape = 1056×816 SVG units at 96 dpi).
     """
     min_x, min_y, max_x, max_y = compute_bounding_box(elements)
 
@@ -87,7 +92,7 @@ def compute_scale(elements: list[PlacedElement]) -> tuple[float, float, float]:
         # Typically converges in ≤ 5 iterations (ratio ~0.93 per step).
         prev_s = None
         for _ in range(10):
-            s, _, _ = _scale_from_bounds(min_x, min_y, max_x, max_y)
+            s, _, _ = _scale_from_bounds(min_x, min_y, max_x, max_y, page_w, page_h)
             if prev_s is not None and abs(s - prev_s) < 0.01:
                 break
             prev_s = s
@@ -98,4 +103,4 @@ def compute_scale(elements: list[PlacedElement]) -> tuple[float, float, float]:
                 min_y = min(min_y, e.y - dy_px / s)
                 max_y = max(max_y, e.y + dy_px / s)
 
-    return _scale_from_bounds(min_x, min_y, max_x, max_y)
+    return _scale_from_bounds(min_x, min_y, max_x, max_y, page_w, page_h)

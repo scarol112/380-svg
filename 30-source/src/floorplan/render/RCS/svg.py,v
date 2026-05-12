@@ -1,10 +1,15 @@
-head	1.16;
+head	1.17;
 access;
 symbols;
 locks
-	scarol:1.16; strict;
+	scarol:1.17; strict;
 comment	@# @;
 
+
+1.17
+date	2026.05.12.12.02.05;	author scarol;	state Exp;
+branches;
+next	1.16;
 
 1.16
 date	2026.05.12.03.46.00;	author scarol;	state Exp;
@@ -92,7 +97,7 @@ desc
 @
 
 
-1.16
+1.17
 log
 @*** empty log message ***
 @
@@ -384,12 +389,16 @@ def _rect_box(
 
 # ── render pipeline ───────────────────────────────────────────────────────────
 
-def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
+def render_svg(
+    elements: list[PlacedElement],
+    scale: float, tx: float, ty: float,
+    page_w: int = PAGE_W, page_h: int = PAGE_H,
+) -> str:
     lines: list[str] = []
     lines.append(
         f'<svg xmlns="http://www.w3.org/2000/svg" '
-        f'width="{PAGE_W}" height="{PAGE_H}" '
-        f'viewBox="0 0 {PAGE_W} {PAGE_H}">'
+        f'width="{page_w}" height="{page_h}" '
+        f'viewBox="0 0 {page_w} {page_h}">'
     )
     lines.append(defs_svg())
     lines.append('  <g id="drawing">')
@@ -870,6 +879,21 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))
     return "\n    ".join(parts)
+@
+
+
+1.16
+log
+@*** empty log message ***
+@
+text
+@d288 5
+a292 1
+def render_svg(elements: list[PlacedElement], scale: float, tx: float, ty: float) -> str:
+d296 2
+a297 2
+        f'width="{PAGE_W}" height="{PAGE_H}" '
+        f'viewBox="0 0 {PAGE_W} {PAGE_H}">'
 @
 
 
