@@ -382,7 +382,8 @@ def _element_bbox_px(
         start_deg = elem.extra.get("start_angle", 0.0)
         sweep_deg = elem.extra.get("sweep", 90.0)
         ccw = elem.extra.get("ccw", False)
-        start_rad = math.radians(start_deg)
+        # compass → SVG: 0=up maps to SVG 270°; formula (start + 270) % 360
+        start_rad = math.radians((start_deg + 270) % 360)
         end_rad = start_rad + math.radians(sweep_deg) * (-1 if ccw else 1)
         arc_xs = [x0 + r * math.cos(start_rad), x0 + r * math.cos(end_rad)]
         arc_ys = [y0 + r * math.sin(start_rad), y0 + r * math.sin(end_rad)]
@@ -503,7 +504,8 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     start_deg = elem.extra.get("start_angle", 0.0)
     cx = _px(elem.x, scale, tx)
     cy = _px(elem.y, scale, ty)
-    start_rad = math.radians(start_deg)
+    # compass → SVG: 0=up maps to SVG 270°; formula (start + 270) % 360
+    start_rad = math.radians((start_deg + 270) % 360)
     start_x = cx + r * math.cos(start_rad)
     start_y = cy + r * math.sin(start_rad)
     sweep_rad = math.radians(sweep_deg)

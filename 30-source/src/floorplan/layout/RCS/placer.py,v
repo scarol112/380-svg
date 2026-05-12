@@ -1,10 +1,15 @@
-head	1.19;
+head	1.20;
 access;
 symbols;
 locks
-	scarol:1.19; strict;
+	scarol:1.20; strict;
 comment	@# @;
 
+
+1.20
+date	2026.05.12.18.52.12;	author scarol;	state Exp;
+branches;
+next	1.19;
 
 1.19
 date	2026.05.12.16.32.36;	author scarol;	state Exp;
@@ -107,7 +112,7 @@ desc
 @
 
 
-1.19
+1.20
 log
 @*** empty log message ***
 @
@@ -351,7 +356,8 @@ class ElementPlacer:
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
-        start_rad = math.radians(elem.start_angle)
+        # compass → SVG: 0=up maps to SVG 270°; formula (start + 270) % 360
+        start_rad = math.radians((elem.start_angle + 270) % 360)
         sweep_rad = math.radians(elem.sweep)
         end_rad = start_rad + (-sweep_rad if elem.ccw else sweep_rad)
         self._cursor.x = x + elem.radius * math.cos(end_rad)
@@ -567,6 +573,17 @@ class ElementPlacer:
             "font_family": self._text_font_family(elem.font_family),
             "color": self._resolve_color(elem.color),
         })
+@
+
+
+1.19
+log
+@*** empty log message ***
+@
+text
+@d240 2
+a241 1
+        start_rad = math.radians(elem.start_angle)
 @
 
 

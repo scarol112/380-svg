@@ -237,7 +237,8 @@ class ElementPlacer:
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
-        start_rad = math.radians(elem.start_angle)
+        # compass → SVG: 0=up maps to SVG 270°; formula (start + 270) % 360
+        start_rad = math.radians((elem.start_angle + 270) % 360)
         sweep_rad = math.radians(elem.sweep)
         end_rad = start_rad + (-sweep_rad if elem.ccw else sweep_rad)
         self._cursor.x = x + elem.radius * math.cos(end_rad)
