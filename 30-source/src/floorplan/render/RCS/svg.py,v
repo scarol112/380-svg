@@ -1,10 +1,15 @@
-head	1.19;
+head	1.20;
 access;
 symbols;
 locks
-	scarol:1.19; strict;
+	scarol:1.20; strict;
 comment	@# @;
 
+
+1.20
+date	2026.05.12.17.19.36;	author scarol;	state Exp;
+branches;
+next	1.19;
 
 1.19
 date	2026.05.12.15.55.31;	author scarol;	state Exp;
@@ -107,7 +112,7 @@ desc
 @
 
 
-1.19
+1.20
 log
 @*** empty log message ***
 @
@@ -490,6 +495,26 @@ def _element_bbox_px(
     if elem.kind == "circle":
         r = elem.extra.get("radius", 0) * scale + elem.lw / 2
         return x0 - r, y0 - r, x0 + r, y0 + r
+
+    if elem.kind == "arc":
+        r = elem.extra.get("radius", 0) * scale
+        start_deg = elem.extra.get("start_angle", 0.0)
+        sweep_deg = elem.extra.get("sweep", 90.0)
+        ccw = elem.extra.get("ccw", False)
+        start_rad = math.radians(start_deg)
+        end_rad = start_rad + math.radians(sweep_deg) * (-1 if ccw else 1)
+        arc_xs = [x0 + r * math.cos(start_rad), x0 + r * math.cos(end_rad)]
+        arc_ys = [y0 + r * math.sin(start_rad), y0 + r * math.sin(end_rad)]
+        # include any cardinal points (0°, 90°, 180°, 270°) the arc passes through
+        TWO_PI = 2 * math.pi
+        for k in range(4):
+            card_rad = math.radians(k * 90)
+            dist = (card_rad - start_rad) % TWO_PI if not ccw else (start_rad - card_rad) % TWO_PI
+            if dist <= math.radians(sweep_deg) + 1e-9:
+                arc_xs.append(x0 + r * math.cos(card_rad))
+                arc_ys.append(y0 + r * math.sin(card_rad))
+        pad = max(elem.lw / 2, 1.0)
+        return min(arc_xs) - pad, min(arc_ys) - pad, max(arc_xs) + pad, max(arc_ys) + pad
 
     # For points, the circle radius (1.5px) plus half stroke dominates over length/width
     if elem.kind == "point":
@@ -894,6 +919,15 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))
     return "\n    ".join(parts)
+@
+
+
+1.19
+log
+@*** empty log message ***
+@
+text
+@d380 20
 @
 
 
