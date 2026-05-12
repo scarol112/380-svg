@@ -4,7 +4,7 @@ from ..dsl.ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, PointElem, LabelElem,
+    ArcElem, ArrowElem, CircleElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
     TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
@@ -77,6 +77,8 @@ class ElementPlacer:
                 self._place_arc(node)
             case ArrowElem():
                 self._place_arrow(node)
+            case CircleElem():
+                self._place_circle(node)
             case PointElem():
                 self._place_point(node)
             case LabelElem():
@@ -257,6 +259,22 @@ class ElementPlacer:
             label=f"{_fmt_dec(x)}, {_fmt_dec(y)}",
             extra={},
         ))
+
+    def _place_circle(self, elem: CircleElem) -> None:
+        x, y = self._place_start(elem.absolute)
+        lw = elem.lw if elem.lw is not None else 1.0
+        d = elem.radius * 2
+        pe = PlacedElement(
+            kind="circle", number=self._next_number(),
+            x=x, y=y, length=d, width=d,
+            direction=self._cursor.direction,
+            lw=lw, dash=elem.dash, color=self._resolve_color(elem.color), label=None,
+            extra={"radius": elem.radius},
+            show_id=self._show_id, show_dims=False, source_line=elem.source_line,
+        )
+        self._elements.append(pe)
+        self._register_name(pe, elem.name)
+        # cursor does not advance — circle marks a location without disrupting flow
 
     def _place_point(self, elem: PointElem) -> None:
         x, y = self._place_start(elem.absolute)

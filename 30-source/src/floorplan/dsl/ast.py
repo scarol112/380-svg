@@ -97,6 +97,17 @@ class ArrowElem:
 
 
 @dataclass
+class CircleElem:
+    radius: float  # feet
+    lw: float | None = None
+    dash: str | None = None
+    color: str | None = None
+    absolute: tuple[float, float] | None = None
+    name: str | None = None
+    source_line: int = 0
+
+
+@dataclass
 class PointElem:
     lw: float | None = None  # stroke width; None = default 1px
     color: str | None = None
@@ -234,6 +245,7 @@ ASTNode = (
     | WindowElem
     | ArcElem
     | ArrowElem
+    | CircleElem
     | PointElem
     | LabelElem
     | MoveToElem

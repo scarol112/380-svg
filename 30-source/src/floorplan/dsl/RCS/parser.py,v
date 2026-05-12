@@ -1,10 +1,15 @@
-head	1.17;
+head	1.18;
 access;
 symbols;
 locks
-	scarol:1.17; strict;
+	scarol:1.18; strict;
 comment	@# @;
 
+
+1.18
+date	2026.05.12.03.46.00;	author scarol;	state Exp;
+branches;
+next	1.17;
 
 1.17
 date	2026.05.12.03.36.02;	author scarol;	state Exp;
@@ -97,7 +102,7 @@ desc
 @
 
 
-1.17
+1.18
 log
 @*** empty log message ***
 @
@@ -107,7 +112,7 @@ from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, PointElem, LabelElem,
+    ArcElem, ArrowElem, CircleElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
     TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
@@ -222,6 +227,7 @@ _ALIASES: dict[str, str] = {
     "wi":     "window",
     "a":      "arc",
     "aw":     "arrow",
+    "ci":     "circle",
     "p":      "point",
     "lb":     "label",
     "dir":    "direction",
@@ -268,6 +274,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_arc(rest, lineno)
     if keyword == "arrow":
         return _parse_arrow(rest, lineno)
+    if keyword == "circle":
+        return _parse_circle(rest, lineno)
     if keyword == "point":
         return _parse_point(rest, lineno)
     if keyword == "label":
@@ -454,6 +462,14 @@ def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
                      color=c["color"], absolute=c["absolute"], name=c["name"],
                      source_line=lineno)
+
+
+def _parse_circle(tokens: list[Token], lineno: int) -> CircleElem:
+    (radius,) = _leading_measurements(tokens, 1, lineno)
+    c = _extract_common(tokens, lineno)
+    return CircleElem(radius=radius, lw=c["lw"], dash=c["dash"],
+                      color=c["color"], absolute=c["absolute"], name=c["name"],
+                      source_line=lineno)
 
 
 def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
@@ -683,6 +699,20 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.17
+log
+@*** empty log message ***
+@
+text
+@d6 1
+a6 1
+    ArcElem, ArrowElem, PointElem, LabelElem,
+d121 1
+d168 2
+d356 8
 @
 
 

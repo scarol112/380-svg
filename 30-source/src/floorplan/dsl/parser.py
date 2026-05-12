@@ -3,7 +3,7 @@ from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
     ShowCornerXYDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
-    ArcElem, ArrowElem, PointElem, LabelElem,
+    ArcElem, ArrowElem, CircleElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
     TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
@@ -118,6 +118,7 @@ _ALIASES: dict[str, str] = {
     "wi":     "window",
     "a":      "arc",
     "aw":     "arrow",
+    "ci":     "circle",
     "p":      "point",
     "lb":     "label",
     "dir":    "direction",
@@ -164,6 +165,8 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_arc(rest, lineno)
     if keyword == "arrow":
         return _parse_arrow(rest, lineno)
+    if keyword == "circle":
+        return _parse_circle(rest, lineno)
     if keyword == "point":
         return _parse_point(rest, lineno)
     if keyword == "label":
@@ -350,6 +353,14 @@ def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
                      color=c["color"], absolute=c["absolute"], name=c["name"],
                      source_line=lineno)
+
+
+def _parse_circle(tokens: list[Token], lineno: int) -> CircleElem:
+    (radius,) = _leading_measurements(tokens, 1, lineno)
+    c = _extract_common(tokens, lineno)
+    return CircleElem(radius=radius, lw=c["lw"], dash=c["dash"],
+                      color=c["color"], absolute=c["absolute"], name=c["name"],
+                      source_line=lineno)
 
 
 def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
