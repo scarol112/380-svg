@@ -1,10 +1,15 @@
-head	1.18;
+head	1.19;
 access;
 symbols;
 locks
-	scarol:1.18; strict;
+	scarol:1.19; strict;
 comment	@# @;
 
+
+1.19
+date	2026.05.12.15.32.45;	author scarol;	state Exp;
+branches;
+next	1.18;
 
 1.18
 date	2026.05.12.03.46.00;	author scarol;	state Exp;
@@ -102,7 +107,7 @@ desc
 @
 
 
-1.18
+1.19
 log
 @*** empty log message ***
 @
@@ -450,8 +455,9 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
 
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     radius, sweep = _leading_measurements(tokens, 2, lineno)
+    ccw = any(tok.kind == "WORD" and tok.value.lower() == "ccw" for tok in tokens)
     c = _extract_common(tokens, lineno)
-    return ArcElem(radius=radius, sweep=sweep, lw=c["lw"], dash=c["dash"],
+    return ArcElem(radius=radius, sweep=sweep, ccw=ccw, lw=c["lw"], dash=c["dash"],
                    color=c["color"], absolute=c["absolute"], name=c["name"],
                    source_line=lineno)
 
@@ -699,6 +705,18 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.18
+log
+@*** empty log message ***
+@
+text
+@d344 1
+d346 1
+a346 1
+    return ArcElem(radius=radius, sweep=sweep, lw=c["lw"], dash=c["dash"],
 @
 
 

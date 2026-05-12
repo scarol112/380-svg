@@ -479,16 +479,18 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     r = elem.extra.get("radius", elem.length / 2) * scale
     sweep_deg = elem.extra.get("sweep", 90)
+    ccw = elem.extra.get("ccw", False)
     cx = _px(elem.x, scale, tx)
     cy = _px(elem.y, scale, ty)
     start_x = cx + r
     start_y = cy
     rad = math.radians(sweep_deg)
     end_x = cx + r * math.cos(rad)
-    end_y = cy + r * math.sin(rad)
+    end_y = cy + (-1 if ccw else 1) * r * math.sin(rad)
     large = 1 if sweep_deg > 180 else 0
+    sweep_flag = 0 if ccw else 1
     return (
-        f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
+        f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},{sweep_flag} '
         f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"'
         f'{_dash_attr(elem.dash)}/>'
     )

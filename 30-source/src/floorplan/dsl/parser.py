@@ -341,8 +341,9 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
 
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     radius, sweep = _leading_measurements(tokens, 2, lineno)
+    ccw = any(tok.kind == "WORD" and tok.value.lower() == "ccw" for tok in tokens)
     c = _extract_common(tokens, lineno)
-    return ArcElem(radius=radius, sweep=sweep, lw=c["lw"], dash=c["dash"],
+    return ArcElem(radius=radius, sweep=sweep, ccw=ccw, lw=c["lw"], dash=c["dash"],
                    color=c["color"], absolute=c["absolute"], name=c["name"],
                    source_line=lineno)
 

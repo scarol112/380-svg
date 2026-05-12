@@ -1,10 +1,15 @@
-head	1.13;
+head	1.14;
 access;
 symbols;
 locks
-	scarol:1.13; strict;
+	scarol:1.14; strict;
 comment	@# @;
 
+
+1.14
+date	2026.05.12.15.32.45;	author scarol;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2026.05.12.03.46.00;	author scarol;	state Exp;
@@ -77,7 +82,7 @@ desc
 @
 
 
-1.13
+1.14
 log
 @*** empty log message ***
 @
@@ -161,6 +166,7 @@ class WindowElem:
 class ArcElem:
     radius: float  # feet
     sweep: float   # degrees
+    ccw: bool = False
     lw: float | None = None
     dash: str | None = None
     color: str | None = None
@@ -339,6 +345,15 @@ ASTNode = (
     | TextBoxElem
     | TextAppendElem
 )
+@
+
+
+1.13
+log
+@*** empty log message ***
+@
+text
+@d80 1
 @
 
 

@@ -230,7 +230,7 @@ class ElementPlacer:
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            extra={"radius": elem.radius, "sweep": elem.sweep},
+            extra={"radius": elem.radius, "sweep": elem.sweep, "ccw": elem.ccw},
             **self._flags(), source_line=elem.source_line,
         )
         self._elements.append(pe)

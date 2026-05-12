@@ -77,6 +77,7 @@ class WindowElem:
 class ArcElem:
     radius: float  # feet
     sweep: float   # degrees
+    ccw: bool = False
     lw: float | None = None
     dash: str | None = None
     color: str | None = None

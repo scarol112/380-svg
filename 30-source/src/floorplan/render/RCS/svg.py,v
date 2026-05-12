@@ -1,10 +1,15 @@
-head	1.17;
+head	1.18;
 access;
 symbols;
 locks
-	scarol:1.17; strict;
+	scarol:1.18; strict;
 comment	@# @;
 
+
+1.18
+date	2026.05.12.15.32.45;	author scarol;	state Exp;
+branches;
+next	1.17;
 
 1.17
 date	2026.05.12.12.02.05;	author scarol;	state Exp;
@@ -97,7 +102,7 @@ desc
 @
 
 
-1.17
+1.18
 log
 @*** empty log message ***
 @
@@ -583,16 +588,18 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     r = elem.extra.get("radius", elem.length / 2) * scale
     sweep_deg = elem.extra.get("sweep", 90)
+    ccw = elem.extra.get("ccw", False)
     cx = _px(elem.x, scale, tx)
     cy = _px(elem.y, scale, ty)
     start_x = cx + r
     start_y = cy
     rad = math.radians(sweep_deg)
     end_x = cx + r * math.cos(rad)
-    end_y = cy + r * math.sin(rad)
+    end_y = cy + (-1 if ccw else 1) * r * math.sin(rad)
     large = 1 if sweep_deg > 180 else 0
+    sweep_flag = 0 if ccw else 1
     return (
-        f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
+        f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},{sweep_flag} '
         f'{end_x:.1f},{end_y:.1f}" fill="none" stroke="{elem.color}" stroke-width="{elem.lw}"'
         f'{_dash_attr(elem.dash)}/>'
     )
@@ -879,6 +886,22 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))
     return "\n    ".join(parts)
+@
+
+
+1.17
+log
+@*** empty log message ***
+@
+text
+@d482 1
+d489 1
+a489 1
+    end_y = cy + r * math.sin(rad)
+d491 1
+d493 1
+a493 1
+        f'<path d="M {start_x:.1f},{start_y:.1f} A {r:.1f},{r:.1f} 0 {large},1 '
 @
 
 

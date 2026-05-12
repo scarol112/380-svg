@@ -1,10 +1,15 @@
-head	1.15;
+head	1.16;
 access;
 symbols;
 locks
-	scarol:1.15; strict;
+	scarol:1.16; strict;
 comment	@# @;
 
+
+1.16
+date	2026.05.12.15.32.45;	author scarol;	state Exp;
+branches;
+next	1.15;
 
 1.15
 date	2026.05.12.03.46.00;	author scarol;	state Exp;
@@ -87,7 +92,7 @@ desc
 @
 
 
-1.15
+1.16
 log
 @*** empty log message ***
 @
@@ -324,7 +329,7 @@ class ElementPlacer:
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            extra={"radius": elem.radius, "sweep": elem.sweep},
+            extra={"radius": elem.radius, "sweep": elem.sweep, "ccw": elem.ccw},
             **self._flags(), source_line=elem.source_line,
         )
         self._elements.append(pe)
@@ -541,6 +546,17 @@ class ElementPlacer:
             "font_family": self._text_font_family(elem.font_family),
             "color": self._resolve_color(elem.color),
         })
+@
+
+
+1.15
+log
+@*** empty log message ***
+@
+text
+@d233 1
+a233 1
+            extra={"radius": elem.radius, "sweep": elem.sweep},
 @
 
 
