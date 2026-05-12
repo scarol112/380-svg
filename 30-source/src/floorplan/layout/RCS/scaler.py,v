@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.05.12.19.03.26;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.05.12.12.02.05;	author scarol;	state Exp;
@@ -37,12 +42,14 @@ desc
 @
 
 
-1.5
+1.6
 log
 @*** empty log message ***
 @
 text
-@from ..model import PlacedElement
+@import math
+
+from ..model import PlacedElement
 from .cursor import direction_vector
 
 # Print area: full page (11×8.5in landscape) at 96 SVG units/inch, with 0.5in margin
@@ -71,6 +78,26 @@ def compute_bounding_box(elements: list[PlacedElement]) -> tuple[float, float, f
             r = e.length / 2  # length stores diameter
             xs.extend([e.x - r, e.x + r])
             ys.extend([e.y - r, e.y + r])
+            continue
+        if e.kind == "arc":
+            r = e.extra.get("radius", 0.0)
+            start_deg = e.extra.get("start_angle", 0.0)
+            sweep_deg = e.extra.get("sweep", 90.0)
+            ccw = e.extra.get("ccw", False)
+            # compass → SVG: (start + 270) % 360
+            start_rad = math.radians((start_deg + 270) % 360)
+            end_rad = start_rad + math.radians(sweep_deg) * (-1 if ccw else 1)
+            arc_xs = [e.x + r * math.cos(start_rad), e.x + r * math.cos(end_rad)]
+            arc_ys = [e.y + r * math.sin(start_rad), e.y + r * math.sin(end_rad)]
+            TWO_PI = 2 * math.pi
+            for k in range(4):
+                card_rad = math.radians(k * 90)
+                dist = (card_rad - start_rad) % TWO_PI if not ccw else (start_rad - card_rad) % TWO_PI
+                if dist <= math.radians(sweep_deg) + 1e-9:
+                    arc_xs.append(e.x + r * math.cos(card_rad))
+                    arc_ys.append(e.y + r * math.sin(card_rad))
+            xs.extend(arc_xs)
+            ys.extend(arc_ys)
             continue
         dx, dy = direction_vector(e.direction)
         # leading edge endpoint
@@ -148,6 +175,16 @@ def compute_scale(
                 max_y = max(max_y, e.y + dy_px / s)
 
     return _scale_from_bounds(min_x, min_y, max_x, max_y, page_w, page_h)
+@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@d1 2
+d32 20
 @
 
 
