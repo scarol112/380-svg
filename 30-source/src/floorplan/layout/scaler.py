@@ -23,6 +23,11 @@ def compute_bounding_box(elements: list[PlacedElement]) -> tuple[float, float, f
     xs: list[float] = []
     ys: list[float] = []
     for e in geometry:
+        if e.kind == "circle":
+            r = e.length / 2  # length stores diameter
+            xs.extend([e.x - r, e.x + r])
+            ys.extend([e.y - r, e.y + r])
+            continue
         dx, dy = direction_vector(e.direction)
         # leading edge endpoint
         ex = e.x + dx * e.length
