@@ -129,8 +129,9 @@ class ElementPlacer:
         self._cursor.x = x + dx * length
         self._cursor.y = y + dy * length
 
-    def _flags(self) -> dict:
-        return {"show_id": self._show_id, "show_dims": self._show_dims}
+    def _flags(self, show_dims_override: bool | None = None) -> dict:
+        show_dims = show_dims_override if show_dims_override is not None else self._show_dims
+        return {"show_id": self._show_id, "show_dims": show_dims}
 
     def _resolve_color(self, elem_color: str | None) -> str:
         return elem_color if elem_color is not None else self._color
@@ -162,7 +163,7 @@ class ElementPlacer:
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -175,7 +176,7 @@ class ElementPlacer:
             x=x, y=y, length=elem.length, width=elem.width,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=elem.label,
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -189,7 +190,7 @@ class ElementPlacer:
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"thickness": elem.thickness},
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -203,7 +204,7 @@ class ElementPlacer:
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"swing": elem.swing},
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -217,7 +218,7 @@ class ElementPlacer:
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"depth": elem.depth},
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -232,7 +233,7 @@ class ElementPlacer:
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"radius": elem.radius, "sweep": elem.sweep, "ccw": elem.ccw,
                    "start_angle": elem.start_angle},
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -249,7 +250,7 @@ class ElementPlacer:
             x=x, y=y, length=elem.length, width=0.0,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -275,7 +276,7 @@ class ElementPlacer:
             direction=self._cursor.direction,
             lw=lw, dash=elem.dash, color=self._resolve_color(elem.color), label=None,
             extra={"radius": elem.radius},
-            show_id=self._show_id, show_dims=False, source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -356,7 +357,7 @@ class ElementPlacer:
             x=start_x, y=start_y, length=length, width=0.0,
             direction=bearing,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            **self._flags(), source_line=elem.source_line,
+            **self._flags(elem.show_dims_override), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
@@ -430,7 +431,7 @@ class ElementPlacer:
                 "font_family": self._text_font_family(elem.font_family),
                 "text_rows": [],
             },
-            **self._flags(),
+            **self._flags(elem.show_dims_override),
             source_line=elem.source_line,
         )
         self._elements.append(pe)

@@ -17,6 +17,7 @@ class LineElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -32,6 +33,7 @@ class RectElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -46,6 +48,7 @@ class WallElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -58,6 +61,7 @@ class DoorElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -70,6 +74,7 @@ class WindowElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -84,6 +89,7 @@ class ArcElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -95,6 +101,7 @@ class ArrowElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -106,6 +113,7 @@ class CircleElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -147,6 +155,7 @@ class LineToElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None  # A= start override
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -219,6 +228,7 @@ class TextBoxElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 

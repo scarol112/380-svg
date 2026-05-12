@@ -1,10 +1,15 @@
-head	1.15;
+head	1.16;
 access;
 symbols;
 locks
-	scarol:1.15; strict;
+	scarol:1.16; strict;
 comment	@# @;
 
+
+1.16
+date	2026.05.12.16.32.36;	author scarol;	state Exp;
+branches;
+next	1.15;
 
 1.15
 date	2026.05.12.15.55.31;	author scarol;	state Exp;
@@ -87,7 +92,7 @@ desc
 @
 
 
-1.15
+1.16
 log
 @*** empty log message ***
 @
@@ -111,6 +116,7 @@ class LineElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None  # A= offset from canvas origin
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -126,6 +132,7 @@ class RectElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -140,6 +147,7 @@ class WallElem:
     end: tuple[float, float] | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -152,6 +160,7 @@ class DoorElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -164,6 +173,7 @@ class WindowElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -178,6 +188,7 @@ class ArcElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -189,6 +200,7 @@ class ArrowElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -200,6 +212,7 @@ class CircleElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -241,6 +254,7 @@ class LineToElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None  # A= start override
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -313,6 +327,7 @@ class TextBoxElem:
     color: str | None = None
     absolute: tuple[float, float] | None = None
     name: str | None = None
+    show_dims_override: bool | None = None
     source_line: int = 0
 
 
@@ -351,6 +366,24 @@ ASTNode = (
     | TextBoxElem
     | TextAppendElem
 )
+@
+
+
+1.15
+log
+@*** empty log message ***
+@
+text
+@d20 1
+d36 1
+d51 1
+d64 1
+d77 1
+d92 1
+d104 1
+d116 1
+d158 1
+d231 1
 @
 
 

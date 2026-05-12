@@ -240,6 +240,7 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
     result: dict = {
         "lw": None, "dash": None, "color": None, "begin": None, "end": None,
         "absolute": None, "label": None, "name": None, "font_family": None,
+        "show_dims": None,
     }
     coords_found: list[tuple[float, float]] = []
 
@@ -258,6 +259,10 @@ def _extract_common(tokens: list[Token], lineno: int) -> dict:
             lv = tok.value.lower()
             if lv in _DASH_STYLES:
                 result["dash"] = lv
+            elif lv == "dim=on":
+                result["show_dims"] = True
+            elif lv == "dim=off":
+                result["show_dims"] = False
             elif tok.value.startswith("@") and len(tok.value) > 1:
                 result["name"] = tok.value[1:]
             elif lv.startswith("font=") and len(lv) > 5:
@@ -291,7 +296,7 @@ def _parse_line_elem(tokens: list[Token], lineno: int) -> LineElem:
     c = _extract_common(tokens, lineno)
     return LineElem(length=length, lw=c["lw"], dash=c["dash"], color=c["color"],
                     begin=c["begin"], end=c["end"], absolute=c["absolute"],
-                    name=c["name"], source_line=lineno)
+                    name=c["name"], show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
@@ -299,7 +304,7 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
     c = _extract_common(tokens, lineno)
     return RectElem(length=length, width=width, lw=c["lw"], dash=c["dash"], color=c["color"],
                     label=c["label"], begin=c["begin"], end=c["end"], absolute=c["absolute"],
-                    name=c["name"], source_line=lineno)
+                    name=c["name"], show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_wall(tokens: list[Token], lineno: int) -> WallElem:
@@ -313,7 +318,8 @@ def _parse_wall(tokens: list[Token], lineno: int) -> WallElem:
     c = _extract_common(tokens, lineno)
     return WallElem(length=length, thickness=thickness, lw=c["lw"], dash=c["dash"],
                     color=c["color"], begin=c["begin"], end=c["end"],
-                    absolute=c["absolute"], name=c["name"], source_line=lineno)
+                    absolute=c["absolute"], name=c["name"],
+                    show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
@@ -325,7 +331,7 @@ def _parse_door(tokens: list[Token], lineno: int) -> DoorElem:
     c = _extract_common(tokens, lineno)
     return DoorElem(width=width, swing=swing, lw=c["lw"], dash=c["dash"],
                     color=c["color"], absolute=c["absolute"], name=c["name"],
-                    source_line=lineno)
+                    show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
@@ -336,7 +342,7 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
     c = _extract_common(tokens, lineno)
     return WindowElem(width=width, depth=depth, lw=c["lw"], dash=c["dash"],
                       color=c["color"], absolute=c["absolute"], name=c["name"],
-                      source_line=lineno)
+                      show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
@@ -353,7 +359,7 @@ def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     return ArcElem(radius=radius, sweep=sweep, ccw=ccw, start_angle=start_angle,
                    lw=c["lw"], dash=c["dash"],
                    color=c["color"], absolute=c["absolute"], name=c["name"],
-                   source_line=lineno)
+                   show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
@@ -361,7 +367,7 @@ def _parse_arrow(tokens: list[Token], lineno: int) -> ArrowElem:
     c = _extract_common(tokens, lineno)
     return ArrowElem(length=length, lw=c["lw"], dash=c["dash"],
                      color=c["color"], absolute=c["absolute"], name=c["name"],
-                     source_line=lineno)
+                     show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_circle(tokens: list[Token], lineno: int) -> CircleElem:
@@ -369,7 +375,7 @@ def _parse_circle(tokens: list[Token], lineno: int) -> CircleElem:
     c = _extract_common(tokens, lineno)
     return CircleElem(radius=radius, lw=c["lw"], dash=c["dash"],
                       color=c["color"], absolute=c["absolute"], name=c["name"],
-                      source_line=lineno)
+                      show_dims_override=c["show_dims"], source_line=lineno)
 
 
 def _parse_point(tokens: list[Token], lineno: int) -> PointElem:
@@ -436,7 +442,8 @@ def _parse_lineto(tokens: list[Token], lineno: int) -> LineToElem:
     return LineToElem(
         dest_x=dest_x, dest_y=dest_y,
         lw=c["lw"], dash=c["dash"], color=c["color"],
-        absolute=c["absolute"], name=c["name"], source_line=lineno,
+        absolute=c["absolute"], name=c["name"],
+        show_dims_override=c["show_dims"], source_line=lineno,
     )
 
 
@@ -563,6 +570,7 @@ def _parse_textbox(tokens: list[Token], lineno: int) -> TextBoxElem:
         lw=c["lw"], dash=c["dash"], color=c["color"],
         absolute=c["absolute"],
         name=c["name"],
+        show_dims_override=c["show_dims"],
         source_line=lineno,
     )
 
