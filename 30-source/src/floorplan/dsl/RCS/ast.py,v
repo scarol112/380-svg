@@ -1,10 +1,15 @@
-head	1.14;
+head	1.15;
 access;
 symbols;
 locks
-	scarol:1.14; strict;
+	scarol:1.15; strict;
 comment	@# @;
 
+
+1.15
+date	2026.05.12.15.55.31;	author scarol;	state Exp;
+branches;
+next	1.14;
 
 1.14
 date	2026.05.12.15.32.45;	author scarol;	state Exp;
@@ -82,7 +87,7 @@ desc
 @
 
 
-1.14
+1.15
 log
 @*** empty log message ***
 @
@@ -167,6 +172,7 @@ class ArcElem:
     radius: float  # feet
     sweep: float   # degrees
     ccw: bool = False
+    start_angle: float = 0.0  # degrees; 0=right (3 o'clock), increases clockwise
     lw: float | None = None
     dash: str | None = None
     color: str | None = None
@@ -345,6 +351,15 @@ ASTNode = (
     | TextBoxElem
     | TextAppendElem
 )
+@
+
+
+1.14
+log
+@*** empty log message ***
+@
+text
+@d81 1
 @
 
 

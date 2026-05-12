@@ -230,12 +230,17 @@ class ElementPlacer:
             x=x, y=y, length=elem.radius * 2, width=elem.radius * 2,
             direction=self._cursor.direction,
             lw=_lw(elem.lw), dash=elem.dash, color=self._resolve_color(elem.color), label=None,
-            extra={"radius": elem.radius, "sweep": elem.sweep, "ccw": elem.ccw},
+            extra={"radius": elem.radius, "sweep": elem.sweep, "ccw": elem.ccw,
+                   "start_angle": elem.start_angle},
             **self._flags(), source_line=elem.source_line,
         )
         self._elements.append(pe)
         self._register_name(pe, elem.name)
-        self._move_cursor_to_end(x, y, elem.radius * 2)
+        start_rad = math.radians(elem.start_angle)
+        sweep_rad = math.radians(elem.sweep)
+        end_rad = start_rad + (-sweep_rad if elem.ccw else sweep_rad)
+        self._cursor.x = x + elem.radius * math.cos(end_rad)
+        self._cursor.y = y + elem.radius * math.sin(end_rad)
 
     def _place_arrow(self, elem: ArrowElem) -> None:
         x, y = self._place_start(elem.absolute)

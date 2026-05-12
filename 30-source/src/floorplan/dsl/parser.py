@@ -342,8 +342,16 @@ def _parse_window(tokens: list[Token], lineno: int) -> WindowElem:
 def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     radius, sweep = _leading_measurements(tokens, 2, lineno)
     ccw = any(tok.kind == "WORD" and tok.value.lower() == "ccw" for tok in tokens)
+    start_angle = 0.0
+    for tok in tokens:
+        if tok.kind == "WORD" and tok.value.lower().startswith("start="):
+            try:
+                start_angle = float(tok.value[6:])
+            except ValueError:
+                raise ParseError(f"Line {lineno}: invalid start= angle: {tok.value[6:]!r}")
     c = _extract_common(tokens, lineno)
-    return ArcElem(radius=radius, sweep=sweep, ccw=ccw, lw=c["lw"], dash=c["dash"],
+    return ArcElem(radius=radius, sweep=sweep, ccw=ccw, start_angle=start_angle,
+                   lw=c["lw"], dash=c["dash"],
                    color=c["color"], absolute=c["absolute"], name=c["name"],
                    source_line=lineno)
 

@@ -480,13 +480,16 @@ def _arc_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
     r = elem.extra.get("radius", elem.length / 2) * scale
     sweep_deg = elem.extra.get("sweep", 90)
     ccw = elem.extra.get("ccw", False)
+    start_deg = elem.extra.get("start_angle", 0.0)
     cx = _px(elem.x, scale, tx)
     cy = _px(elem.y, scale, ty)
-    start_x = cx + r
-    start_y = cy
-    rad = math.radians(sweep_deg)
-    end_x = cx + r * math.cos(rad)
-    end_y = cy + (-1 if ccw else 1) * r * math.sin(rad)
+    start_rad = math.radians(start_deg)
+    start_x = cx + r * math.cos(start_rad)
+    start_y = cy + r * math.sin(start_rad)
+    sweep_rad = math.radians(sweep_deg)
+    end_rad = start_rad + (-sweep_rad if ccw else sweep_rad)
+    end_x = cx + r * math.cos(end_rad)
+    end_y = cy + r * math.sin(end_rad)
     large = 1 if sweep_deg > 180 else 0
     sweep_flag = 0 if ccw else 1
     return (

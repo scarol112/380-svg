@@ -78,6 +78,7 @@ class ArcElem:
     radius: float  # feet
     sweep: float   # degrees
     ccw: bool = False
+    start_angle: float = 0.0  # degrees; 0=right (3 o'clock), increases clockwise
     lw: float | None = None
     dash: str | None = None
     color: str | None = None
