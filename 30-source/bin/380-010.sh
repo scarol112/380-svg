@@ -11,4 +11,4 @@ fi
 
 INPUT="$(realpath "$INPUT")"
 cd "$(dirname "$0")/.."
-uv run python -m floorplan.cli "$INPUT" -o "$OUTPUT" "${@:3}"
+uv run python -m svgdsl.cli "$INPUT" -o "$OUTPUT" "${@:3}"

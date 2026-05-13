@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.4 $ $Date: 2026/05/10 22:46:09 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.5 $ $Date: 2026/05/13 02:53:21 $ -->
 # App working title: svg
 
 ## Project tools
@@ -16,21 +16,21 @@ assets/380-032.js - javascript for 380-030.html
 
 | File | Purpose |
 |---|---|
-| `bin/380-010.sh` | Shell driver. Resolves the input path, `cd`s to `30-source/`, and invokes `uv run python -m floorplan.cli`. Accepts `<input.dsl> [output.svg]`. |
+| `bin/380-010.sh` | Shell driver. Resolves the input path, `cd`s to `30-source/`, and invokes `uv run python -m svgdsl.cli`. Accepts `<input.dsl> [output.svg]`. |
 | `assets/380-030.html` | Browser viewer frame. Displays the current SVG output and refreshes it every 6 seconds so edits appear without a manual reload. |
 | `assets/380-031.css` | Stylesheet for the viewer frame. |
 | `assets/380-032.js` | JavaScript for the viewer: auto-refresh timer, SVG file path field, and display logic. |
 
-### Package `src/floorplan/`
+### Package `src/svgdsl/`
 
 | File | Purpose |
 |---|---|
 | `__init__.py` | Package marker (empty). |
-| `cli.py` | Command-line entry point (`python -m floorplan.cli`). Parses `argparse` arguments, reads the DSL file (or stdin), calls `execute_dsl()`, computes the auto-scale transform via `compute_scale()`, and writes the SVG via `render_svg()`. |
+| `cli.py` | Command-line entry point (`python -m svgdsl.cli`). Parses `argparse` arguments, reads the DSL file (or stdin), calls `execute_dsl()`, computes the auto-scale transform via `compute_scale()`, and writes the SVG via `render_svg()`. |
 | `model.py` | Defines `PlacedElement` — the single shared dataclass that the placer produces and the renderer consumes. Fields: kind, number, x/y, length/width, direction, lw, dash, color, label, extra, show\_id, show\_dims, source\_line. |
 | `interpreter.py` | Interleaved parse-and-execute engine. Processes DSL statements one at a time so that system variables (`$__cx`, `$__cy`, `$__dir`, `$__mltodir`) always reflect live state. Handles variable assignment, `$name`/`${name}` substitution, `(expr)` inline arithmetic, `+=`/`-=` compound assignment, and `include` file resolution. Entry point: `execute_dsl(text, source_path)`. |
 
-### Sub-package `src/floorplan/dsl/`  *(language front-end)*
+### Sub-package `src/svgdsl/dsl/`  *(language front-end)*
 
 | File | Purpose |
 |---|---|
@@ -39,7 +39,7 @@ assets/380-032.js - javascript for 380-030.html
 | `lexer.py` | Tokenizer. Converts a raw DSL line into a list of `Token` objects. Recognises measurement units (feet, feet+inches, inches, `px`), coordinate pairs (`h,v`), `A=h,v` absolute placements, `C=color` color overrides, double-quoted strings, and plain words/numbers. |
 | `parser.py` | Parser. Converts token lists into AST nodes. Contains the `_ALIASES` table mapping short aliases to canonical keyword names, the `parse_file()` batch entry point, `_parse_line()` dispatcher, and one `_parse_*` helper per element and directive type. Also resolves `include` directives for the batch pipeline. |
 
-### Sub-package `src/floorplan/layout/`  *(geometry and placement)*
+### Sub-package `src/svgdsl/layout/`  *(geometry and placement)*
 
 | File | Purpose |
 |---|---|
@@ -48,7 +48,7 @@ assets/380-032.js - javascript for 380-030.html
 | `placer.py` | `ElementPlacer`. Walks AST nodes and converts them into `PlacedElement` objects. Tracks cursor position, canvas origin, element numbering counter, `elementid`/`dimensions` toggles, stroke color, `showcornerxy` state, `_mltodir`, named-element registry (`_named_elements`), and default text style (`_text_style`). Contains a `_place_*` method for each element type. Text elements that reference a named element (`textline`, `textbreak`) copy the referenced element's geometry at placement time so no lookup is needed at render time. `textappend` mutates the target element's `extra["text_rows"]` list. |
 | `scaler.py` | Auto-scale computation. Calculates the bounding box of all placed elements, derives a uniform scale factor so the drawing fits within the print area (full page minus 0.5 in margins), and returns `(scale, tx, ty)`. Iterates to account for the pixel extents of corner-marker annotations so none are clipped. |
 
-### Sub-package `src/floorplan/render/`  *(SVG output)*
+### Sub-package `src/svgdsl/render/`  *(SVG output)*
 
 | File | Purpose |
 |---|---|

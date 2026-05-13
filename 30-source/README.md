@@ -8,7 +8,7 @@ Several DSLs exist:
 - **OpenSCAD** — code-based 3D/2D modeling, but more for mechanical parts than floor plans
 - **Sweet Home 3D** has its own XML format
 - **IFC (Industry Foundation Classes)** — the professional standard for building information modeling, but very verbose/complex
-- **ASCII-art based tools** like `floorplan` that compile to SVG
+- **ASCII-art based tools** like `svgdsl` that compile to SVG
 
 ### Recommended approach
 

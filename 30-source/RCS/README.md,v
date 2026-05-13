@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.13.02.53.21;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@Replace all references to floorplan with svgdsl
 @
 text
 @# Floor Plan SVG Generation
@@ -32,7 +37,7 @@ Several DSLs exist:
 - **OpenSCAD** — code-based 3D/2D modeling, but more for mechanical parts than floor plans
 - **Sweet Home 3D** has its own XML format
 - **IFC (Industry Foundation Classes)** — the professional standard for building information modeling, but very verbose/complex
-- **ASCII-art based tools** like `floorplan` that compile to SVG
+- **ASCII-art based tools** like `svgdsl` that compile to SVG
 
 ### Recommended approach
 
@@ -46,4 +51,15 @@ SVG is the practical choice for generating floor plans from a description:
 
 Describe the layout — rooms, approximate dimensions, which walls are shared,
 door/window placements — and Claude can produce an SVG directly.
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d11 1
+a11 1
+- **ASCII-art based tools** like `floorplan` that compile to SVG
 @

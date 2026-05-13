@@ -105,9 +105,9 @@ Expression evaluation uses Python's `eval()` restricted to numeric operators
 
 | File | Change |
 |---|---|
-| `src/floorplan/interpreter.py` | **New** — `execute_dsl()`, variable substitution, expression evaluator, interleaved loop |
-| `src/floorplan/cli.py` | Replace `parse_file + place_all` with `execute_dsl` |
-| `src/floorplan/dsl/parser.py` | No change — `_parse_line` reused as-is from interpreter |
+| `src/svgdsl/interpreter.py` | **New** — `execute_dsl()`, variable substitution, expression evaluator, interleaved loop |
+| `src/svgdsl/cli.py` | Replace `parse_file + place_all` with `execute_dsl` |
+| `src/svgdsl/dsl/parser.py` | No change — `_parse_line` reused as-is from interpreter |
 | `docs/design.md` | Update |
 | `docs/users-guide.md` | Update |
 

@@ -1,10 +1,15 @@
-head	1.26;
+head	1.27;
 access;
 symbols;
 locks
-	scarol:1.26; strict;
+	scarol:1.27; strict;
 comment	@# @;
 
+
+1.27
+date	2026.05.13.02.53.21;	author scarol;	state Exp;
+branches;
+next	1.26;
 
 1.26
 date	2026.05.12.18.53.20;	author scarol;	state Exp;
@@ -141,12 +146,12 @@ desc
 @@
 
 
-1.26
+1.27
 log
-@*** empty log message ***
+@Replace all references to floorplan with svgdsl
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.25 $ $Date: 2026/05/12 16:25:07 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.26 $ $Date: 2026/05/12 18:53:20 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -163,13 +168,13 @@ bin/380-010.sh <input.dsl> [output.svg]
 #### Python directly
 
 ```
-uv run python -m floorplan.cli <input.dsl> [-o output.svg]
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg]
 ```
 
 Or read from stdin:
 
 ```
-cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
+cat myplan.dsl | uv run python -m svgdsl.cli -o output.svg
 ```
 
 #### Paper size (`--paper`)
@@ -178,7 +183,7 @@ Both the shell driver and the Python CLI accept a paper-size option:
 
 ```
 bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
-uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
 ```
 
 | Value | Size | Orientation |
@@ -188,7 +193,7 @@ uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
 
 ```
 bin/380-010.sh myplan.dsl myplan.svg --paper tabloid
-uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
+uv run python -m svgdsl.cli myplan.dsl -o myplan.svg --paper tabloid
 ```
 
 #### Viewing the output
@@ -1033,6 +1038,29 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.26
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.25 $ $Date: 2026/05/12 16:25:07 $ -->
+d18 1
+a18 1
+uv run python -m floorplan.cli <input.dsl> [-o output.svg]
+d24 1
+a24 1
+cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
+d33 1
+a33 1
+uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+d43 1
+a43 1
+uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
 @
 
 

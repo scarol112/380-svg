@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.26 $ $Date: 2026/05/12 18:53:20 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.27 $ $Date: 2026/05/13 02:53:21 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -15,13 +15,13 @@ bin/380-010.sh <input.dsl> [output.svg]
 #### Python directly
 
 ```
-uv run python -m floorplan.cli <input.dsl> [-o output.svg]
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg]
 ```
 
 Or read from stdin:
 
 ```
-cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
+cat myplan.dsl | uv run python -m svgdsl.cli -o output.svg
 ```
 
 #### Paper size (`--paper`)
@@ -30,7 +30,7 @@ Both the shell driver and the Python CLI accept a paper-size option:
 
 ```
 bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
-uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
 ```
 
 | Value | Size | Orientation |
@@ -40,7 +40,7 @@ uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
 
 ```
 bin/380-010.sh myplan.dsl myplan.svg --paper tabloid
-uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
+uv run python -m svgdsl.cli myplan.dsl -o myplan.svg --paper tabloid
 ```
 
 #### Viewing the output

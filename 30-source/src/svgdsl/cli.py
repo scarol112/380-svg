@@ -27,7 +27,7 @@ def _err(msg: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        prog="floorplan",
+        prog="svgdsl",
         description="Generate SVG floor plans from a DSL description file.",
     )
     ap.add_argument("input", nargs="?", help="DSL input file (default: stdin)")

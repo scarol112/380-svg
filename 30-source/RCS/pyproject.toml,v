@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.13.02.53.21;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.20.13.58.52;	author scarol;	state Exp;
@@ -17,13 +22,13 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial check-in
+@Replace all references to floorplan with svgdsl
 @
 text
 @[project]
-name = "floorplan"
+name = "svgdsl"
 version = "0.1.0"
 description = "Generate SVG floor plans from text descriptions"
 readme = "README.md"
@@ -38,5 +43,19 @@ requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
 
 [project.scripts]
+svgdsl = "svgdsl.cli:main"
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@d2 1
+a2 1
+name = "floorplan"
+d17 1
+a17 1
 floorplan = "floorplan.cli:main"
 @

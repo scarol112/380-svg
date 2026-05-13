@@ -1,10 +1,15 @@
-head	1.5;
+head	1.6;
 access;
 symbols;
 locks
-	scarol:1.5; strict;
+	scarol:1.6; strict;
 comment	@# @;
 
+
+1.6
+date	2026.05.13.02.53.21;	author scarol;	state Exp;
+branches;
+next	1.5;
 
 1.5
 date	2026.05.12.12.02.05;	author scarol;	state Exp;
@@ -37,9 +42,9 @@ desc
 @
 
 
-1.5
+1.6
 log
-@*** empty log message ***
+@Replace all references to floorplan with svgdsl
 @
 text
 @import argparse
@@ -71,7 +76,7 @@ def _err(msg: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        prog="floorplan",
+        prog="svgdsl",
         description="Generate SVG floor plans from a DSL description file.",
     )
     ap.add_argument("input", nargs="?", help="DSL input file (default: stdin)")
@@ -110,6 +115,17 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@d30 1
+a30 1
+        prog="floorplan",
 @
 
 
