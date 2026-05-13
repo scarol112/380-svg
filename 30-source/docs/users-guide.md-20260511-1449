@@ -1,152 +1,4 @@
-head	1.26;
-access;
-symbols;
-locks
-	scarol:1.26; strict;
-comment	@# @;
-
-
-1.26
-date	2026.05.12.18.53.20;	author scarol;	state Exp;
-branches;
-next	1.25;
-
-1.25
-date	2026.05.12.16.25.07;	author scarol;	state Exp;
-branches;
-next	1.24;
-
-1.24
-date	2026.05.12.15.40.30;	author scarol;	state Exp;
-branches;
-next	1.23;
-
-1.23
-date	2026.05.11.19.13.39;	author scarol;	state Exp;
-branches;
-next	1.22;
-
-1.22
-date	2026.05.11.19.06.10;	author scarol;	state Exp;
-branches;
-next	1.21;
-
-1.21
-date	2026.05.10.22.46.09;	author scarol;	state Exp;
-branches;
-next	1.20;
-
-1.20
-date	2026.05.07.02.53.09;	author scarol;	state Exp;
-branches;
-next	1.19;
-
-1.19
-date	2026.05.03.01.57.48;	author scarol;	state Exp;
-branches;
-next	1.18;
-
-1.18
-date	2026.05.02.17.29.56;	author scarol;	state Exp;
-branches;
-next	1.17;
-
-1.17
-date	2026.05.02.11.15.05;	author scarol;	state Exp;
-branches;
-next	1.16;
-
-1.16
-date	2026.04.30.02.03.02;	author scarol;	state Exp;
-branches;
-next	1.15;
-
-1.15
-date	2026.04.29.23.42.31;	author scarol;	state Exp;
-branches;
-next	1.14;
-
-1.14
-date	2026.04.29.22.24.20;	author scarol;	state Exp;
-branches;
-next	1.13;
-
-1.13
-date	2026.04.29.21.53.19;	author scarol;	state Exp;
-branches;
-next	1.12;
-
-1.12
-date	2026.04.29.21.21.49;	author scarol;	state Exp;
-branches;
-next	1.11;
-
-1.11
-date	2026.04.26.17.20.04;	author scarol;	state Exp;
-branches;
-next	1.10;
-
-1.10
-date	2026.04.26.15.03.31;	author scarol;	state Exp;
-branches;
-next	1.9;
-
-1.9
-date	2026.04.26.03.29.53;	author scarol;	state Exp;
-branches;
-next	1.8;
-
-1.8
-date	2026.04.24.14.27.32;	author scarol;	state Exp;
-branches;
-next	1.7;
-
-1.7
-date	2026.04.21.15.40.29;	author scarol;	state Exp;
-branches;
-next	1.6;
-
-1.6
-date	2026.04.21.15.38.38;	author scarol;	state Exp;
-branches;
-next	1.5;
-
-1.5
-date	2026.04.21.15.27.45;	author scarol;	state Exp;
-branches;
-next	1.4;
-
-1.4
-date	2026.04.20.19.28.49;	author scarol;	state Exp;
-branches;
-next	1.3;
-
-1.3
-date	2026.04.20.18.34.22;	author scarol;	state Exp;
-branches;
-next	1.2;
-
-1.2
-date	2026.04.20.17.16.50;	author scarol;	state Exp;
-branches;
-next	1.1;
-
-1.1
-date	2026.04.20.15.45.22;	author scarol;	state Exp;
-branches;
-next	;
-
-
-desc
-@@
-
-
-1.26
-log
-@*** empty log message ***
-@
-text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.25 $ $Date: 2026/05/12 16:25:07 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.21 $ $Date: 2026/05/10 22:46:09 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -170,25 +22,6 @@ Or read from stdin:
 
 ```
 cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
-```
-
-#### Paper size (`--paper`)
-
-Both the shell driver and the Python CLI accept a paper-size option:
-
-```
-bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
-uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
-```
-
-| Value | Size | Orientation |
-|---|---|---|
-| `letter` | 11 × 8.5 in | landscape (default) |
-| `tabloid` | 17 × 11 in | landscape |
-
-```
-bin/380-010.sh myplan.dsl myplan.svg --paper tabloid
-uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
 ```
 
 #### Viewing the output
@@ -235,7 +68,7 @@ Dimensions are in **feet** unless a unit suffix is given.
 | `6"` | 6 inches (0.5 ft) |
 | `12'6"` | 12 feet 6 inches |
 | `2px` | 2 SVG pixels — **line weight only** |
-| `0px` | Invisible — nothing is drawn and no annotations are shown. For most elements, the cursor still advances. `point 0px` produces no output and does not advance the cursor (since `point` never advances the cursor). |
+| `0px` | Invisible — element occupies space and advances the cursor, but nothing is drawn and no annotations are shown |
 
 #### Drawing cursor
 
@@ -244,7 +77,7 @@ top-left of the first element). Each element advances the cursor by its length
 in the current drawing direction. The cursor position becomes the start point
 of the next element.
 
-#### Drawing direction (`dir`)
+#### Drawing direction
 
 ```
 direction <degrees>
@@ -261,7 +94,7 @@ Sets the compass direction for subsequent elements.
 
 `direction` can appear anywhere in the file and takes effect immediately.
 
-#### Include (`inc`)
+#### Include
 
 ```
 include <filename>
@@ -347,7 +180,6 @@ Two reference forms, identical behavior:
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 | `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
 | `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
-| `$__date` | — | Current date in `YYYY-MM-DD` format |
 
 Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
 
@@ -469,7 +301,7 @@ for i = 0 to (n - 1) {
 
 ---
 
-#### Display directives (`eid`, `dim`, `sxy`)
+#### Display directives
 
 ```
 elementid on|off
@@ -511,7 +343,7 @@ direction 180       # no marker — showcornerxy is off
 `showcornerxy` is useful during drawing development to verify that walls meet
 at the correct coordinates.
 
-#### Color (`col`)
+#### Color
 
 ```
 color <value>
@@ -580,14 +412,14 @@ An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
 perpendicular to it.
 
 ```
-rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@@name]
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@name]
 ```
 
 ```
 rect 12 10
 rect 10'6" 8' "Bedroom"
 rect 14 11 2px "Master Bedroom" A=12,0
-rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+rect 4 0.8 @panel "**Schedule**" C="lightgray"
 ```
 
 The label is centered inside the rectangle. Inline markup (`*italic*`, `**bold**`) is supported in the label. A named rect can receive `textappend` rows that expand it downward.
@@ -658,49 +490,12 @@ window 4 A=22,3
 A general-purpose arc, drawn clockwise from the element's start point.
 
 ```
-arc <radius> <sweep-degrees> [ccw] [start=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
-The optional keyword `ccw` draws the arc counter-clockwise instead of clockwise.
-
-The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
-
-| `start=` value | Position on circle |
-|---|---|
-| `0` | 12 o'clock (top) — **default** |
-| `90` | 3 o'clock (right) |
-| `180` | 6 o'clock (bottom) |
-| `270` | 9 o'clock (left) |
-
-**Cursor after arc**: the cursor moves to the arc's actual endpoint on the circle, computed from `start` angle plus the sweep direction and amount. It does **not** advance by diameter in the drawing direction.
-
-The arc's bounding box for annotation placement is computed from the actual arc geometry (start angle, sweep, and cardinal crossings), so dimension labels for nearby elements are not displaced when an arc is present.
-
 ```
-arc 3 90                    # quarter circle, 3ft radius, clockwise from 12 o'clock
-arc 5 180                   # semicircle, 5ft radius, clockwise from 12 o'clock
-arc 3 90 ccw                # quarter circle, counter-clockwise from 12 o'clock
-arc 4 90 start=0            # quarter circle starting at 12 o'clock (top)
-arc 3 180 ccw start=180     # semicircle counter-clockwise starting at 6 o'clock
-```
-
----
-
-#### `circle` / `ci`
-
-An open (unfilled) circle, centered at the current cursor position or at an
-absolute position. The cursor does **not** advance after a circle.
-
-```
-circle <radius> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
-```
-
-Supports all standard dash styles and color options.
-
-```
-circle 2                   # 2ft-radius circle centered at cursor
-circle 1.5 2px C=blue      # blue, 2px stroke
-circle 3 dashed A=10,5     # dashed circle at (10ft, 5ft); cursor unchanged
+arc 3 90           # quarter circle, 3ft radius
+arc 5 180          # semicircle, 5ft radius
 ```
 
 ---
@@ -799,13 +594,13 @@ A text annotation. Does not advance the cursor. Labels always render
 horizontally regardless of the current drawing direction.
 
 ```
-label "text" [left|center|right] [<size>] [font=<family>] [A=<h>,<v>] [@@name]
+label "text" [left|center|right] [<size>] [font=<family>] [A=<h>,<v>] [@name]
 ```
 
 - alignment — `left` (default), `center`, or `right`
 - `<size>` — font size in SVG pixels (default 10, or the current `textstyle` size)
 - `font=<family>` — font family for this label only (e.g. `font=serif`)
-- `@@name` — register this label under a name for later reference
+- `@name` — register this label under a name for later reference
 
 Quoted text supports **inline markup** and **line breaks** — see [Text styling](#text-styling) below.
 
@@ -822,15 +617,15 @@ lb "**Bold title**\nSubtitle" center 12 A=0,0
 
 #### Element naming
 
-Any element can be tagged with `@@name` at the end of its statement. The name is used to anchor text elements to that element later.
+Any element can be tagged with `@name` at the end of its statement. The name is used to anchor text elements to that element later.
 
 ```
-line 12 @@corridor
-rect 14 10 @@living_room "Bedroom"
-wall 8 0.5 @@north_wall
+line 12 @corridor
+rect 14 10 @living_room "Bedroom"
+wall 8 0.5 @north_wall
 ```
 
-Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration.
+Names are case-sensitive identifiers. A later `@name` on a different element replaces the earlier registration.
 
 ---
 
@@ -891,13 +686,13 @@ Places text alongside a named line or other element, rotated to match its direct
 textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
 ```
 
-- `<name>` — a previously registered element name (via `@@name`)
+- `<name>` — a previously registered element name (via `@name`)
 - alignment — where on the element to anchor the text: `left` = at the start, `center` = centred (default), `right` = at the end
 - Text is offset slightly away from the element and rotated to stay readable
 
 ```
 dir 90
-l 14 @@corridor
+l 14 @corridor
 textline "Corridor" corridor center 10
 txl "**North Wall**" north_wall left 12 C=blue
 ```
@@ -915,7 +710,7 @@ textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [<lw>px] [C
 - `<lw>px` — border box stroke width (default 1px); use `0px` to hide the border box while keeping the white mask and text
 
 ```
-l 14 @@front_wall
+l 14 @front_wall
 textbreak "Front Wall" front_wall center 10
 txbr "**Section A-A**" section_line center 12
 txbr "No box" section_line center 10 0px    # invisible border, but white mask and text visible
@@ -929,18 +724,18 @@ A stroked rectangle with text inside. Behaves like `rect` for cursor advancement
 
 ```
 textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
-        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@name]
 ```
 
 - `wrap` — word-wraps the text to fit within the box width using `<tspan>` elements
-- `@@name` — name the box so `textappend` can add rows to it later
+- `@name` — name the box so `textappend` can add rows to it later
 
 Text supports inline markup and `\n` line breaks. With `wrap`, explicit `\n` paragraph breaks are honoured before word-wrapping is applied.
 
 ```
 tbox 6 2 "Long note that wraps inside the box" left wrap 9
 tbox 8 1.5 "**Title**" center 14 2px A=0,12
-tbox 4 0.8 @@panel "**Schedule**" C="lightgray"
+tbox 4 0.8 @panel "**Schedule**" C="lightgray"
 ```
 
 A `textbox` with `width=0` starts at zero height and grows downward via `textappend`.
@@ -959,13 +754,13 @@ textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>
 - An empty string `""` inserts a blank spacer row
 
 ```
-rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+rect 4 0.8 @panel "**Schedule**" C="lightgray"
 textappend "Area: 168 sq ft" panel
 textappend "*Finish:* Hardwood" panel
 textappend "" panel             # blank spacer
 textappend "Updated: 2026-05" panel right 8
 
-tbox 4 0.6 @@notes "**Notes**"
+tbox 4 0.6 @notes "**Notes**"
 tapp "Item 1\nItem 2" notes    # two rows from one call
 tapp "" notes                  # blank line
 tapp "Item 3" notes
@@ -985,7 +780,7 @@ tapp "Item 3" notes
 | `hidden` | Hidden line — short dashes (4,2) |
 | `C=<color>` | Per-element stroke color override. Named (`C=red`) or quoted CSS (`C="#ff0000"`). Does not affect subsequent elements. |
 | `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
-| `@@name` | Register this element under a name for later reference by `textline`, `textbreak`, or `textappend`. |
+| `@name` | Register this element under a name for later reference by `textline`, `textbreak`, or `textappend`. |
 | `font=<family>` | *(text elements and `label` only)* Per-element font family override. |
 
 Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
@@ -1033,586 +828,3 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
-@
-
-
-1.25
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.24 $ $Date: 2026/05/12 15:40:30 $ -->
-d518 1
-a518 1
-The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins (SVG coordinates, where y increases downward):
-d522 4
-a525 4
-| `0` | 3 o'clock (rightward) — **default** |
-| `90` | 6 o'clock (bottom) |
-| `180` | 9 o'clock (left) |
-| `270` | 12 o'clock (top) |
-d529 2
-d532 5
-a536 5
-arc 3 90                    # quarter circle, 3ft radius, clockwise from 3 o'clock
-arc 5 180                   # semicircle, 5ft radius, clockwise from 3 o'clock
-arc 3 90 ccw                # quarter circle, counter-clockwise from 3 o'clock
-arc 4 90 start=270          # quarter circle starting at 12 o'clock (top)
-arc 3 180 ccw start=90      # semicircle counter-clockwise starting at 6 o'clock
-@
-
-
-1.24
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.23 $ $Date: 2026/05/11 19:13:39 $ -->
-d513 1
-a513 1
-arc <radius> <sweep-degrees> [ccw] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
-d518 11
-d530 5
-a534 3
-arc 3 90           # quarter circle, 3ft radius, clockwise
-arc 5 180          # semicircle, 5ft radius, clockwise
-arc 3 90 ccw       # quarter circle, counter-clockwise
-@
-
-
-1.23
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.22 $ $Date: 2026/05/11 19:06:10 $ -->
-d27 19
-d513 9
-a521 1
-arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
-d524 13
-d538 3
-a540 2
-arc 3 90           # quarter circle, 3ft radius
-arc 5 180          # semicircle, 5ft radius
-@
-
-
-1.22
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.21 $ $Date: 2026/05/10 22:46:09 $ -->
-d629 1
-a629 1
-Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration. The double-at form `@@@@name` is also accepted and behaves identically to `@@name`.
-@
-
-
-1.21
-log
-@Document control-flow features: if/for/blocks/True/False
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.20 $ $Date: 2026/05/07 02:53:09 $ -->
-d71 1
-a71 1
-| `0px` | Invisible — element occupies space and advances the cursor, but nothing is drawn and no annotations are shown |
-d80 1
-a80 1
-#### Drawing direction
-d97 1
-a97 1
-#### Include
-d183 1
-d305 1
-a305 1
-#### Display directives
-d347 1
-a347 1
-#### Color
-d629 1
-a629 1
-Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration.
-@
-
-
-1.20
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.19 $ $Date: 2026/05/03 01:57:48 $ -->
-d196 105
-@
-
-
-1.19
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
-d181 2
-d184 1
-a184 1
-All system variables update after every statement.
-@
-
-
-1.18
-log
-@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
-a58 25
-#### Aliases
-
-Every keyword has a short alias so common sequences stay compact. Aliases are
-case-insensitive and can be mixed freely with full names.
-
-| Full name | Alias | Full name | Alias |
-|---|---|---|---|
-| `line` | `l` | `direction` | `dir` |
-| `rect` | `r` | `elementid` | `eid` |
-| `wall` | `w` | `dimensions` | `dim` |
-| `door` | `d` | `color` | `col` |
-| `window` | `wi` | `include` | `inc` |
-| `arc` | `a` | `showcornerxy` | `sxy` |
-| `arrow` | `aw` | `moveto` | `mto` |
-| `point` | `p` | `lineto` | `lto` |
-| `label` | `lb` | `textstyle` | `tstyle` |
-| `textline` | `txl` | `textbreak` | `txbr` |
-| `textbox` | `tbox` | `textappend` | `tapp` |
-
-```
-dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
-eid off; dim off
-p C=red A=3,3; p C=blue A=5,5
-```
-
-d600 1
-a600 1
-textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
-d603 2
-d609 1
-@
-
-
-1.17
-log
-@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.16 $ $Date: 2026/04/30 02:03:02 $ -->
-d4 1
-a4 1
-## Running the program
-d6 1
-a6 1
-### Shell driver (recommended)
-d15 1
-a15 1
-### Python directly
-d27 1
-a27 1
-### Viewing the output
-d35 1
-a35 1
-## Input file format
-d59 1
-a59 1
-### Aliases
-d84 1
-a84 1
-### Measurements
-d98 1
-a98 1
-### Drawing cursor
-d105 1
-a105 1
-### Drawing direction
-d122 1
-a122 1
-### Include
-d143 1
-a143 1
-### Variables
-d222 1
-a222 1
-### Display directives
-d236 1
-a236 1
-#### `showcornerxy`
-d264 1
-a264 1
-### Color
-d297 1
-a297 1
-### Absolute placement
-d310 1
-a310 1
-## Element types
-d312 1
-a312 1
-### `line`
-d327 1
-a327 1
-### `rect`
-d347 1
-a347 1
-### `wall`
-d363 1
-a363 1
-### `door`
-d384 1
-a384 1
-### `window`
-d406 1
-a406 1
-### `arc`
-d421 1
-a421 1
-### `arrow`
-d436 1
-a436 1
-### `moveto`
-d456 1
-a456 1
-### `lineto`
-d478 1
-a478 1
-### `point`
-d509 1
-a509 1
-### `label`
-d534 1
-a534 1
-## Text styling
-d536 1
-a536 1
-### Element naming
-d550 1
-a550 1
-### Inline bold, italic, and line breaks
-d575 1
-a575 1
-### `textstyle` — default font
-d599 1
-a599 1
-### `textline` — text alongside a named element
-d620 1
-a620 1
-### `textbreak` — text that visually breaks a line
-d636 1
-a636 1
-### `textbox` — text inside a drawn rectangle
-d660 1
-a660 1
-### `textappend` — add rows to a named rect or textbox
-d686 1
-a686 1
-## Common options (all elements)
-d711 1
-a711 1
-## Output
-d724 1
-a724 1
-## Example
-@
-
-
-1.16
-log
-@*** empty log message ***
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 23:42:31 $ -->
-d74 3
-a76 1
-| `label` | `lb` | | |
-d333 1
-a333 1
-rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
-d340 1
-d343 1
-a343 1
-The label is centered inside the rectangle.
-d515 1
-a515 1
-label "text" [left|center|right] [<size>] [A=<h>,<v>]
-d519 5
-a523 1
-- `<size>` — font size in SVG pixels (default 10)
-d529 153
-d698 2
-@
-
-
-1.15
-log
-@Document __ system variables: __cursorx, __cursory, __cx, __cy, __dir
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
-d72 2
-a73 2
-| `arrow` | `aw` | | |
-| `point` | `p` | | |
-d203 1
-d429 42
-@
-
-
-1.14
-log
-@Document (expr) inline arithmetic syntax
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.13 $ $Date: 2026/04/29 21:53:19 $ -->
-d196 1
-a196 1
-**Built-in cursor variables** — read-only, updated after every placed element:
-d198 7
-a204 4
-| Variable | Meaning |
-|---|---|
-| `$cursorx` | Current cursor x in feet from canvas origin (same as `A=` x) |
-| `$cursory` | Current cursor y in feet from canvas origin (same as `A=` y) |
-d209 4
-a212 1
-point C=red A=$cursorx,$cursory   # red dot at cursor after rect
-d215 1
-a215 1
-Variables are shared across `include` files. Assigning to `cursorx` or `cursory` is an error.
-@
-
-
-1.13
-log
-@Document += and -= compound assignment operators
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.12 $ $Date: 2026/04/29 21:21:49 $ -->
-d156 14
-@
-
-
-1.12
-log
-@Document numeric variables, cursorx/cursory, and arithmetic (issue #20)
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 17:20:04 $ -->
-d156 9
-@
-
-
-1.11
-log
-@Document element and directive aliases (issue #19)
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.10 $ $Date: 2026/04/26 15:03:31 $ -->
-d140 49
-@
-
-
-1.10
-log
-@Document semicolon-separated statements (issue #9)
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
-d57 23
-@
-
-
-1.9
-log
-@Document point element
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.8 $ $Date: 2026/04/24 14:27:32 $ -->
-d37 3
-a39 2
-One element or directive per line. Everything after `#` on a line is a comment
-and is ignored. Blank lines are ignored.
-d45 12
-@
-
-
-1.8
-log
-@Document showcornerxy directive (issue #15)
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:40:29 $ -->
-d314 31
-@
-
-
-1.7
-log
-@add C= to element syntax listings and common options table; remove orphaned example block
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.6 $ $Date: 2026/04/21 15:38:38 $ -->
-d110 1
-d113 33
-a145 3
-Toggle element reference numbers and dimension labels independently. Both are
-`on` by default. The directive takes effect for all elements that follow it;
-elements placed before the directive are unaffected.
-@
-
-
-1.6
-log
-@C= per-element color override; quote-aware comment strip for hex colors
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.5 $ $Date: 2026/04/21 15:27:45 $ -->
-a148 10
-```
-# show rooms without cluttering annotations on narrow walls
-rect 12 10 "Living Room"
-elementid off
-dimensions off
-wall 12
-elementid on
-dimensions on
-```
-
-d169 1
-a169 1
-line <length> [<lw>px] [A=<h>,<v>]
-d185 1
-a185 1
-rect <length> <width> [<lw>px] ["label"] [A=<h>,<v>]
-d204 1
-a204 1
-wall <length> [<thickness>] [<lw>px] [A=<h>,<v>]
-d220 1
-a220 1
-door <width> [left|right|in|out] [<lw>px] [A=<h>,<v>]
-d240 1
-a240 1
-window <width> [<depth>] [<lw>px] [A=<h>,<v>]
-d262 1
-a262 1
-arc <radius> <sweep-degrees> [<lw>px] [A=<h>,<v>]
-d277 1
-a277 1
-arrow <length> [<lw>px] [A=<h>,<v>]
-d317 1
-@
-
-
-1.5
-log
-@color directive: set stroke color for subsequent elements
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.4 $ $Date: 2026/04/20 19:28:49 $ -->
-d138 10
-@
-
-
-1.4
-log
-@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
-@
-text
-@d1 1
-a1 1
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.3 $ $Date: 2026/04/20 18:34:22 $ -->
-d115 23
-@
-
-
-1.3
-log
-@refresh 6s; label font size; window dim length only; A= cursor behavior corrected; RCS headers
-@
-text
-@d1 1
-a1 1
-<!-- $Source$ $Revision$ $Date$ -->
-d289 5
-d295 8
-@
-
-
-1.2
-log
-@Add include directive with relative path resolution and circular include detection
-@
-text
-@d1 1
-d30 1
-a30 1
-automatically every 15 seconds. Use the path field in the toolbar to point it
-d130 2
-a131 1
-An absolutely placed element does **not** move the cursor.
-d223 3
-d270 1
-a270 1
-label "text" [left|center|right] [A=<h>,<v>]
-d274 1
-d279 1
-@
-
-
-1.1
-log
-@Add display directives, red IDs, bigger fonts, overlap avoidance, 0px invisible
-@
-text
-@d83 21
-@

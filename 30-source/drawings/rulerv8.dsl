@@ -23,3 +23,5 @@ l 1 0px ; lb "7"
 l 1 0px ; lb "8"
 
 textline 11 C=black "$__dsl_filename" l1
+mto 0 0
+dir 90

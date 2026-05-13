@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.23 $ $Date: 2026/05/11 19:13:39 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.26 $ $Date: 2026/05/12 18:53:20 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -22,6 +22,25 @@ Or read from stdin:
 
 ```
 cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
+```
+
+#### Paper size (`--paper`)
+
+Both the shell driver and the Python CLI accept a paper-size option:
+
+```
+bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
+uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+```
+
+| Value | Size | Orientation |
+|---|---|---|
+| `letter` | 11 × 8.5 in | landscape (default) |
+| `tabloid` | 17 × 11 in | landscape |
+
+```
+bin/380-010.sh myplan.dsl myplan.svg --paper tabloid
+uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
 ```
 
 #### Viewing the output
@@ -491,12 +510,49 @@ window 4 A=22,3
 A general-purpose arc, drawn clockwise from the element's start point.
 
 ```
-arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+arc <radius> <sweep-degrees> [ccw] [start=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
+The optional keyword `ccw` draws the arc counter-clockwise instead of clockwise.
+
+The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
+
+| `start=` value | Position on circle |
+|---|---|
+| `0` | 12 o'clock (top) — **default** |
+| `90` | 3 o'clock (right) |
+| `180` | 6 o'clock (bottom) |
+| `270` | 9 o'clock (left) |
+
+**Cursor after arc**: the cursor moves to the arc's actual endpoint on the circle, computed from `start` angle plus the sweep direction and amount. It does **not** advance by diameter in the drawing direction.
+
+The arc's bounding box for annotation placement is computed from the actual arc geometry (start angle, sweep, and cardinal crossings), so dimension labels for nearby elements are not displaced when an arc is present.
+
 ```
-arc 3 90           # quarter circle, 3ft radius
-arc 5 180          # semicircle, 5ft radius
+arc 3 90                    # quarter circle, 3ft radius, clockwise from 12 o'clock
+arc 5 180                   # semicircle, 5ft radius, clockwise from 12 o'clock
+arc 3 90 ccw                # quarter circle, counter-clockwise from 12 o'clock
+arc 4 90 start=0            # quarter circle starting at 12 o'clock (top)
+arc 3 180 ccw start=180     # semicircle counter-clockwise starting at 6 o'clock
+```
+
+---
+
+#### `circle` / `ci`
+
+An open (unfilled) circle, centered at the current cursor position or at an
+absolute position. The cursor does **not** advance after a circle.
+
+```
+circle <radius> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@name]
+```
+
+Supports all standard dash styles and color options.
+
+```
+circle 2                   # 2ft-radius circle centered at cursor
+circle 1.5 2px C=blue      # blue, 2px stroke
+circle 3 dashed A=10,5     # dashed circle at (10ft, 5ft); cursor unchanged
 ```
 
 ---

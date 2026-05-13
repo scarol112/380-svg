@@ -1,4 +1,5 @@
 #.09-unit horizontal ruler 1/2 unit marks
+dim off
 dir 90
 l 0.5 @rh10a;  l 0.5 4px
 l 0.5;  l 0.5 4px
@@ -26,4 +27,6 @@ l 1 0px ; lb "8"
 l 1 0px ; lb "9"
 l 1 0px ; lb "10"
 
-textline 10 C=black "$__dsl_filename" rh10a
+# textline 10 C=black "$__dsl_filename" rh10a
+mto 0 0
+
