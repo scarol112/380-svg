@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.27 $ $Date: 2026/05/13 02:53:21 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.29 $ $Date: 2026/05/13 20:10:26 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -213,6 +213,78 @@ lb "__dir=${__dir}" A=0,1       # label showing current direction
 ```
 
 Variables are shared across `include` files.
+
+---
+
+#### Strings
+
+Variables are numeric by default. To create a string variable, declare it with the `string` keyword:
+
+```
+string title = "Master Bedroom"
+string note  = 'A single-quoted literal'
+string empty                              # default ""
+string a, b, c                            # multi-decl, each default ""
+```
+
+Both `"..."` and `'...'` are accepted as string literals. (`'` is only treated as a string opener where it cannot match a feet/inches measurement, so `wall 12'6"` is unaffected.) Multi-declarations cannot have an initializer — write one declaration per line if you need to give variables different initial values.
+
+**Concatenation** with `+` or `+=`:
+
+```
+string title = "Master Bedroom"
+string rev   = " (rev 2)"
+title += rev                              # title is now "Master Bedroom (rev 2)"
+label "${title}"
+```
+
+**Built-in functions:**
+
+| Builtin | Returns | What it does |
+|---|---|---|
+| `len(s)` | number | Length of string `s` |
+| `substr(s, start)` | string | Slice from `start` to end |
+| `substr(s, start, end)` | string | Slice from `start` up to `end` |
+| `match(s, pattern)` | 1 or 0 | Truthy if regex `pattern` matches `s` |
+| `replace(s, pattern, repl)` | string | Regex replace |
+
+Use them in either context where the return type fits:
+
+```
+string title = "Master Bedroom"
+n = (len(title))                          # numeric context
+label "title is ${n} chars"
+
+if (match(title, "Bedroom")) {            # condition
+    label "matched"
+}
+
+string clean = replace(title, "[^A-Za-z]", "_")  # string context
+label "${clean}"
+
+string first6 = substr(title, 0, 6)
+label "${first6}"                         # → "Master"
+```
+
+**No implicit coercion.** A number cannot be concatenated into a string with `+`, and a string cannot appear in a numeric expression. To put a number into a label, use the `${name}` substitution form, which formats it for display:
+
+```
+numeric n = (len(title))
+label "len = ${n}"                        # ok — ${n} formats the number
+string lbl = "len = " + n                 # ERROR: cannot concatenate string and numeric
+```
+
+`-=` is not defined on string variables.
+
+**Reference forms inside expressions.** A bare name in an expression is a *value reference* — looked up at evaluation time and passed to the operator or builtin as a typed value. The `$name` / `${name}` forms are *textual substitution* — the variable's raw content is spliced into the source before parsing, like a macro. For numeric variables both work in expressions because the spliced text is a valid number; for string variables the spliced text is unquoted characters, which breaks the syntax. Use each form where it fits:
+
+| Context | Use | Example |
+|---|---|---|
+| Builtin call arg, or inside `(...)` | bare name | `len(s)`, `(len(s) + 1)`, `replace(s, "x", "y")` |
+| Inside a label or quoted text | `${name}` | `label "name is ${s}"`, `"len = ${n}"` |
+| Standalone numeric token | `$name` / `${name}` | `rect $w $h`, `line ${lw}px`, `door 3 A=$offset,0` |
+
+So for `string s = "hello"`: `len(s)` returns 5; `len($s)` and `len(${s})` both rewrite to `len(hello)` — an unquoted bare identifier — and error.
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.5 $ $Date: 2026/05/13 02:53:21 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.6 $ $Date: 2026/05/13 19:11:28 $ -->
 # App working title: svg
 
 ## Project tools
@@ -154,6 +154,38 @@ lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
 **Scope**: variables are shared across `include` files — one table for the entire drawing.
 
 **Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
+
+### Strings and explicit types
+
+Variables are numeric by default. Strings require an explicit declaration with the `string` keyword. The `numeric` keyword is also accepted for symmetric explicit declaration but is optional (bare `x = 5` keeps working).
+
+**Declaration:**
+```
+string title = "Master Bedroom"
+string suffix = ' (rev 2)'          # single quotes also work
+string empty                        # no initializer → ""
+string a, b, c                      # multi-declaration, each → ""
+numeric x, y, z                     # multi-declaration, each → 0.0
+```
+
+Multi-declarations cannot carry an initializer (`string a, b = "x"` is a parse error). One variable per line for initialized declarations.
+
+**Operations:**
+- `+` and `+=` concatenate strings: `title += " (rev 2)"`
+- `len(s)` — length of a string, returns a numeric
+- `substr(s, start)` / `substr(s, start, end)` — Python-slice semantics
+- `match(s, pattern)` — regex search, returns 1 (truthy) or 0
+- `replace(s, pattern, repl)` — regex replace, returns the new string
+
+`len` and `match` return numeric values and are valid in numeric / condition contexts (`if (match(title, "^Master"))`, `n = (len(title))`). `substr` and `replace` return strings and are valid only in string-expression context.
+
+**No implicit coercion.** A numeric in a string `+` expression, or a string in a numeric expression, is a parse error. To put a number into a label, use the existing `${var}` substitution which formats the number for display:
+```
+numeric n = (len(title))
+label "len = ${n}"
+```
+
+**Literals.** Both `"..."` and `'...'` are accepted. The lexer accepts a `'` as a string opener only where it cannot match a feet/inches measurement (which requires a digit before the `'`); inside numeric statements like `wall 12'6"`, the `'` remains a measurement separator.
 
 ### Control flow (`if`, `for`, bare blocks)
 

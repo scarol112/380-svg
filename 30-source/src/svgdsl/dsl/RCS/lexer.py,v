@@ -1,10 +1,15 @@
-head	1.3;
+head	1.4;
 access;
 symbols;
 locks
-	scarol:1.3; strict;
+	scarol:1.4; strict;
 comment	@# @;
 
+
+1.4
+date	2026.05.13.19.11.02;	author scarol;	state Exp;
+branches;
+next	1.3;
 
 1.3
 date	2026.05.02.11.15.05;	author scarol;	state Exp;
@@ -27,9 +32,9 @@ desc
 @
 
 
-1.3
+1.4
 log
-@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@Accept single-quoted strings as QUOTED tokens (issue #38)
 @
 text
 @import re
@@ -51,6 +56,7 @@ _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
+_QUOTED_SINGLE = re.compile(r"'([^']*)'")
 _COLOR_ELEM  = re.compile(r'C=(?:"([^"]*)"|(\w+))', re.IGNORECASE)
 
 
@@ -77,6 +83,15 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
             continue
 
         m = _QUOTED.match(raw, i)
+        if m:
+            content = m.group(1).replace('\\n', '\n')
+            tokens.append(Token("QUOTED", content, lineno))
+            i = m.end()
+            continue
+
+        # Single-quoted string. Safe to try here because feet/inches patterns
+        # below all require a digit immediately before the quote.
+        m = _QUOTED_SINGLE.match(raw, i)
         if m:
             content = m.group(1).replace('\\n', '\n')
             tokens.append(Token("QUOTED", content, lineno))
@@ -161,6 +176,16 @@ def parse_absolute(token: Token) -> tuple[float, float]:
     if not m:
         raise ValueError(f"Not an absolute offset: {token.value!r}")
     return float(m.group(1)), float(m.group(2))
+@
+
+
+1.3
+log
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@
+text
+@d20 1
+d47 9
 @
 
 

@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from .dsl.builtins import BUILTINS, BUILTIN_RETURNS_NUMERIC, BUILTIN_RETURNS_STRING
 from .dsl.lexer import tokenize
 from .dsl.parser import ParseError, _ALIASES, _parse_line, _split_statements, _strip_comment
 from .layout.placer import ElementPlacer
@@ -18,6 +19,8 @@ _ALL_KEYWORDS = {
     "textstyle", "textline", "textbreak", "textbox", "textappend",
     "if", "elif", "else", "for", "to", "step",
     "True", "False", "and", "or", "not",
+    "string", "numeric", "tuple",
+    "len", "substr", "match", "replace",
 }
 
 _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
@@ -25,6 +28,12 @@ _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
 # Matches ${name} (brace form) or $name (bare form); brace form tried first
 _VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
 _ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(\+|-)?=\s*(.+)$')
+_DECL_RE = re.compile(
+    r'^(string|numeric)\s+'
+    r'([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)'
+    r'\s*(?:=\s*(.+))?$'
+)
+_BUILTIN_CALL_HEAD_RE = re.compile(r'\b(len|substr|match|replace)\s*\(')
 _SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()<>=!A-Za-z_]+$')
 # (expr) inline arithmetic — bare identifiers inside are variable references
 _INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
@@ -308,6 +317,11 @@ def _execute_stmt(
         _execute_include(tokens, lineno, source_path, vars_, placer, seen)
         return
 
+    m_decl = _DECL_RE.match(stmt)
+    if m_decl:
+        _execute_declaration(m_decl, lineno, vars_)
+        return
+
     m = _ASSIGNMENT_RE.match(stmt)
     if m:
         name, op, expr_raw = m.group(1), m.group(2), m.group(3).strip()
@@ -315,6 +329,18 @@ def _execute_stmt(
             raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
+        existing = vars_.get(name)
+        is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
+        if is_string_ctx:
+            if op == '-':
+                raise ParseError(f"Line {lineno}: '-=' is not defined on string variables")
+            value = _eval_string_expr(expr_raw, vars_, lineno)
+            if op is None:
+                vars_[name] = value
+            else:
+                prev = existing if isinstance(existing, str) else ""
+                vars_[name] = prev + value
+            return
         expr_sub = _substitute_vars(expr_raw, vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         value = _eval_expr(expr_sub, lineno)
@@ -338,6 +364,43 @@ def _execute_stmt(
     if node is not None:
         placer._dispatch(node)
         _update_system_vars(placer, vars_)
+
+
+def _execute_declaration(
+    match: re.Match,
+    lineno: int,
+    vars_: dict[str, float | str],
+) -> None:
+    """Handle `string`/`numeric` declarations (with optional initializer or multi-decl)."""
+    type_name = match.group(1)
+    names_str = match.group(2)
+    expr_raw = match.group(3)
+
+    names = [n.strip() for n in names_str.split(',')]
+    if len(names) != len(set(names)):
+        raise ParseError(f"Line {lineno}: duplicate name in multi-declaration")
+    if len(names) > 1 and expr_raw is not None:
+        raise ParseError(f"Line {lineno}: multi-declaration cannot have an initializer")
+
+    for name in names:
+        if name.startswith('__'):
+            raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
+        if name in _ALL_KEYWORDS:
+            raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
+
+    if expr_raw is None:
+        default: float | str = "" if type_name == "string" else 0.0
+        for name in names:
+            vars_[name] = default
+        return
+
+    expr_raw = expr_raw.strip()
+    if type_name == "string":
+        vars_[names[0]] = _eval_string_expr(expr_raw, vars_, lineno)
+    else:
+        expr_sub = _substitute_vars(expr_raw, vars_, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+        vars_[names[0]] = _eval_expr(expr_sub, lineno)
 
 
 def _execute_include(
@@ -394,11 +457,14 @@ def _substitute_vars(text: str, vars_: dict[str, float | str], lineno: int) -> s
 
 
 def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int) -> str:
-    """Replace each (expr) group outside quoted strings with its evaluated value.
+    """Replace builtin calls and (expr) groups outside quoted strings with their values.
 
-    Bare identifiers inside parentheses are variable references.
-    Parentheses inside double-quoted strings are left untouched.
+    Builtin calls (`len(s)`, `match(s, p)`, ...) are substituted first at any
+    position. Then each remaining (expr) group is evaluated with bare
+    identifiers inside resolved as variable references. Quoted strings are
+    skipped throughout.
     """
+    text = _substitute_builtins_in_expr(text, vars_, lineno)
     result: list[str] = []
     i = 0
     in_quote = False
@@ -426,7 +492,10 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
                     name = m.group()
                     if name in _RESERVED_EXPR_NAMES:
                         return name
-                    return _fmt_float(_v.get(name, 0.0))
+                    val = _v.get(name, 0.0)
+                    if isinstance(val, str):
+                        raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
+                    return _fmt_float(val)
                 expr = _BARE_ID_RE.sub(sub_id, inner)
                 result.append(_fmt_float(_eval_expr(expr, lineno)))
                 i = j
@@ -442,6 +511,7 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
     Used for evaluating condition expressions and for/step bounds that are not
     wrapped in parentheses.
     """
+    text = _substitute_builtins_in_expr(text, vars_, lineno)
     def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
         name = m.group()
         if name in _RESERVED_EXPR_NAMES:
@@ -451,6 +521,248 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
             raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
         return _fmt_float(val)
     return _BARE_ID_RE.sub(sub_id, text)
+
+
+def _parse_call_args(
+    text: str,
+    paren_pos: int,
+    vars_: dict[str, float | str],
+    lineno: int,
+) -> tuple[list[object], int]:
+    """Parse a comma-separated argument list starting at the `(` at paren_pos.
+
+    Returns (args, position_after_closing_paren). Each arg is one of:
+      - quoted string literal ("..." or '...')
+      - bare identifier resolved against `vars_` (may yield str or float)
+      - numeric literal
+      - nested builtin call (resolved recursively)
+    Compound numeric expressions (e.g. `x + 1`) are NOT supported as args.
+    """
+    if paren_pos >= len(text) or text[paren_pos] != '(':
+        raise ParseError(f"Line {lineno}: expected '(' in function call")
+    i = paren_pos + 1
+    n = len(text)
+    args: list[object] = []
+
+    # Skip whitespace; handle empty arg list
+    while i < n and text[i].isspace():
+        i += 1
+    if i < n and text[i] == ')':
+        return args, i + 1
+
+    while i < n:
+        while i < n and text[i].isspace():
+            i += 1
+        if i >= n:
+            break
+
+        ch = text[i]
+        if ch in ('"', "'"):
+            quote = ch
+            j = i + 1
+            while j < n and text[j] != quote:
+                j += 1
+            if j >= n:
+                raise ParseError(f"Line {lineno}: unterminated string in argument list")
+            args.append(text[i + 1:j].replace('\\n', '\n'))
+            i = j + 1
+        elif ch.isalpha() or ch == '_':
+            j = i
+            while j < n and (text[j].isalnum() or text[j] == '_'):
+                j += 1
+            name = text[i:j]
+            k = j
+            while k < n and text[k].isspace():
+                k += 1
+            if k < n and text[k] == '(':
+                if name not in BUILTINS:
+                    raise ParseError(f"Line {lineno}: unknown function {name!r}")
+                inner_args, end = _parse_call_args(text, k, vars_, lineno)
+                args.append(BUILTINS[name](inner_args, lineno))
+                i = end
+            else:
+                args.append(vars_.get(name, 0.0))
+                i = j
+        elif ch == '-' or ch.isdigit() or ch == '.':
+            j = i
+            if text[j] == '-':
+                j += 1
+            saw_digit = False
+            while j < n and (text[j].isdigit() or text[j] == '.'):
+                if text[j].isdigit():
+                    saw_digit = True
+                j += 1
+            if not saw_digit:
+                raise ParseError(f"Line {lineno}: malformed number in argument list")
+            args.append(float(text[i:j]))
+            i = j
+        else:
+            raise ParseError(f"Line {lineno}: unexpected character {ch!r} in argument list")
+
+        while i < n and text[i].isspace():
+            i += 1
+        if i < n and text[i] == ',':
+            i += 1
+            continue
+        if i < n and text[i] == ')':
+            return args, i + 1
+        raise ParseError(f"Line {lineno}: expected ',' or ')' in argument list")
+
+    raise ParseError(f"Line {lineno}: unterminated function call")
+
+
+def _substitute_builtins_in_expr(
+    text: str,
+    vars_: dict[str, float | str],
+    lineno: int,
+) -> str:
+    """Replace numeric-returning builtin calls with their decimal value.
+
+    Walks `text` skipping content inside "..." and '...' string literals.
+    `substr`/`replace` (string-returning) raise ParseError — they're only valid
+    in string-expression context.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch in ('"', "'"):
+            quote = ch
+            out.append(ch)
+            i += 1
+            while i < n and text[i] != quote:
+                out.append(text[i])
+                i += 1
+            if i < n:
+                out.append(text[i])
+                i += 1
+            continue
+        m = _BUILTIN_CALL_HEAD_RE.match(text, i)
+        if m and (i == 0 or not (text[i - 1].isalnum() or text[i - 1] == '_')):
+            name = m.group(1)
+            paren_pos = m.end() - 1
+            args, after = _parse_call_args(text, paren_pos, vars_, lineno)
+            if name in BUILTIN_RETURNS_STRING:
+                raise ParseError(
+                    f"Line {lineno}: {name}() returns a string and is not valid in a numeric expression"
+                )
+            result = BUILTINS[name](args, lineno)
+            out.append(_fmt_float(float(result)))
+            i = after
+            continue
+        out.append(ch)
+        i += 1
+    return ''.join(out)
+
+
+def _eval_string_expr(
+    text: str,
+    vars_: dict[str, float | str],
+    lineno: int,
+) -> str:
+    """Evaluate a string expression: terms joined by `+`.
+
+    Each term is: a quoted literal, a bare variable reference (must be string),
+    a ${name}/$name reference, or a string-returning builtin call. Numeric
+    terms (literals, numeric vars, len/match results) raise ParseError — there
+    is no implicit numeric-to-string coercion.
+    """
+    parts: list[str] = []
+    i = 0
+    n = len(text)
+    expect_term = True
+
+    def lookup_str(name: str) -> str:
+        val = vars_.get(name)
+        if val is None:
+            return ""
+        if isinstance(val, str):
+            return val
+        raise ParseError(
+            f"Line {lineno}: cannot use numeric variable {name!r} in a string expression"
+        )
+
+    while i < n:
+        if text[i].isspace():
+            i += 1
+            continue
+        if expect_term:
+            ch = text[i]
+            if ch in ('"', "'"):
+                quote = ch
+                j = i + 1
+                while j < n and text[j] != quote:
+                    j += 1
+                if j >= n:
+                    raise ParseError(f"Line {lineno}: unterminated string literal")
+                parts.append(text[i + 1:j].replace('\\n', '\n'))
+                i = j + 1
+                expect_term = False
+            elif ch == '$':
+                j = i + 1
+                if j < n and text[j] == '{':
+                    j += 1
+                    start = j
+                    while j < n and text[j] != '}':
+                        j += 1
+                    if j >= n:
+                        raise ParseError(f"Line {lineno}: unterminated ${{...}} reference")
+                    name = text[start:j]
+                    j += 1
+                else:
+                    start = j
+                    while j < n and (text[j].isalnum() or text[j] == '_'):
+                        j += 1
+                    name = text[start:j]
+                if not name:
+                    raise ParseError(f"Line {lineno}: empty variable reference")
+                parts.append(lookup_str(name))
+                i = j
+                expect_term = False
+            elif ch.isalpha() or ch == '_':
+                j = i
+                while j < n and (text[j].isalnum() or text[j] == '_'):
+                    j += 1
+                name = text[i:j]
+                k = j
+                while k < n and text[k].isspace():
+                    k += 1
+                if k < n and text[k] == '(':
+                    if name not in BUILTINS:
+                        raise ParseError(f"Line {lineno}: unknown function {name!r}")
+                    args, end = _parse_call_args(text, k, vars_, lineno)
+                    if name in BUILTIN_RETURNS_NUMERIC:
+                        raise ParseError(
+                            f"Line {lineno}: {name}() returns a numeric value, cannot be used in a string expression"
+                        )
+                    parts.append(BUILTINS[name](args, lineno))
+                    i = end
+                else:
+                    parts.append(lookup_str(name))
+                    i = j
+                expect_term = False
+            else:
+                raise ParseError(f"Line {lineno}: unexpected character {ch!r} in string expression")
+        else:
+            if text[i] == '+':
+                expect_term = True
+                i += 1
+            else:
+                raise ParseError(f"Line {lineno}: expected '+' in string expression, got {text[i]!r}")
+    if expect_term:
+        raise ParseError(f"Line {lineno}: string expression is incomplete")
+    return ''.join(parts)
+
+
+def _rhs_is_string_expr(text: str) -> bool:
+    """Quick check: does the RHS start with a string literal?
+
+    Used to dispatch plain `name = expr` assignments when the LHS is not
+    already-typed as a string variable.
+    """
+    stripped = text.lstrip()
+    return bool(stripped) and stripped[0] in ('"', "'")
 
 
 def _eval_expr(expr: str, lineno: int) -> float:

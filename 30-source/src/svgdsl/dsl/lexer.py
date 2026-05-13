@@ -17,6 +17,7 @@ _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
+_QUOTED_SINGLE = re.compile(r"'([^']*)'")
 _COLOR_ELEM  = re.compile(r'C=(?:"([^"]*)"|(\w+))', re.IGNORECASE)
 
 
@@ -43,6 +44,15 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
             continue
 
         m = _QUOTED.match(raw, i)
+        if m:
+            content = m.group(1).replace('\\n', '\n')
+            tokens.append(Token("QUOTED", content, lineno))
+            i = m.end()
+            continue
+
+        # Single-quoted string. Safe to try here because feet/inches patterns
+        # below all require a digit immediately before the quote.
+        m = _QUOTED_SINGLE.match(raw, i)
         if m:
             content = m.group(1).replace('\\n', '\n')
             tokens.append(Token("QUOTED", content, lineno))
