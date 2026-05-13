@@ -370,13 +370,26 @@ def _execute_include(
     vars_["__dsl_filename"] = saved_filename
 
 
+def _fmt_float(val: float) -> str:
+    """Format a float without scientific notation so it's safe inside eval expressions.
+
+    %g switches to scientific notation (e.g. '3e-05') for very small or very
+    large values.  The 'e' is then matched by _BARE_ID_RE as a variable name
+    and corrupted.  This helper always returns a plain decimal string.
+    """
+    s = f"{val:.10g}"
+    if 'e' in s or 'E' in s:
+        s = f"{val:.10f}".rstrip('0').rstrip('.') or '0'
+    return s
+
+
 def _substitute_vars(text: str, vars_: dict[str, float | str], lineno: int) -> str:
     def replace(m: re.Match) -> str:  # type: ignore[type-arg]
         name = m.group(1) if m.group(1) is not None else m.group(2)
         val = vars_.get(name, 0.0)
         if isinstance(val, str):
             return val
-        return f"{val:g}"
+        return _fmt_float(val)
     return _VARREF_RE.sub(replace, text)
 
 
@@ -413,9 +426,9 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
                     name = m.group()
                     if name in _RESERVED_EXPR_NAMES:
                         return name
-                    return f"{_v.get(name, 0.0):g}"
+                    return _fmt_float(_v.get(name, 0.0))
                 expr = _BARE_ID_RE.sub(sub_id, inner)
-                result.append(f"{_eval_expr(expr, lineno):g}")
+                result.append(_fmt_float(_eval_expr(expr, lineno)))
                 i = j
         else:
             result.append(ch)
@@ -436,7 +449,7 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
         val = _v.get(name, 0.0)
         if isinstance(val, str):
             raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
-        return f"{val:g}"
+        return _fmt_float(val)
     return _BARE_ID_RE.sub(sub_id, text)
 
 
