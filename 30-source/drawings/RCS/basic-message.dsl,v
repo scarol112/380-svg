@@ -1,9 +1,32 @@
-# Basic message output
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.13.17.55.54;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# Basic message output
 include page-letter-landscape-def.dsl
 
 mto 0 0; include border.dsl
 
-textbox 3 7 " " A=0.5,0.5 @messages
+textbox 3 7 " " A=0.5,0.5 @@messages
 textbreak 12 0px " Messages " messages
 
 d= 1
@@ -16,10 +39,5 @@ tapp "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod te
 
 lb "$__dsl_filename" A=9,7.9
 
-#rulerdivisions=0.5
-#rulerlength=5
-#for d = 10 to 360 step 10 {
-    #mto 5 5
-    #rulerdirection=$d
-    #include ruler.dsl
-#}
+mto 0 0;rulerlength=20; include rulerhloop.dsl
+@
