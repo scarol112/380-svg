@@ -1,4 +1,4 @@
-const REFRESH_MS = 3000;
+const REFRESH_MS = 2000;
 
 function loadSvg() {
   const path = document.getElementById("svg-path").value.trim();
