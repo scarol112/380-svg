@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.6 $ $Date: 2026/05/13 19:11:28 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.7 $ $Date: 2026/05/13 21:14:43 $ -->
 # App working title: svg
 
 ## Project tools
@@ -172,12 +172,12 @@ Multi-declarations cannot carry an initializer (`string a, b = "x"` is a parse e
 
 **Operations:**
 - `+` and `+=` concatenate strings: `title += " (rev 2)"`
-- `len(s)` — length of a string, returns a numeric
-- `substr(s, start)` / `substr(s, start, end)` — Python-slice semantics
-- `match(s, pattern)` — regex search, returns 1 (truthy) or 0
-- `replace(s, pattern, repl)` — regex replace, returns the new string
+- `len(s)` — length of a string, returns a numeric. No regex.
+- `substr(s, start)` / `substr(s, start, end)` — integer indices, 0-based, exclusive `end`, negative indices count from end. No regex.
+- `match(s, pattern)` — `pattern` is a regex. Uses `re.search` (matches anywhere in `s`; anchor with `^` for start, `^...$` for full string). Returns 1 or 0.
+- `replace(s, pattern, repl)` — `pattern` is a regex (`re.sub`); replaces all occurrences. `repl` is a literal string (not a regex) but supports Python backreferences (`\1`, `\g<name>`).
 
-`len` and `match` return numeric values and are valid in numeric / condition contexts (`if (match(title, "^Master"))`, `n = (len(title))`). `substr` and `replace` return strings and are valid only in string-expression context.
+`len` and `match` return numeric values and are valid in numeric / condition contexts (`if (match(title, "^Master"))`, `n = len(title)`). `substr` and `replace` return strings and are valid only in string-expression context.
 
 **No implicit coercion.** A numeric in a string `+` expression, or a string in a numeric expression, is a parse error. To put a number into a label, use the existing `${var}` substitution which formats the number for display:
 ```

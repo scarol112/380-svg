@@ -1,10 +1,15 @@
-head	1.29;
+head	1.30;
 access;
 symbols;
 locks
-	scarol:1.29; strict;
+	scarol:1.30; strict;
 comment	@# @;
 
+
+1.30
+date	2026.05.13.21.14.42;	author scarol;	state Exp;
+branches;
+next	1.29;
 
 1.29
 date	2026.05.13.20.10.26;	author scarol;	state Exp;
@@ -156,12 +161,12 @@ desc
 @@
 
 
-1.29
+1.30
 log
-@Add reference-forms table to Strings section: bare name vs $name/${name} (issue #38)
+@Precise regex docs for match/replace/substr builtins (issue #43)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.28 $ $Date: 2026/05/13 19:11:29 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.29 $ $Date: 2026/05/13 20:10:26 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -403,30 +408,42 @@ label "${title}"
 
 **Built-in functions:**
 
-| Builtin | Returns | What it does |
-|---|---|---|
-| `len(s)` | number | Length of string `s` |
-| `substr(s, start)` | string | Slice from `start` to end |
-| `substr(s, start, end)` | string | Slice from `start` up to `end` |
-| `match(s, pattern)` | 1 or 0 | Truthy if regex `pattern` matches `s` |
-| `replace(s, pattern, repl)` | string | Regex replace |
+| Builtin | Returns | `pattern` a regex? | What it does |
+|---|---|---|---|
+| `len(s)` | number | — | Length of string `s` |
+| `substr(s, start)` | string | — | Characters from `start` to end; integer index |
+| `substr(s, start, end)` | string | — | Characters from `start` up to (not including) `end`; integer indices |
+| `match(s, pattern)` | 1 or 0 | **yes** | Search `s` for regex `pattern`; 1 if found anywhere, 0 if not |
+| `replace(s, pattern, repl)` | string | **pattern only** | Replace all matches of regex `pattern` in `s` with literal `repl` |
 
-Use them in either context where the return type fits:
+**Regex details:**
+
+- `match` and `replace` use Python's `re` module; `pattern` is a full regex in both.
+- `match(s, p)` calls `re.search` — succeeds if `p` matches *anywhere* in `s`. To require a match at the start, anchor with `^`; for a full-string match use `^...$`.
+- `replace(s, p, r)` calls `re.sub` — replaces *all* non-overlapping occurrences. `repl` is a **literal** replacement string (not a regex), but Python backreference syntax works: `\1`, `\2` for numbered groups; `\g<name>` for named groups.
+- `substr` has no regex involvement. Indices are 0-based; `end` is exclusive. Negative indices count from the end: `substr(s, -3)` returns the last 3 characters.
 
 ```
 string title = "Master Bedroom"
-n = (len(title))                          # numeric context
+n = len(title)                            # no parens needed
 label "title is ${n} chars"
 
-if (match(title, "Bedroom")) {            # condition
+if (match(title, "Bedroom")) {            # re.search — matches anywhere
     label "matched"
 }
+if (match(title, "^Master")) {            # anchored to start
+    label "starts with Master"
+}
 
-string clean = replace(title, "[^A-Za-z]", "_")  # string context
+string clean = replace(title, "[^A-Za-z ]", "_")   # char class regex
 label "${clean}"
 
-string first6 = substr(title, 0, 6)
-label "${first6}"                         # → "Master"
+string lower = replace(title, "([A-Z])", "_\1")    # backreference \1
+label "${lower}"
+
+string first6 = substr(title, 0, 6)      # → "Master"
+string last3  = substr(title, -3)         # → "oom"
+label "${first6} ... ${last3}"
 ```
 
 **No implicit coercion.** A number cannot be concatenated into a string with `+`, and a string cannot appear in a numeric expression. To put a number into a label, use the `${name}` substitution form, which formats it for display:
@@ -1120,6 +1137,42 @@ Run:
 ```
 bin/380-010.sh myplan.dsl myplan.svg
 ```
+@
+
+
+1.29
+log
+@Add reference-forms table to Strings section: bare name vs $name/${name} (issue #38)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.28 $ $Date: 2026/05/13 19:11:29 $ -->
+d243 14
+a256 9
+| Builtin | Returns | What it does |
+|---|---|---|
+| `len(s)` | number | Length of string `s` |
+| `substr(s, start)` | string | Slice from `start` to end |
+| `substr(s, start, end)` | string | Slice from `start` up to `end` |
+| `match(s, pattern)` | 1 or 0 | Truthy if regex `pattern` matches `s` |
+| `replace(s, pattern, repl)` | string | Regex replace |
+
+Use them in either context where the return type fits:
+d260 1
+a260 1
+n = (len(title))                          # numeric context
+d263 1
+a263 1
+if (match(title, "Bedroom")) {            # condition
+d266 3
+d270 1
+a270 1
+string clean = replace(title, "[^A-Za-z]", "_")  # string context
+d273 6
+a278 2
+string first6 = substr(title, 0, 6)
+label "${first6}"                         # → "Master"
 @
 
 

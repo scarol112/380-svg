@@ -293,12 +293,12 @@ Multi-declarations cannot carry an initializer (parse error). Reserved keywords 
 
 **String builtins** (function-call form, callable in any expression context that accepts the return type):
 
-| Builtin | Returns | Notes |
-|---|---|---|
-| `len(s)` | numeric | Length of string `s` |
-| `substr(s, start)` / `substr(s, start, end)` | string | Python-slice semantics |
-| `match(s, pattern)` | numeric | `re.search`-style; 1 if matched, 0 if not |
-| `replace(s, pattern, repl)` | string | `re.sub`-style regex replacement |
+| Builtin | Returns | `pattern` regex? | Notes |
+|---|---|---|---|
+| `len(s)` | numeric | — | Length of string `s` |
+| `substr(s, start)` / `substr(s, start, end)` | string | — | Integer indices; 0-based, exclusive `end`, negative indices count from end |
+| `match(s, pattern)` | numeric | **yes** | `re.search`; matches anywhere in `s` — anchor with `^`/`$` to restrict |
+| `replace(s, pattern, repl)` | string | **pattern only** | `re.sub`; replaces all occurrences; `repl` is a literal string supporting backreferences (`\1`, `\g<name>`) |
 
 Builtin arguments may be string literals, numeric literals, bare variable names, or nested builtin calls — not compound expressions like `x + 1`.
 
