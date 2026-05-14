@@ -88,6 +88,6 @@ color black
 
 dir 90
 mto 5 7; p 0px C=red dim=off @p1; textline center 18 "Master Bedroom" p1
-mto 0 1; include rulerh10.dsl
+mto 0 1; include ruler.dsl
 
 #end

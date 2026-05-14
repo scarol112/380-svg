@@ -11,23 +11,22 @@ r 0.5 2 A=7.75,1.0
 l 0.5 A=7.75,1.2; l 0.5 A=7.75,1.4; l 0.5 A=7.75,1.6; l 0.5 A=7.75,1.8; l 0.5 A=7.75,2.0
 l 0.5 A=7.75,2.2; l 0.5 A=7.75,2.4; l 0.5 A=7.75,2.6; l 0.5 A=7.75,2.8; l 0.5 A=7.75,3.0
 
+
 l 5 A=2,2 @l2
 textline "***textline*** text 16pt" 16 left l2
 textline "*italic* 20 pt" C=blue center 20 l2
 textline "**bold courier** 12pt" font=courier right 12 l2
 
 textbox 2 2 A=7,4 " " @messages
-
-#textbox 2 2 A=7,4 "\nNow is the time for all good men to come to the aid of their party. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." @messages
 textbreak font=papyrus 14 0px " Messages " messages
-
 
 tapp "**APPENDED1**" font=Courier messages
 tapp "appended2" messages
 tapp "File: ${__dsl_filename}, line: $__dsl_file_lineno" messages
 tapp "File: ${__dsl_filename}, line: $__dsl_file_lineno" messages
 tapp "File: ${__dsl_filename}, line: $__dsl_file_lineno" messages
-tapp "File: ${__dsl_filename}, line: $__dsl_file_lineno" messages; tapp "$__dsl_file_lineno" messages
+tapp "File: ${__dsl_filename}, line: $__dsl_file_lineno" messages;
+tapp "$__dsl_file_lineno" messages
 
 mto 7 7; rect 3 1
 l 1 0px A=9,7 @l97; textbreak 10 right 0px "$__dsl_filename" l97

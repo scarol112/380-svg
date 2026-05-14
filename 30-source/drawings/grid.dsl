@@ -14,13 +14,15 @@ if ($grid_stroke == 0) {
 if ($grid_ymax == 0) {
     grid_ymax = 8
     }
-#showvalues = True
 
+if ($showvalues == 1) {
+    lb "${grid_size} , ${grid_xmax} , ${grid_ymax} , ${grid_stroke}" A=2,2 C=red
+}
 
 r $grid_xmax $grid_ymax A=0,0
 
-stop = $grid_ymax - $grid_size
-for y=$grid_size to $stop step $grid_size {
+maxval = $grid_ymax - $grid_size
+for y=$grid_size to $maxval step $grid_size {
     l $grid_xmax ${grid_stroke}px A=0,$y
     if ($showvalues) {
         lb "$y"
@@ -28,8 +30,8 @@ for y=$grid_size to $stop step $grid_size {
 }
 
 dir 180
-stop = $grid_xmax - $grid_size
-for x=$grid_size to $stop step $grid_size {
+maxval = $grid_xmax - $grid_size
+for x=$grid_size to $maxval step $grid_size {
     l $grid_ymax ${grid_stroke}px  A=$x,0
     if ($showvalues) {
         lb "$x"
