@@ -688,10 +688,16 @@ def _print_trace_summary(t: _Trace, source_path: Path | None) -> None:
     line_w = max(line_w, 4)
     header = f"{'NAME':<{name_w}}  TYPE  {'FILE':<{file_w}}  {'LINE':>{line_w}}  VALUE"
     sep    = f"{'----':<{name_w}}  ----  {'----':<{file_w}}  {'----':>{line_w}}  -----"
-    lines  = ["=== VARTRACE SUMMARY ===", header, sep] + [
-        f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]:<{file_w}}  {str(r[3]):>{line_w}}  {r[4]}"
-        for r in sorted_rows
-    ]
+    data_lines: list[str] = []
+    prev_name: str | None = None
+    prev_file: str | None = None
+    for r in sorted_rows:
+        if prev_name is not None and (r[0] != prev_name or r[2] != prev_file):
+            data_lines.append("")
+        data_lines.append(f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]:<{file_w}}  {str(r[3]):>{line_w}}  {r[4]}")
+        prev_name = r[0]
+        prev_file = r[2]
+    lines  = ["=== VARTRACE SUMMARY ===", header, sep] + data_lines
     text = '\n'.join(lines)
     if t.filepath:
         with open(t.filepath, 'a') as f:
