@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.32 $ $Date: 2026/05/14 03:32:57 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.33 $ $Date: 2026/05/14 13:05:27 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -195,6 +195,7 @@ Two reference forms, identical behavior:
 |---|---|---|
 | `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same coordinate space as `A=`) |
 | `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
+| `$__cursor` | — | Cursor position as a 2-element tuple `(cx, cy)`. Pass whole as a coordinate (`mto $__cursor`) or read slots inside `(expr)` as bare `__cursor[0]` / `__cursor[1]` — `$__cursor[0]` does not work |
 | `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
 | `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
 | `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
@@ -297,6 +298,67 @@ string lbl = "len = " + n                 # ERROR: cannot concatenate string and
 | Standalone numeric token | `$name` / `${name}` | `rect $w $h`, `line ${lw}px`, `door 3 A=$offset,0` |
 
 So for `string s = "hello"`: `len(s)` returns 5; `len($s)` and `len(${s})` both rewrite to `len(hello)` — an unquoted bare identifier — and error.
+
+---
+
+#### Tuples
+
+A `tuple` holds an ordered sequence of numeric or string values. Declare it with the `tuple` keyword:
+
+```
+tuple p = (3, 4)                # 2-element tuple
+tuple q = 1, 2, 3               # bare comma form
+tuple m = ("label", 5)          # mixed string + numeric
+tuple empty                     # empty tuple ()
+```
+
+**Indexing** reads a single slot. `t[i]` is recognized in `(expr)` arithmetic and on the RHS of `numeric`/`string` assignments. To embed a slot in a label, copy it to a scalar first:
+
+```
+numeric n = (p[0] + p[1])       # → 7.0
+numeric px = p[0]
+numeric py = p[1]
+label "x=${px}, y=${py}"
+```
+
+`${name[i]}` inline interpolation is not supported — `${...}` resolves only bare variable names.
+
+**Element assignment** mutates one slot (type must match):
+
+```
+p[0] = 10
+p[1] = (p[0] * 2)               # → p is now (10, 20)
+```
+
+**Element-wise math** applies operators slot-by-slot. Result length = `min(len(a), len(b))`. A scalar on one side is broadcast across all slots:
+
+```
+tuple q = 1, 2, 3
+tuple sum2 = p + q              # → (11, 22) — min length 2
+tuple scaled = p * 3            # → (30, 60) — scalar broadcast
+```
+
+**Cursor snapshot** — `$__cursor` is a 2-element tuple updated after every placed element:
+
+```
+mto 5 5
+tuple here = $__cursor          # snapshot (5, 5)
+mto 10 10
+mto $here                       # return to (5, 5)
+```
+
+**Tuple as coordinate argument** — any coord-bearing command (`r`, `mto`, `lto`, etc.) accepts a 2-tuple in three forms:
+
+```
+tuple origin = 1, 1
+r 10 8 $origin                  # tuple variable
+r 10 8 (2, 2)                   # parenthesized literal
+r 10 8 2,2                      # existing bare COORD form
+```
+
+Non-2-tuple in a coordinate position is a ParseError.
+
+**`len(t)`** returns the number of elements in a tuple as a numeric.
 
 ---
 

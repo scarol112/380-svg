@@ -18,7 +18,10 @@ def _check_int(name: str, arg: object, lineno: int) -> int:
 def builtin_len(args: list[object], lineno: int) -> float:
     if len(args) != 1:
         raise ParseError(f"Line {lineno}: len() takes 1 argument, got {len(args)}")
-    s = _check_str("len", args[0], lineno)
+    arg = args[0]
+    if isinstance(arg, tuple):
+        return float(len(arg))
+    s = _check_str("len", arg, lineno)
     return float(len(s))
 
 

@@ -421,24 +421,48 @@ def _parse_label(tokens: list[Token], lineno: int) -> LabelElem:
                      color=color, absolute=absolute, name=name, source_line=lineno)
 
 
+def _coord_token_only(tokens: list[Token], lineno: int) -> tuple[float, float]:
+    """Parse the first token as a COORD. Raise if followed by a stray comma-value."""
+    dest_x, dest_y = parse_coord(tokens[0])
+    if len(tokens) > 1 and tokens[1].kind == "WORD" and tokens[1].value.startswith(','):
+        raise ParseError(
+            f"Line {lineno}: coordinate expects 2-element tuple, got more values"
+        )
+    return dest_x, dest_y
+
+
 def _parse_moveto(tokens: list[Token], lineno: int) -> MoveToElem:
-    if len(tokens) < 2:
+    if not tokens:
         raise ParseError(f"Line {lineno}: moveto requires dest_x and dest_y")
-    dest_x = parse_measurement(tokens[0])
-    dest_y = parse_measurement(tokens[1])
+    if tokens[0].kind == "COORD":
+        dest_x, dest_y = _coord_token_only(tokens, lineno)
+        rest = tokens[1:]
+    else:
+        if len(tokens) < 2:
+            raise ParseError(f"Line {lineno}: moveto requires dest_x and dest_y")
+        dest_x = parse_measurement(tokens[0])
+        dest_y = parse_measurement(tokens[1])
+        rest = tokens[2:]
     absolute = None
-    for tok in tokens[2:]:
+    for tok in rest:
         if tok.kind == "ABSOLUTE":
             absolute = parse_absolute(tok)
     return MoveToElem(dest_x=dest_x, dest_y=dest_y, absolute=absolute, source_line=lineno)
 
 
 def _parse_lineto(tokens: list[Token], lineno: int) -> LineToElem:
-    if len(tokens) < 2:
+    if not tokens:
         raise ParseError(f"Line {lineno}: lineto requires dest_x and dest_y")
-    dest_x = parse_measurement(tokens[0])
-    dest_y = parse_measurement(tokens[1])
-    c = _extract_common(tokens[2:], lineno)
+    if tokens[0].kind == "COORD":
+        dest_x, dest_y = _coord_token_only(tokens, lineno)
+        rest = tokens[1:]
+    else:
+        if len(tokens) < 2:
+            raise ParseError(f"Line {lineno}: lineto requires dest_x and dest_y")
+        dest_x = parse_measurement(tokens[0])
+        dest_y = parse_measurement(tokens[1])
+        rest = tokens[2:]
+    c = _extract_common(rest, lineno)
     return LineToElem(
         dest_x=dest_x, dest_y=dest_y,
         lw=c["lw"], dash=c["dash"], color=c["color"],

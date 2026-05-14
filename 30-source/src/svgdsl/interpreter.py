@@ -28,14 +28,15 @@ _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
 
 # Matches ${name} (brace form) or $name (bare form); brace form tried first
 _VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
-_ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*(\+|-)?=\s*(.+)$')
+_ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*([+\-*/])?=\s*(.+)$')
+_INDEX_ASSIGN_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*\[(.+?)\]\s*=\s*(.+)$')
 _DECL_RE = re.compile(
-    r'^(string|numeric)\s+'
+    r'^(string|numeric|tuple)\s+'
     r'([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)'
     r'\s*(?:=\s*(.+))?$'
 )
 _BUILTIN_CALL_HEAD_RE = re.compile(r'\b(len|substr|match|replace)\s*\(')
-_SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()<>=!A-Za-z_]+$')
+_SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()<>=!\[\]A-Za-z_,]+$')
 # (expr) inline arithmetic — bare identifiers inside are variable references
 _INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
 _BARE_ID_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
@@ -56,13 +57,17 @@ _ELSE_HDR_RE = re.compile(r'^\}\s*else\s*\{\s*$', re.IGNORECASE)
 _BARE_OPEN_RE = re.compile(r'^\{\s*$')
 
 
+TupleVal = tuple[float | str, ...]
+
+
 def execute_dsl(
     text: str,
     source_path: Path | None = None,
 ) -> list[PlacedElement]:
-    vars_: dict[str, float | str] = {
+    vars_: dict[str, float | str | TupleVal] = {
         "__cursorx": 0.0, "__cursory": 0.0,
         "__cx": 0.0,      "__cy": 0.0,
+        "__cursor": (0.0, 0.0),
         "__dir": 90.0,
         "__mltodir": 0.0,
         "__dsl_filename": "",
@@ -81,7 +86,7 @@ def execute_dsl(
 def _execute_text(
     text: str,
     source_path: Path | None,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -97,7 +102,7 @@ def _execute_block(
     start: int,
     end: int,
     source_path: Path | None,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -257,7 +262,7 @@ def _collect_if_chain(
     return chain, i
 
 
-def _eval_condition(expr_text: str, vars_: dict[str, float | str], lineno: int) -> bool:
+def _eval_condition(expr_text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> bool:
     expr_sub = _substitute_vars(expr_text, vars_, lineno)
     expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, lineno)
     result = _eval_expr(expr_sub, lineno)
@@ -272,7 +277,7 @@ def _execute_for(
     body_lines: list[tuple[int, str]],
     lineno: int,
     source_path: Path | None,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -312,7 +317,7 @@ def _execute_stmt(
     stmt: str,
     lineno: int,
     source_path: Path | None,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -342,6 +347,43 @@ def _execute_stmt(
         _execute_declaration(m_decl, lineno, vars_)
         return
 
+    m_idx = _INDEX_ASSIGN_RE.match(stmt)
+    if m_idx:
+        name, idx_expr, val_expr = m_idx.group(1), m_idx.group(2).strip(), m_idx.group(3).strip()
+        if name.startswith('__'):
+            raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
+        existing = vars_.get(name)
+        if not isinstance(existing, tuple):
+            raise ParseError(f"Line {lineno}: '{name}' is not a tuple variable")
+        idx_sub = _substitute_vars(idx_expr, vars_, lineno)
+        idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
+        idx_val = _eval_expr(idx_sub, lineno)
+        if idx_val != int(idx_val) or int(idx_val) < 0:
+            raise ParseError(f"Line {lineno}: tuple index must be a non-negative integer")
+        idx_int = int(idx_val)
+        if idx_int >= len(existing):
+            raise ParseError(f"Line {lineno}: tuple index {idx_int} out of range (len={len(existing)})")
+        slot_val = existing[idx_int]
+        rhs_is_str = _rhs_is_string_expr(val_expr)
+        if isinstance(slot_val, float) and rhs_is_str:
+            raise ParseError(f"Line {lineno}: type mismatch: slot {idx_int} is numeric, got string")
+        if isinstance(slot_val, str) and not rhs_is_str:
+            val_ref = val_expr.strip()
+            if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', val_ref):
+                ref_val = vars_.get(val_ref)
+                if isinstance(ref_val, float):
+                    raise ParseError(f"Line {lineno}: type mismatch: slot {idx_int} is string, got numeric")
+        if isinstance(slot_val, str):
+            new_val: float | str = _eval_string_expr(val_expr, vars_, lineno)
+        else:
+            v_sub = _substitute_tuple_indexing(_substitute_vars(val_expr, vars_, lineno), vars_, lineno)
+            v_sub = _evaluate_inline_exprs(v_sub, vars_, lineno)
+            new_val = _eval_expr(v_sub, lineno)
+        elems = list(existing)
+        elems[idx_int] = new_val
+        vars_[name] = tuple(elems)
+        return
+
     m = _ASSIGNMENT_RE.match(stmt)
     if m:
         name, op, expr_raw = m.group(1), m.group(2), m.group(3).strip()
@@ -350,10 +392,30 @@ def _execute_stmt(
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
         existing = vars_.get(name)
+        is_tuple_ctx = isinstance(existing, tuple) or _rhs_is_tuple_expr(expr_raw, vars_)
+        if is_tuple_ctx:
+            if op in ('*', '/') and not isinstance(existing, tuple):
+                raise ParseError(f"Line {lineno}: '*=' and '/=' are only valid on tuple variables")
+            rhs_val = _eval_tuple_expr(expr_raw, vars_, lineno)
+            if op is None:
+                vars_[name] = rhs_val
+            elif op == '+':
+                lhs = existing if isinstance(existing, tuple) else ()
+                vars_[name] = _tuple_op(lhs, rhs_val, '+', lineno)
+            elif op == '-':
+                lhs = existing if isinstance(existing, tuple) else ()
+                vars_[name] = _tuple_op(lhs, rhs_val, '-', lineno)
+            elif op == '*':
+                lhs = existing if isinstance(existing, tuple) else ()
+                vars_[name] = _tuple_op(lhs, rhs_val, '*', lineno)
+            elif op == '/':
+                lhs = existing if isinstance(existing, tuple) else ()
+                vars_[name] = _tuple_op(lhs, rhs_val, '/', lineno)
+            return
         is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
         if is_string_ctx:
-            if op == '-':
-                raise ParseError(f"Line {lineno}: '-=' is not defined on string variables")
+            if op in ('-', '*', '/'):
+                raise ParseError(f"Line {lineno}: '{op}=' is not defined on string variables")
             value = _eval_string_expr(expr_raw, vars_, lineno)
             if op is None:
                 vars_[name] = value
@@ -361,7 +423,9 @@ def _execute_stmt(
                 prev = existing if isinstance(existing, str) else ""
                 vars_[name] = prev + value
             return
-        expr_sub = _substitute_vars(expr_raw, vars_, lineno)
+        if op in ('*', '/'):
+            raise ParseError(f"Line {lineno}: '{op}=' is only valid on tuple variables")
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         value = _eval_expr(expr_sub, lineno)
         if op is None:
@@ -370,9 +434,9 @@ def _execute_stmt(
             if name not in vars_:
                 vars_[name] = 0.0
             if op == '+':
-                vars_[name] += value
+                vars_[name] += value  # type: ignore[operator]
             else:
-                vars_[name] -= value
+                vars_[name] -= value  # type: ignore[operator]
         return
 
     sub_stmt = _substitute_vars(stmt, vars_, lineno)
@@ -389,9 +453,9 @@ def _execute_stmt(
 def _execute_declaration(
     match: re.Match,
     lineno: int,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
 ) -> None:
-    """Handle `string`/`numeric` declarations (with optional initializer or multi-decl)."""
+    """Handle `string`/`numeric`/`tuple` declarations (with optional initializer or multi-decl)."""
     type_name = match.group(1)
     names_str = match.group(2)
     expr_raw = match.group(3)
@@ -409,16 +473,22 @@ def _execute_declaration(
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
 
     if expr_raw is None:
-        default: float | str = "" if type_name == "string" else 0.0
-        for name in names:
-            vars_[name] = default
+        if type_name == "tuple":
+            for name in names:
+                vars_[name] = ()
+        else:
+            default: float | str = "" if type_name == "string" else 0.0
+            for name in names:
+                vars_[name] = default
         return
 
     expr_raw = expr_raw.strip()
     if type_name == "string":
         vars_[names[0]] = _eval_string_expr(expr_raw, vars_, lineno)
+    elif type_name == "tuple":
+        vars_[names[0]] = _eval_tuple_expr(expr_raw, vars_, lineno)
     else:
-        expr_sub = _substitute_vars(expr_raw, vars_, lineno)
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         vars_[names[0]] = _eval_expr(expr_sub, lineno)
 
@@ -427,7 +497,7 @@ def _execute_include(
     tokens: list,
     lineno: int,
     source_path: Path | None,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -466,17 +536,22 @@ def _fmt_float(val: float) -> str:
     return s
 
 
-def _substitute_vars(text: str, vars_: dict[str, float | str], lineno: int) -> str:
+def _substitute_vars(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
     def replace(m: re.Match) -> str:  # type: ignore[type-arg]
         name = m.group(1) if m.group(1) is not None else m.group(2)
         val = vars_.get(name, 0.0)
+        if isinstance(val, tuple):
+            return ','.join(
+                v if isinstance(v, str) else _fmt_float(v)
+                for v in val
+            )
         if isinstance(val, str):
             return val
         return _fmt_float(val)
     return _VARREF_RE.sub(replace, text)
 
 
-def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int) -> str:
+def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
     """Replace builtin calls and (expr) groups outside quoted strings with their values.
 
     Builtin calls (`len(s)`, `match(s, p)`, ...) are substituted first at any
@@ -484,6 +559,7 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
     identifiers inside resolved as variable references. Quoted strings are
     skipped throughout.
     """
+    text = _substitute_tuple_indexing(text, vars_, lineno)
     text = _substitute_builtins_in_expr(text, vars_, lineno)
     result: list[str] = []
     i = 0
@@ -508,29 +584,45 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str], lineno: int
                 i += 1
             else:
                 inner = text[i + 1:j - 1]
-                def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
-                    name = m.group()
-                    if name in _RESERVED_EXPR_NAMES:
-                        return name
-                    val = _v.get(name, 0.0)
-                    if isinstance(val, str):
-                        raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
-                    return _fmt_float(val)
-                expr = _BARE_ID_RE.sub(sub_id, inner)
-                result.append(_fmt_float(_eval_expr(expr, lineno)))
-                i = j
+                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD
+                if _has_top_level_comma(inner):
+                    tval = _eval_tuple_expr(inner, vars_, lineno)
+                    if len(tval) != 2:
+                        raise ParseError(
+                            f"Line {lineno}: coordinate expects 2-element tuple, got {len(tval)}"
+                        )
+                    result.append(','.join(
+                        v if isinstance(v, str) else _fmt_float(v)
+                        for v in tval
+                    ))
+                    i = j
+                else:
+                    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+                        name = m.group()
+                        if name in _RESERVED_EXPR_NAMES:
+                            return name
+                        val = _v.get(name, 0.0)
+                        if isinstance(val, str):
+                            raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
+                        if isinstance(val, tuple):
+                            raise ParseError(f"Line {_l}: variable '{name}' is a tuple, not numeric")
+                        return _fmt_float(val)
+                    expr = _BARE_ID_RE.sub(sub_id, inner)
+                    result.append(_fmt_float(_eval_expr(expr, lineno)))
+                    i = j
         else:
             result.append(ch)
             i += 1
     return ''.join(result)
 
 
-def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno: int) -> str:
+def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
     """Like _evaluate_inline_exprs but also substitutes bare identifiers at the top level.
 
     Used for evaluating condition expressions and for/step bounds that are not
     wrapped in parentheses.
     """
+    text = _substitute_tuple_indexing(text, vars_, lineno)
     text = _substitute_builtins_in_expr(text, vars_, lineno)
     def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
         name = m.group()
@@ -539,6 +631,8 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
         val = _v.get(name, 0.0)
         if isinstance(val, str):
             raise ParseError(f"Line {_l}: variable '{name}' is a string, not numeric")
+        if isinstance(val, tuple):
+            raise ParseError(f"Line {_l}: variable '{name}' is a tuple, not numeric")
         return _fmt_float(val)
     return _BARE_ID_RE.sub(sub_id, text)
 
@@ -546,7 +640,7 @@ def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str], lineno
 def _parse_call_args(
     text: str,
     paren_pos: int,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     lineno: int,
 ) -> tuple[list[object], int]:
     """Parse a comma-separated argument list starting at the `(` at paren_pos.
@@ -633,7 +727,7 @@ def _parse_call_args(
 
 def _substitute_builtins_in_expr(
     text: str,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     lineno: int,
 ) -> str:
     """Replace numeric-returning builtin calls with their decimal value.
@@ -678,7 +772,7 @@ def _substitute_builtins_in_expr(
 
 def _eval_string_expr(
     text: str,
-    vars_: dict[str, float | str],
+    vars_: dict[str, float | str | TupleVal],
     lineno: int,
 ) -> str:
     """Evaluate a string expression: terms joined by `+`.
@@ -688,6 +782,8 @@ def _eval_string_expr(
     terms (literals, numeric vars, len/match results) raise ParseError — there
     is no implicit numeric-to-string coercion.
     """
+    # Pre-substitute tuple indexing so name[i] yields the slot's string value
+    text = _substitute_tuple_indexing(text, vars_, lineno)
     parts: list[str] = []
     i = 0
     n = len(text)
@@ -785,6 +881,295 @@ def _rhs_is_string_expr(text: str) -> bool:
     return bool(stripped) and stripped[0] in ('"', "'")
 
 
+def _has_top_level_comma(text: str) -> bool:
+    """True if `text` contains a comma at paren/bracket depth 0, outside quotes."""
+    depth = 0
+    in_quote = False
+    for ch in text:
+        if ch == '"':
+            in_quote = not in_quote
+        elif not in_quote:
+            if ch in ('(', '['):
+                depth += 1
+            elif ch in (')', ']'):
+                depth -= 1
+            elif ch == ',' and depth == 0:
+                return True
+    return False
+
+
+def _rhs_is_tuple_expr(text: str, vars_: dict[str, float | str | TupleVal]) -> bool:
+    """Heuristic: does the RHS look like a tuple expression?"""
+    stripped = text.strip()
+    if _has_top_level_comma(stripped):
+        return True
+    if stripped.startswith('(') and stripped.endswith(')'):
+        inner = stripped[1:-1]
+        if _has_top_level_comma(inner):
+            return True
+    if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', stripped):
+        return isinstance(vars_.get(stripped), tuple)
+    # $name or ${name} reference
+    m_ref = re.fullmatch(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)', stripped)
+    if m_ref:
+        name = m_ref.group(1) if m_ref.group(1) is not None else m_ref.group(2)
+        return isinstance(vars_.get(name), tuple)
+    # op form: operand OP operand where an operand is a tuple var
+    m = re.fullmatch(
+        r'([A-Za-z_][A-Za-z0-9_]*|\(.+\))\s*[+\-*/]\s*([A-Za-z_][A-Za-z0-9_]*|\(.+\))',
+        stripped,
+    )
+    if m:
+        left = m.group(1).strip()
+        right = m.group(2).strip()
+        return isinstance(vars_.get(left), tuple) or isinstance(vars_.get(right), tuple)
+    return False
+
+
+def _eval_tuple_expr(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    lineno: int,
+) -> TupleVal:
+    """Evaluate a tuple expression and return a TupleVal."""
+    text = text.strip()
+
+    # Operation form: find top-level +/-/*/÷ with at least one tuple operand
+    op_char, left_s, right_s = _split_top_level_op(text)
+    if op_char is not None:
+        left_val = _resolve_tuple_operand(left_s, vars_, lineno)
+        right_val = _resolve_tuple_operand(right_s, vars_, lineno)
+        if isinstance(left_val, tuple) or isinstance(right_val, tuple):
+            if isinstance(left_val, tuple) and not isinstance(right_val, tuple):
+                # scalar broadcast: replicate scalar to match lhs length
+                rhs: TupleVal = tuple(right_val for _ in left_val)  # type: ignore[misc]
+                lhs: TupleVal = left_val
+            elif isinstance(right_val, tuple) and not isinstance(left_val, tuple):
+                lhs = tuple(left_val for _ in right_val)  # type: ignore[misc]
+                rhs = right_val
+            else:
+                lhs = left_val  # type: ignore[assignment]
+                rhs = right_val  # type: ignore[assignment]
+            return _tuple_op(lhs, rhs, op_char, lineno)
+        # neither side is a tuple — fall through
+
+    # Parenthesized list with top-level comma
+    if text.startswith('(') and text.endswith(')'):
+        inner = text[1:-1]
+        if _has_top_level_comma(inner):
+            return _eval_tuple_literal(inner, vars_, lineno)
+
+    # Bare-tuple literal (top-level comma)
+    if _has_top_level_comma(text):
+        return _eval_tuple_literal(text, vars_, lineno)
+
+    # Bare variable reference resolving to a tuple
+    if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', text):
+        val = vars_.get(text)
+        if isinstance(val, tuple):
+            return val
+
+    # $varname or ${varname} reference resolving to a tuple
+    m_ref = re.fullmatch(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)', text)
+    if m_ref:
+        name = m_ref.group(1) if m_ref.group(1) is not None else m_ref.group(2)
+        val = vars_.get(name)
+        if isinstance(val, tuple):
+            return val
+
+    # Single scalar — wrap in 1-tuple
+    scalar = _eval_scalar_element(text, vars_, lineno)
+    return (scalar,)
+
+
+def _resolve_tuple_operand(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    lineno: int,
+) -> float | str | TupleVal:
+    """Resolve one side of a tuple op: tuple var, scalar var, or literal."""
+    t = text.strip()
+    if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t):
+        val = vars_.get(t)
+        if val is not None:
+            return val
+    m_ref = re.fullmatch(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)', t)
+    if m_ref:
+        name = m_ref.group(1) if m_ref.group(1) is not None else m_ref.group(2)
+        val = vars_.get(name)
+        if val is not None:
+            return val
+    if t.startswith('(') and t.endswith(')'):
+        inner = t[1:-1]
+        if _has_top_level_comma(inner):
+            return _eval_tuple_literal(inner, vars_, lineno)
+    if _has_top_level_comma(t):
+        return _eval_tuple_literal(t, vars_, lineno)
+    return _eval_scalar_element(t, vars_, lineno)
+
+
+def _eval_tuple_literal(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> TupleVal:
+    """Split on top-level commas and evaluate each element as a scalar."""
+    parts: list[str] = []
+    depth = 0
+    in_quote = False
+    current: list[str] = []
+    for ch in text:
+        if ch == '"':
+            in_quote = not in_quote
+            current.append(ch)
+        elif not in_quote:
+            if ch in ('(', '['):
+                depth += 1
+                current.append(ch)
+            elif ch in (')', ']'):
+                depth -= 1
+                current.append(ch)
+            elif ch == ',' and depth == 0:
+                parts.append(''.join(current).strip())
+                current = []
+            else:
+                current.append(ch)
+        else:
+            current.append(ch)
+    parts.append(''.join(current).strip())
+    return tuple(_eval_scalar_element(p, vars_, lineno) for p in parts)
+
+
+def _eval_scalar_element(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    lineno: int,
+) -> float | str:
+    """Evaluate a single element of a tuple literal as either string or numeric."""
+    t = text.strip()
+    if t.startswith('"') or t.startswith("'"):
+        return _eval_string_expr(t, vars_, lineno)
+    if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t):
+        val = vars_.get(t)
+        if isinstance(val, str):
+            return val
+        if isinstance(val, float) or isinstance(val, int):
+            return float(val)
+        if val is None:
+            return 0.0
+    expr_sub = _substitute_tuple_indexing(_substitute_vars(t, vars_, lineno), vars_, lineno)
+    expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+    return _eval_expr(expr_sub, lineno)
+
+
+def _split_top_level_op(text: str) -> tuple[str | None, str, str]:
+    """Find the last top-level +/-/*/÷ (outside parens/quotes) and split around it.
+
+    Returns (op, left, right) or (None, '', '') if none found.
+    Searches right-to-left so `a + b + c` splits as `(a + b) + c`.
+    Addition/subtraction are lower precedence — scan them after mul/div.
+    """
+    # Scan right-to-left for +/- first (lower precedence), then */÷
+    for ops in ('+', '-', '*', '/'):
+        depth = 0
+        in_quote = False
+        for i in range(len(text) - 1, -1, -1):
+            ch = text[i]
+            if ch == '"':
+                in_quote = not in_quote
+            elif not in_quote:
+                if ch in (')', ']'):
+                    depth += 1
+                elif ch in ('(', '['):
+                    depth -= 1
+                elif ch == ops and depth == 0 and i > 0:
+                    return ops, text[:i].strip(), text[i + 1:].strip()
+    return None, '', ''
+
+
+def _tuple_op(
+    a: TupleVal,
+    b: TupleVal,
+    op: str,
+    lineno: int,
+) -> TupleVal:
+    """Apply element-wise op to two tuples. Result length = min(len(a), len(b))."""
+    n = min(len(a), len(b))
+    result: list[float | str] = []
+    for i in range(n):
+        va, vb = a[i], b[i]
+        if isinstance(va, str) and isinstance(vb, str):
+            if op != '+':
+                raise ParseError(f"Line {lineno}: '{op}' is not defined on string tuple slots")
+            result.append(va + vb)
+        elif isinstance(va, float) and isinstance(vb, float):
+            if op == '+':
+                result.append(va + vb)
+            elif op == '-':
+                result.append(va - vb)
+            elif op == '*':
+                result.append(va * vb)
+            elif op == '/':
+                if vb == 0:
+                    raise ParseError(f"Line {lineno}: division by zero in tuple op")
+                result.append(va / vb)
+        else:
+            raise ParseError(
+                f"Line {lineno}: type mismatch in tuple op at slot {i}: "
+                f"{'string' if isinstance(va, str) else 'numeric'} vs "
+                f"{'string' if isinstance(vb, str) else 'numeric'}"
+            )
+    return tuple(result)
+
+
+# Matches name[expr] outside quoted strings — used for tuple index substitution
+_TUPLE_INDEX_RE = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\[([^\]]+)\]')
+
+
+def _substitute_tuple_indexing(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    lineno: int,
+) -> str:
+    """Replace name[expr] patterns with the tuple slot value."""
+    if '[' not in text:
+        return text
+    result: list[str] = []
+    i = 0
+    n = len(text)
+    in_quote = False
+    while i < n:
+        ch = text[i]
+        if ch == '"':
+            in_quote = not in_quote
+            result.append(ch)
+            i += 1
+            continue
+        if in_quote:
+            result.append(ch)
+            i += 1
+            continue
+        m = _TUPLE_INDEX_RE.match(text, i)
+        if m:
+            name = m.group(1)
+            idx_expr = m.group(2).strip()
+            val = vars_.get(name)
+            if isinstance(val, tuple):
+                idx_sub = _substitute_vars(idx_expr, vars_, lineno)
+                idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
+                idx_float = _eval_expr(idx_sub, lineno)
+                if idx_float != int(idx_float) or int(idx_float) < 0:
+                    raise ParseError(f"Line {lineno}: tuple index must be a non-negative integer")
+                idx_int = int(idx_float)
+                if idx_int >= len(val):
+                    raise ParseError(
+                        f"Line {lineno}: tuple index {idx_int} out of range (len={len(val)})"
+                    )
+                slot = val[idx_int]
+                result.append(slot if isinstance(slot, str) else _fmt_float(slot))
+                i = m.end()
+                continue
+        result.append(ch)
+        i += 1
+    return ''.join(result)
+
+
 def _eval_expr(expr: str, lineno: int) -> float:
     if not _SAFE_EXPR_RE.match(expr):
         raise ParseError(f"Line {lineno}: invalid expression: {expr!r}")
@@ -797,7 +1182,7 @@ def _eval_expr(expr: str, lineno: int) -> float:
         raise ParseError(f"Line {lineno}: expression error in {expr!r}: {e}")
 
 
-def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
+def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float | str | TupleVal]) -> None:
     ox, oy = placer._canvas_origin
     cx = placer._cursor.x - ox
     cy = placer._cursor.y - oy
@@ -805,5 +1190,6 @@ def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float]) -> None:
     vars_["__cursory"] = cy
     vars_["__cx"] = cx
     vars_["__cy"] = cy
+    vars_["__cursor"] = (cx, cy)
     vars_["__dir"] = placer._cursor.direction
     vars_["__mltodir"] = placer._mltodir

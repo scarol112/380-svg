@@ -278,7 +278,7 @@ Multiple `stop`/`start` pairs in one file are independent. These directives are 
 
 ---
 
-#### Variable statements (`string`, `numeric`, plain assignment)
+#### Variable statements (`string`, `numeric`, `tuple`, plain assignment)
 
 Variables are numeric by default. Plain `name = expr` (or `name += expr`, `name -= expr`) creates or updates a numeric variable.
 
@@ -291,22 +291,43 @@ string a, b, c              # multi-decl, all default ""
 numeric x                   # default 0.0
 numeric x = 5
 numeric a, b, c             # multi-decl, all default 0.0
+tuple t                     # default ()
+tuple t = (3, 4)            # parenthesized 2-tuple
+tuple t = 1, 2, 3           # bare comma form
+tuple a, b, c               # multi-decl, all default ()
 ```
 
 Grammar:
 
 ```
-<decl>    ::= ("string" | "numeric") <names> ( "=" <expr> )?
+<decl>    ::= ("string" | "numeric" | "tuple") <names> ( "=" <expr> )?
 <names>   ::= <name> ( "," <name> )*
 ```
 
 Multi-declarations cannot carry an initializer (parse error). Reserved keywords (including `string`, `numeric`, `tuple`, `len`, `substr`, `match`, `replace`) cannot be used as variable names.
 
-**String builtins** (function-call form, callable in any expression context that accepts the return type):
+**Tuple indexing (read):** `t[i]` inside `(expr)` groups or on the RHS of a `numeric`/`string` assignment reads slot `i` (0-based, must be in range). Not recognized inside `${...}` interpolation:
+
+```
+numeric x = (t[0] + t[1])
+numeric first = t[0]
+label "first=${first}"
+```
+
+**Tuple element assignment:** `t[i] = v` mutates slot `i`. The new value's type must match the existing slot's type:
+
+```
+t[0] = 10
+t[1] = (t[0] * 2)
+```
+
+**Tuple compound assignment:** `+=`, `-=`, `*=`, `/=` operate element-wise on tuple variables. Scalar broadcast applies when one side is not a tuple.
+
+**String and numeric builtins** (function-call form, callable in any expression context that accepts the return type):
 
 | Builtin | Returns | `pattern` regex? | Notes |
 |---|---|---|---|
-| `len(s)` | numeric | — | Length of string `s` |
+| `len(s)` | numeric | — | Length of string `s` or tuple `t` |
 | `substr(s, start)` / `substr(s, start, end)` | string | — | Integer indices; 0-based, exclusive `end`, negative indices count from end |
 | `match(s, pattern)` | numeric | **yes** | `re.search`; matches anywhere in `s` — anchor with `^`/`$` to restrict |
 | `replace(s, pattern, repl)` | string | **pattern only** | `re.sub`; replaces all occurrences; `repl` is a literal string supporting backreferences (`\1`, `\g<name>`) |

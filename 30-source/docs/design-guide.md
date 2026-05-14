@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.8 $ $Date: 2026/05/14 02:55:17 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.9 $ $Date: 2026/05/14 13:05:27 $ -->
 # App working title: svg
 
 ## Project tools
@@ -154,6 +154,46 @@ lb "width: ${roomw}"      # parens inside "..." are literal, not evaluated
 **Scope**: variables are shared across `include` files — one table for the entire drawing.
 
 **Implementation**: `interpreter.py` processes statements one at a time (interleaved parse + place), which is what makes `cursorx`/`cursory` viable. The original `parse_file()` pipeline is retained for any callers that don't use variables.
+
+### Tuples
+
+The `tuple` type holds an ordered sequence of one or more `numeric` or `string` values. Elements may be mixed types within the same tuple.
+
+**Declaration:**
+```
+tuple empty                        # → ()
+tuple p = (3, 4)                   # parenthesized 2-tuple
+tuple q = 1, 2, 3                  # bare comma form
+tuple r = q                        # copy of q
+tuple m = ("name", 5, "tag", 0)    # mixed string+numeric
+```
+
+**Indexing:** single-index read via `t[i]`, recognized inside `(expr)` arithmetic and on the RHS of `numeric`/`string` assignments. Not recognized inside `${...}` interpolation — copy to a scalar first. Index must be a non-negative integer in range.
+
+**Element assignment:** `t[i] = v` mutates slot `i`. The replacement value must match the existing slot's type (numeric↔numeric, string↔string); mismatches are a ParseError.
+
+**Element-wise math:** `+`, `-`, `*`, `/` operate slot-by-slot. Result length = `min(len(lhs), len(rhs))`. Scalar on one side is broadcast to match the other tuple's length. Per-slot type rules:
+- `numeric op numeric` → numeric; all four ops.
+- `string + string` → concatenate; `-`/`*`/`/` on a string slot → ParseError.
+- Cross-type slot (one numeric, one string) → ParseError.
+
+`+=`, `-=`, `*=`, `/=` compound assignment is valid on tuple variables only.
+
+**Coord-bearing commands** (`r`, `mto`, `lto`, etc.) accept a 2-tuple as the coordinate argument in three equivalent forms:
+```
+r 10 8 $origin       # tuple var
+r 10 8 (2, 2)        # parenthesized literal
+r 10 8 2,2           # existing bare COORD token form
+```
+Non-2-tuple in coord position → ParseError.
+
+**`$__cursor`** system variable: a 2-element tuple `(cx, cy)` updated after every placed element, alongside the existing scalar `$__cx`/`$__cy`. Pass it whole to coord-bearing commands (`mto $__cursor`) or read individual slots inside `(expr)` as `__cursor[0]` / `__cursor[1]` (bare name — `$__cursor[0]` does not work, since `$` substitution runs before indexing). It is read-only (same `__`-prefix rule).
+
+**`len(t)`** returns tuple length as a numeric.
+
+**No implicit auto-typing.** `t = (1,2)` without a prior `tuple` declaration is an error. Use `tuple t = (1,2)` or declare `tuple t` first.
+
+**Out of scope:** nested tuples, slice indexing, `append`/`pop` builtins.
 
 ### Strings and explicit types
 

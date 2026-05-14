@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.14.13.05.27;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.05.13.19.11.16;	author scarol;	state Exp;
@@ -17,9 +22,9 @@ desc
 @
 
 
-1.1
+1.2
 log
-@Initial revision
+@Extend len() builtin to accept tuple arguments (issue #22)
 @
 text
 @import re
@@ -42,7 +47,10 @@ def _check_int(name: str, arg: object, lineno: int) -> int:
 def builtin_len(args: list[object], lineno: int) -> float:
     if len(args) != 1:
         raise ParseError(f"Line {lineno}: len() takes 1 argument, got {len(args)}")
-    s = _check_str("len", args[0], lineno)
+    arg = args[0]
+    if isinstance(arg, tuple):
+        return float(len(arg))
+    s = _check_str("len", arg, lineno)
     return float(len(s))
 
 
@@ -89,4 +97,15 @@ BUILTINS = {
 
 BUILTIN_RETURNS_STRING = {"substr", "replace"}
 BUILTIN_RETURNS_NUMERIC = {"len", "match"}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d21 4
+a24 1
+    s = _check_str("len", args[0], lineno)
 @
