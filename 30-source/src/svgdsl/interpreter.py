@@ -69,13 +69,14 @@ VarMeta  = dict[str, tuple[str, int]]   # name -> (filename, lineno of last writ
 
 
 class _Trace:
-    __slots__ = ("active", "watch", "log", "filepath")
+    __slots__ = ("active", "watch", "log", "filepath", "last_loc")
 
     def __init__(self) -> None:
         self.active: bool = False
         self.watch: set[str] | None = None  # None = all variables
         self.log: list[tuple[str, str, str, int, str]] = []  # (name,type,file,line,value_str)
         self.filepath: str | None = None
+        self.last_loc: tuple[str, int] | None = None  # (filename, lineno) of last live line
 
 
 _current_trace: _Trace | None = None
@@ -600,6 +601,11 @@ def _maybe_trace(name: str, vars_: dict[str, float | str | TupleVal], var_meta: 
     tc = "T" if isinstance(val, tuple) else "S" if isinstance(val, str) else "N"
     val_str = _vardump_format_value(val)
     t.log.append((name, tc, fn, ln, val_str))
+    # Blank line whenever source location changes
+    cur_loc = (fn, ln)
+    if t.last_loc is not None and t.last_loc != cur_loc:
+        _trace_output("", t)
+    t.last_loc = cur_loc
     loc = f"{fn}:{ln}" if fn else ("-" if not ln else f":{ln}")
     _trace_output(f"[TRACE] {name:<20} {tc}  {loc:<30}  {val_str}", t)
 
@@ -660,14 +666,19 @@ def _execute_vartrace(
 def _print_trace_summary(t: _Trace, source_path: Path | None) -> None:
     if not t.log:
         return
-    # Sort by name, preserving execution order within each name
-    from itertools import groupby
+    # Sort by name, preserving execution order within each name.
+    # Within each name suppress consecutive entries with the same value (keep
+    # the first occurrence = initialization, then only actual value changes).
     by_name: dict[str, list] = {}
     for entry in t.log:
         by_name.setdefault(entry[0], []).append(entry)
     sorted_rows = []
     for name in sorted(by_name):
-        sorted_rows.extend(by_name[name])
+        prev_val: str | None = None
+        for entry in by_name[name]:
+            if entry[4] != prev_val:   # entry[4] is val_str
+                sorted_rows.append(entry)
+                prev_val = entry[4]
 
     name_w = max((len(r[0]) for r in sorted_rows), default=4)
     name_w = max(name_w, 4)
