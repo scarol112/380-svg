@@ -32,6 +32,11 @@ _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
 _VARREF_RE = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
 _ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*([+\-*/])?=\s*(.+)$')
 _INDEX_ASSIGN_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*\[(.+?)\]\s*=\s*(.+)$')
+# Tuple unpacking: two or more names on LHS (bare or parenthesized), plain = only
+_UNPACK_RE = re.compile(
+    r'^\(([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)+)\)\s*=\s*(.+)$'
+    r'|^([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)+)\s*=\s*(.+)$'
+)
 _DECL_RE = re.compile(
     r'^(string|numeric|tuple)\s+'
     r'([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)'
@@ -353,6 +358,11 @@ def _execute_stmt(
         _execute_declaration(m_decl, lineno, vars_)
         return
 
+    m_unpack = _UNPACK_RE.match(stmt)
+    if m_unpack:
+        _execute_unpack(m_unpack, lineno, vars_)
+        return
+
     m_idx = _INDEX_ASSIGN_RE.match(stmt)
     if m_idx:
         name, idx_expr, val_expr = m_idx.group(1), m_idx.group(2).strip(), m_idx.group(3).strip()
@@ -497,6 +507,29 @@ def _execute_declaration(
         expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         vars_[names[0]] = _eval_expr(expr_sub, lineno)
+
+
+def _execute_unpack(
+    match: re.Match,
+    lineno: int,
+    vars_: dict[str, float | str | TupleVal],
+) -> None:
+    # Two alternatives: parenthesized (groups 1,2) or bare (groups 3,4)
+    names_str = match.group(1) if match.group(1) is not None else match.group(3)
+    expr_raw = (match.group(2) if match.group(2) is not None else match.group(4)).strip()
+    names = [n.strip() for n in names_str.split(',')]
+    for name in names:
+        if name.startswith('__'):
+            raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
+        if name in _ALL_KEYWORDS:
+            raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
+    tval = _eval_tuple_expr(expr_raw, vars_, lineno)
+    if len(tval) != len(names):
+        raise ParseError(
+            f"Line {lineno}: unpack length mismatch — {len(names)} names but tuple has {len(tval)} elements"
+        )
+    for name, elem in zip(names, tval):
+        vars_[name] = elem
 
 
 def _vardump_format_value(val: float | str | TupleVal) -> str:
