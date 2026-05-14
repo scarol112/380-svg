@@ -1,10 +1,15 @@
-head	1.2;
+head	1.3;
 access;
 symbols;
 locks
-	scarol:1.2; strict;
+	scarol:1.3; strict;
 comment	@# @;
 
+
+1.3
+date	2026.05.14.21.31.27;	author scarol;	state Exp;
+branches;
+next	1.2;
 
 1.2
 date	2026.04.29.15.03.19;	author scarol;	state Exp;
@@ -21,16 +26,87 @@ desc
 @@
 
 
+1.3
+log
+@begain switching to tuples
+@
+text
+@# 10x8 (default) unit grid with 1 (default) unit squares
+
+dir 90
+color Gainsboro
+
+# future ===========
+grid_bounds = 0,0,10,8
+tuple grid_center = (grid_bounds[2],grid_bounds[3]) / 2
+showvalues = True
+grid_xmax=20
+grid_ymax=16
+grid_size =0.25 
+# future ===========
+
+if ($grid_size == 0) {
+    grid_size = 1
+    }
+if ($grid_xmax == 0) {
+    grid_xmax = 10
+    }
+if ($grid_stroke == 0) {
+    grid_stroke = 1
+    }
+if ($grid_ymax == 0) {
+    grid_ymax = 8
+    }
+
+
+r $grid_xmax $grid_ymax A=0,0
+
+maxval = $grid_ymax - $grid_size
+for y=$grid_size to $maxval step $grid_size {
+    l $grid_xmax ${grid_stroke}px A=0,$y
+    if ($showvalues) {
+        lb "$y" c=red a=(($__cx - 0.25), $y)
+    }
+}
+
+dir 180
+if (showvalues) {
+    lb "${grid_size} units" 9 c=red a=(0,(${grid_ymax} + 0.4))
+}
+maxval = $grid_xmax - $grid_size
+for x=$grid_size to $maxval step $grid_size {
+    l $grid_ymax ${grid_stroke}px  A=$x,0
+    if ($showvalues) {
+        lb "$x" c=red
+    }
+}
+
+mto 0 0
+dir 90
+
+stop
+# future ===========
+mto $grid_center
+dir 90
+lb 12 c=red "pgrid_bounds = $grid_bounds"
+p 2px x=red a=($__cursor - (0.75,0))
+# future ===========
+@
+
+
 1.2
 log
 @spaces brainstorm, added inch numbers to rulerh10
 @
 text
-@# 10x10 grid
+@d1 2
+a2 4
+# 10x10 grid
 eid off
 dim off
 sxy off
-dir 90
+d4 34
+a37 10
 color cyan
 l 10 A=0,0
 l 10 A=0,1
@@ -41,8 +117,8 @@ l 10 A=0,5
 l 10 A=0,6
 l 10 A=0,7
 l 10 A=0,8
-
-dir 180
+d40 21
+a60 11
 l 8 A=0,0
 l 8 A=1,0
 l 8 A=2,0

@@ -1,4 +1,5 @@
 # variable length, direction, divisions ruler
+# length and divisionsize are dimensionless grid coordinates
 
 if ($rulerlength == 0) {
 l = 10
@@ -6,10 +7,10 @@ l = 10
 l = $rulerlength
 }
 
-if ($rulerdivisions == 0) {
+if ($rulerdivisionsize == 0) {
 r =0.5 
 } else {
-r = $rulerdivisions
+r = $rulerdivisionsize
 }
 
 

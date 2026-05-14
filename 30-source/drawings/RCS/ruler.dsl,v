@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.05.14.21.31.27;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.05.14.18.05.02;	author scarol;	state Exp;
@@ -31,12 +36,13 @@ desc
 @@
 
 
-1.4
+1.5
 log
-@*** empty log message ***
+@begain switching to tuples
 @
 text
 @# variable length, direction, divisions ruler
+# length and divisionsize are dimensionless grid coordinates
 
 if ($rulerlength == 0) {
 l = 10
@@ -44,10 +50,10 @@ l = 10
 l = $rulerlength
 }
 
-if ($rulerdivisions == 0) {
+if ($rulerdivisionsize == 0) {
 r =0.5 
 } else {
-r = $rulerdivisions
+r = $rulerdivisionsize
 }
 
 
@@ -72,6 +78,21 @@ lb "${tick2}" A=$shiftx,$shifty
 mto $cx1 $cy1
 }
 
+@
+
+
+1.4
+log
+@*** empty log message ***
+@
+text
+@d2 1
+d10 1
+a10 1
+if ($rulerdivisions == 0) {
+d13 1
+a13 1
+r = $rulerdivisions
 @
 
 
