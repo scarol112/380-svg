@@ -21,6 +21,7 @@ _ALL_KEYWORDS = {
     "True", "False", "and", "or", "not",
     "string", "numeric", "tuple",
     "len", "substr", "match", "replace",
+    "stop", "start",
 }
 
 _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
@@ -67,6 +68,7 @@ def execute_dsl(
         "__dsl_filename": "",
         "__dsl_file_lineno": 0.0,
         "__date": datetime.now().strftime("%Y-%m-%d"),
+        "__stopped": 0.0,
     }
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
@@ -104,6 +106,14 @@ def _execute_block(
         lineno, raw = lines[i]
         line = _strip_comment(raw)
         if not line:
+            i += 1
+            continue
+
+        # When stopped, skip everything — block headers, statements, braces —
+        # until a bare 'start' directive is found.
+        if vars_.get("__stopped", 0.0):
+            if line.split()[0].lower() == "start":
+                vars_["__stopped"] = 0.0
             i += 1
             continue
 
@@ -146,6 +156,8 @@ def _execute_block(
             stmt = stmt.strip()
             if stmt:
                 _execute_stmt(stmt, lineno, source_path, vars_, placer, seen)
+                if vars_.get("__stopped", 0.0):
+                    break
         i += 1
 
 
@@ -311,6 +323,14 @@ def _execute_stmt(
         return
     first_word = parts[0].lower()
     canonical = _ALIASES.get(first_word, first_word)
+
+    if canonical == "stop":
+        vars_["__stopped"] = 1.0
+        return
+
+    if canonical == "start":
+        vars_["__stopped"] = 0.0
+        return
 
     if canonical == "include":
         tokens = tokenize(stmt, lineno)

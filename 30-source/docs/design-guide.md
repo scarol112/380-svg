@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.7 $ $Date: 2026/05/13 21:14:43 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.8 $ $Date: 2026/05/14 02:55:17 $ -->
 # App working title: svg
 
 ## Project tools
@@ -230,6 +230,10 @@ For-loops are limited to 100 000 iterations. Exceeding this limit raises `ParseE
 #### `_capture_body` helper
 
 `_capture_body(lines, body_start, body_end)` slices the lines list and returns it. It is a thin named helper to leave the door open for future use (e.g. named function/macro definitions) without changing the for-loop call site.
+
+#### `stop` / `start` directives
+
+`stop` suspends evaluation; `start` resumes it. Both are handled at the top of `_execute_block`'s line loop, before any structural parsing (for/if/brace detection). When `__stopped` is truthy, every line is skipped — block headers, element statements, includes — until a line whose first token is `start` is found. The flag is stored in `vars_["__stopped"]` (a system variable, read-only from DSL). Multiple `stop`/`start` pairs in one file are independent.
 
 #### Keywords reserved against assignment
 

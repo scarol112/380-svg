@@ -1,10 +1,15 @@
-head	1.7;
+head	1.8;
 access;
 symbols;
 locks
-	scarol:1.7; strict;
+	scarol:1.8; strict;
 comment	@# @;
 
+
+1.8
+date	2026.05.14.02.55.17;	author scarol;	state Exp;
+branches;
+next	1.7;
 
 1.7
 date	2026.05.13.21.14.43;	author scarol;	state Exp;
@@ -46,12 +51,12 @@ desc
 @@
 
 
-1.7
+1.8
 log
-@Precise regex docs for match/replace/substr builtins (issue #43)
+@Document stop/start directives (issue #14)
 @
 text
-@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.6 $ $Date: 2026/05/13 19:11:28 $ -->
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.7 $ $Date: 2026/05/13 21:14:43 $ -->
 # App working title: svg
 
 ## Project tools
@@ -284,6 +289,10 @@ For-loops are limited to 100 000 iterations. Exceeding this limit raises `ParseE
 
 `_capture_body(lines, body_start, body_end)` slices the lines list and returns it. It is a thin named helper to leave the door open for future use (e.g. named function/macro definitions) without changing the for-loop call site.
 
+#### `stop` / `start` directives
+
+`stop` suspends evaluation; `start` resumes it. Both are handled at the top of `_execute_block`'s line loop, before any structural parsing (for/if/brace detection). When `__stopped` is truthy, every line is skipped — block headers, element statements, includes — until a line whose first token is `start` is found. The flag is stored in `vars_["__stopped"]` (a system variable, read-only from DSL). Multiple `stop`/`start` pairs in one file are independent.
+
 #### Keywords reserved against assignment
 
 `_ALL_KEYWORDS` is extended with `if elif else for to step True False and or not`. Any attempt to assign to these names (or any name starting with `__`) raises `ParseError`.
@@ -505,6 +514,18 @@ rect 12 10 "Bedroom"
 door 3 right A=2,10
 window 4 A=12,3
 ```
+@
+
+
+1.7
+log
+@Precise regex docs for match/replace/substr builtins (issue #43)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.6 $ $Date: 2026/05/13 19:11:28 $ -->
+d233 4
 @
 
 

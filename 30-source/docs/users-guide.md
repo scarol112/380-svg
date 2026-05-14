@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.30 $ $Date: 2026/05/13 21:14:42 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.31 $ $Date: 2026/05/14 02:55:17 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -299,6 +299,28 @@ string lbl = "len = " + n                 # ERROR: cannot concatenate string and
 So for `string s = "hello"`: `len(s)` returns 5; `len($s)` and `len(${s})` both rewrite to `len(hello)` — an unquoted bare identifier — and error.
 
 ---
+
+#### stop / start
+
+`stop` and `start` are development-time directives that toggle evaluation on and off:
+
+```
+label "this renders"
+stop
+label "skipped"          # not evaluated
+rect 12 10 "skipped"     # not evaluated
+for i = 1 to 5 {
+    line i               # entire block skipped
+}
+start
+label "this renders again"
+```
+
+- `stop` suspends evaluation immediately. All subsequent statements, block headers (`if`, `for`), and element placements are skipped until a `start` is encountered.
+- `start` resumes evaluation. Multiple `stop`/`start` pairs in the same file are allowed.
+- `stop`/`start` take effect at the line level — a `start` on its own line resumes from the *next* line onwards.
+- `include` directives inside a stopped section are skipped (the included file is not read).
+- `stop`/`start` are ignored by the parser/AST pipeline; they only affect the interpreter.
 
 #### Control flow
 
