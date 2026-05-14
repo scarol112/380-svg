@@ -134,6 +134,7 @@ _ALIASES: dict[str, str] = {
     "txbr":   "textbreak",
     "tbox":   "textbox",
     "tapp":   "textappend",
+    "vd":     "vardump",
 }
 
 

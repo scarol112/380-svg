@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -22,6 +23,7 @@ _ALL_KEYWORDS = {
     "string", "numeric", "tuple",
     "len", "substr", "match", "replace",
     "stop", "start",
+    "vardump",
 }
 
 _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
@@ -342,6 +344,10 @@ def _execute_stmt(
         _execute_include(tokens, lineno, source_path, vars_, placer, seen)
         return
 
+    if canonical == "vardump":
+        _execute_vardump(stmt, lineno, source_path, vars_)
+        return
+
     m_decl = _DECL_RE.match(stmt)
     if m_decl:
         _execute_declaration(m_decl, lineno, vars_)
@@ -491,6 +497,58 @@ def _execute_declaration(
         expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         vars_[names[0]] = _eval_expr(expr_sub, lineno)
+
+
+def _vardump_format_value(val: float | str | TupleVal) -> str:
+    if isinstance(val, tuple):
+        parts = []
+        for v in val:
+            parts.append(f'"{v}"' if isinstance(v, str) else _fmt_float(v))
+        return f"({', '.join(parts)})"
+    if isinstance(val, str):
+        return f'"{val}"'
+    return _fmt_float(val)
+
+
+def _execute_vardump(
+    stmt: str,
+    lineno: int,
+    source_path: Path | None,
+    vars_: dict[str, float | str | TupleVal],
+) -> None:
+    # Parse optional filepath argument (quoted or bare word after "vardump")
+    rest = stmt.split(None, 1)[1].strip() if len(stmt.split(None, 1)) > 1 else ""
+    if rest.startswith('"') and rest.endswith('"') and len(rest) >= 2:
+        filepath_str = rest[1:-1]
+    else:
+        filepath_str = rest
+
+    # Separate system (__-prefixed) from user vars; sort each group
+    sys_vars = sorted((k, v) for k, v in vars_.items() if k.startswith('__'))
+    user_vars = sorted((k, v) for k, v in vars_.items() if not k.startswith('__'))
+
+    type_code = {float: 'N', str: 'S', tuple: 'T'}
+    rows: list[tuple[str, str, str]] = []
+    for name, val in sys_vars + user_vars:
+        tc = type_code.get(type(val), '?')
+        rows.append((name, tc, _vardump_format_value(val)))
+
+    name_w = max((len(r[0]) for r in rows), default=4)
+    name_w = max(name_w, 4)
+    header = f"{'NAME':<{name_w}}  TYPE  VALUE"
+    sep    = f"{'----':<{name_w}}  ----  -----"
+    lines  = [header, sep] + [f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]}" for r in rows]
+    table  = '\n'.join(lines)
+
+    if filepath_str:
+        out_path = Path(filepath_str)
+        if not out_path.is_absolute():
+            base = source_path.parent if source_path else Path.cwd()
+            out_path = (base / out_path).resolve()
+        out_path.write_text(table + '\n')
+        print(f"vardump: wrote {len(rows)} variables to {out_path}", file=sys.stderr)
+    else:
+        print(table, file=sys.stderr)
 
 
 def _execute_include(

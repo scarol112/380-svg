@@ -1,10 +1,15 @@
-head	1.8;
+head	1.9;
 access;
 symbols;
 locks
-	scarol:1.8; strict;
+	scarol:1.9; strict;
 comment	@# @;
 
+
+1.9
+date	2026.05.14.13.34.22;	author scarol;	state Exp;
+branches;
+next	1.8;
 
 1.8
 date	2026.05.14.13.05.27;	author scarol;	state Exp;
@@ -52,9 +57,9 @@ desc
 @
 
 
-1.8
+1.9
 log
-@Document tuple in declaration grammar, indexing, element assign (issue #22)
+@Document vardump directive (issue #45)
 @
 text
 @# DSL Statements and Token Support
@@ -337,6 +342,24 @@ Multiple `stop`/`start` pairs in one file are independent. These directives are 
 
 ---
 
+#### `vardump` / `vd`
+
+Development-time diagnostic. Prints a table of all current variables (system and user-defined) with name, type code, and value.
+
+```
+vardump                     # print table to stderr
+vardump /path/to/file.txt   # write table to file; confirm to stderr
+vd                          # alias
+```
+
+**Type codes:** `N` = numeric, `S` = string, `T` = tuple.  
+System variables (`__`-prefixed) appear first, sorted alphabetically; user variables follow, also sorted.  
+String values are shown with surrounding `"..."` quotes. Tuple values as `(e0, e1, ...)`.  
+When a filepath is given it is resolved relative to the DSL source file's directory (or `cwd` for stdin).  
+Output always goes to `stderr` so the SVG pipeline on `stdout` is unaffected.
+
+---
+
 #### Variable statements (`string`, `numeric`, `tuple`, plain assignment)
 
 Variables are numeric by default. Plain `name = expr` (or `name += expr`, `name -= expr`) creates or updates a numeric variable.
@@ -423,6 +446,15 @@ The parser counts all MEASUREMENT/NUMBER tokens and captures a NUMBER as font si
 
 **Note 9 — `textstyle/tstyle` with no arguments is a silent no-op.**
 `textstyle` accepts zero arguments and produces a `TextStyleDirective` with both `size` and `font_family` set to `None`. The directive is applied without error but changes nothing.
+@
+
+
+1.8
+log
+@Document tuple in declaration grammar, indexing, element assign (issue #22)
+@
+text
+@d281 18
 @
 
 

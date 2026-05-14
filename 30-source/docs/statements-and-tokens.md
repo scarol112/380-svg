@@ -278,6 +278,24 @@ Multiple `stop`/`start` pairs in one file are independent. These directives are 
 
 ---
 
+#### `vardump` / `vd`
+
+Development-time diagnostic. Prints a table of all current variables (system and user-defined) with name, type code, and value.
+
+```
+vardump                     # print table to stderr
+vardump /path/to/file.txt   # write table to file; confirm to stderr
+vd                          # alias
+```
+
+**Type codes:** `N` = numeric, `S` = string, `T` = tuple.  
+System variables (`__`-prefixed) appear first, sorted alphabetically; user variables follow, also sorted.  
+String values are shown with surrounding `"..."` quotes. Tuple values as `(e0, e1, ...)`.  
+When a filepath is given it is resolved relative to the DSL source file's directory (or `cwd` for stdin).  
+Output always goes to `stderr` so the SVG pipeline on `stdout` is unaffected.
+
+---
+
 #### Variable statements (`string`, `numeric`, `tuple`, plain assignment)
 
 Variables are numeric by default. Plain `name = expr` (or `name += expr`, `name -= expr`) creates or updates a numeric variable.
