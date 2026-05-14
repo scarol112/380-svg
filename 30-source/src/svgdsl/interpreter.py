@@ -23,7 +23,7 @@ _ALL_KEYWORDS = {
     "string", "numeric", "tuple",
     "len", "substr", "match", "replace",
     "stop", "start",
-    "vardump",
+    "vardump", "vartrace",
 }
 
 _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
@@ -68,6 +68,19 @@ TupleVal = tuple[float | str, ...]
 VarMeta  = dict[str, tuple[str, int]]   # name -> (filename, lineno of last write)
 
 
+class _Trace:
+    __slots__ = ("active", "watch", "log", "filepath")
+
+    def __init__(self) -> None:
+        self.active: bool = False
+        self.watch: set[str] | None = None  # None = all variables
+        self.log: list[tuple[str, str, str, int, str]] = []  # (name,type,file,line,value_str)
+        self.filepath: str | None = None
+
+
+_current_trace: _Trace | None = None
+
+
 def execute_dsl(
     text: str,
     source_path: Path | None = None,
@@ -84,11 +97,15 @@ def execute_dsl(
         "__stopped": 0.0,
     }
     var_meta: VarMeta = {}
+    global _current_trace
+    _current_trace = _Trace()
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
     if source_path is not None:
         seen = seen | {source_path.resolve()}
     _execute_text(text, source_path, vars_, var_meta, placer, seen)
+    _print_trace_summary(_current_trace, source_path)
+    _current_trace = None
     return placer._elements
 
 
@@ -323,6 +340,7 @@ def _execute_for(
     for k in range(n):
         vars_[var] = start_val + k * step_val
         var_meta[var] = (str(vars_.get("__dsl_filename", "")), lineno)
+        _maybe_trace(var, vars_, var_meta)
         _execute_block(body_lines, 0, len(body_lines), source_path, vars_, var_meta, placer, seen)
 
 
@@ -358,6 +376,10 @@ def _execute_stmt(
 
     if canonical == "vardump":
         _execute_vardump(stmt, lineno, source_path, vars_, var_meta)
+        return
+
+    if canonical == "vartrace":
+        _execute_vartrace(stmt, lineno, source_path)
         return
 
     m_decl = _DECL_RE.match(stmt)
@@ -406,6 +428,7 @@ def _execute_stmt(
         elems[idx_int] = new_val
         vars_[name] = tuple(elems)
         var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+        _maybe_trace(name, vars_, var_meta)
         return
 
     m = _ASSIGNMENT_RE.match(stmt)
@@ -436,6 +459,7 @@ def _execute_stmt(
                 lhs = existing if isinstance(existing, tuple) else ()
                 vars_[name] = _tuple_op(lhs, rhs_val, '/', lineno)
             var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+            _maybe_trace(name, vars_, var_meta)
             return
         is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
         if is_string_ctx:
@@ -448,6 +472,7 @@ def _execute_stmt(
                 prev = existing if isinstance(existing, str) else ""
                 vars_[name] = prev + value
             var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+            _maybe_trace(name, vars_, var_meta)
             return
         if op in ('*', '/'):
             raise ParseError(f"Line {lineno}: '{op}=' is only valid on tuple variables")
@@ -464,6 +489,7 @@ def _execute_stmt(
             else:
                 vars_[name] -= value  # type: ignore[operator]
         var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+        _maybe_trace(name, vars_, var_meta)
         return
 
     sub_stmt = _substitute_vars(stmt, vars_, lineno)
@@ -506,11 +532,13 @@ def _execute_declaration(
             for name in names:
                 vars_[name] = ()
                 var_meta[name] = (fn, lineno)
+                _maybe_trace(name, vars_, var_meta)
         else:
             default: float | str = "" if type_name == "string" else 0.0
             for name in names:
                 vars_[name] = default
                 var_meta[name] = (fn, lineno)
+                _maybe_trace(name, vars_, var_meta)
         return
 
     expr_raw = expr_raw.strip()
@@ -523,6 +551,7 @@ def _execute_declaration(
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         vars_[names[0]] = _eval_expr(expr_sub, lineno)
     var_meta[names[0]] = (fn, lineno)
+    _maybe_trace(names[0], vars_, var_meta)
 
 
 def _execute_unpack(
@@ -549,6 +578,115 @@ def _execute_unpack(
     for name, elem in zip(names, tval):
         vars_[name] = elem
         var_meta[name] = (fn, lineno)
+        _maybe_trace(name, vars_, var_meta)
+
+
+def _trace_output(text: str, t: _Trace) -> None:
+    if t.filepath:
+        with open(t.filepath, 'a') as f:
+            f.write(text + '\n')
+    else:
+        print(text, file=sys.stderr)
+
+
+def _maybe_trace(name: str, vars_: dict[str, float | str | TupleVal], var_meta: VarMeta) -> None:
+    t = _current_trace
+    if t is None or not t.active:
+        return
+    if t.watch is not None and name not in t.watch:
+        return
+    fn, ln = var_meta.get(name, ("", 0))
+    val = vars_.get(name)
+    tc = "T" if isinstance(val, tuple) else "S" if isinstance(val, str) else "N"
+    val_str = _vardump_format_value(val)
+    t.log.append((name, tc, fn, ln, val_str))
+    loc = f"{fn}:{ln}" if fn else ("-" if not ln else f":{ln}")
+    _trace_output(f"[TRACE] {name:<20} {tc}  {loc:<30}  {val_str}", t)
+
+
+def _execute_vartrace(
+    stmt: str,
+    lineno: int,
+    source_path: Path | None,
+) -> None:
+    t = _current_trace
+    if t is None:
+        return
+    rest = stmt.split(None, 1)[1].strip() if len(stmt.split(None, 1)) > 1 else ""
+
+    # Empty args → trace all variables
+    if not rest:
+        t.watch = None
+        t.active = True
+        return
+
+    # Tuple argument: "(..." or just "()"
+    names: set[str] | None = None
+    filepath_part = rest
+    if rest.startswith('('):
+        end = rest.find(')')
+        if end < 0:
+            raise ParseError(f"Line {lineno}: vartrace: unmatched '('")
+        inner = rest[1:end].strip()
+        filepath_part = rest[end + 1:].strip()
+        if not inner:
+            # () → stop tracing
+            t.active = False
+            return
+        names = set()
+        for piece in inner.split(','):
+            piece = piece.strip()
+            if len(piece) >= 2 and piece[0] in ('"', "'") and piece[-1] == piece[0]:
+                names.add(piece[1:-1])
+            elif piece:
+                raise ParseError(f"Line {lineno}: vartrace: variable names must be quoted strings, got {piece!r}")
+
+    # Optional filepath
+    if filepath_part:
+        if filepath_part.startswith('"') and filepath_part.endswith('"') and len(filepath_part) >= 2:
+            fp = filepath_part[1:-1]
+        else:
+            fp = filepath_part
+        out_path = Path(fp)
+        if not out_path.is_absolute():
+            base = source_path.parent if source_path else Path.cwd()
+            out_path = (base / out_path).resolve()
+        t.filepath = str(out_path)
+
+    t.watch = names  # None = all variables
+    t.active = True
+
+
+def _print_trace_summary(t: _Trace, source_path: Path | None) -> None:
+    if not t.log:
+        return
+    # Sort by name, preserving execution order within each name
+    from itertools import groupby
+    by_name: dict[str, list] = {}
+    for entry in t.log:
+        by_name.setdefault(entry[0], []).append(entry)
+    sorted_rows = []
+    for name in sorted(by_name):
+        sorted_rows.extend(by_name[name])
+
+    name_w = max((len(r[0]) for r in sorted_rows), default=4)
+    name_w = max(name_w, 4)
+    file_w = max((len(r[2]) for r in sorted_rows), default=4)
+    file_w = max(file_w, 4)
+    line_w = max((len(str(r[3])) for r in sorted_rows), default=4)
+    line_w = max(line_w, 4)
+    header = f"{'NAME':<{name_w}}  TYPE  {'FILE':<{file_w}}  {'LINE':>{line_w}}  VALUE"
+    sep    = f"{'----':<{name_w}}  ----  {'----':<{file_w}}  {'----':>{line_w}}  -----"
+    lines  = ["=== VARTRACE SUMMARY ===", header, sep] + [
+        f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]:<{file_w}}  {str(r[3]):>{line_w}}  {r[4]}"
+        for r in sorted_rows
+    ]
+    text = '\n'.join(lines)
+    if t.filepath:
+        with open(t.filepath, 'a') as f:
+            f.write('\n' + text + '\n')
+    else:
+        print('\n' + text, file=sys.stderr)
 
 
 def _vardump_format_value(val: float | str | TupleVal) -> str:
@@ -1312,10 +1450,13 @@ def _update_system_vars(
     cy = placer._cursor.y - oy
     fn = str(vars_.get("__dsl_filename", ""))
     ln = int(vars_.get("__dsl_file_lineno", 0))
-    vars_["__cursorx"] = cx;  var_meta["__cursorx"] = (fn, ln)
-    vars_["__cursory"] = cy;  var_meta["__cursory"] = (fn, ln)
-    vars_["__cx"]      = cx;  var_meta["__cx"]      = (fn, ln)
-    vars_["__cy"]      = cy;  var_meta["__cy"]      = (fn, ln)
-    vars_["__cursor"]  = (cx, cy); var_meta["__cursor"] = (fn, ln)
-    vars_["__dir"]     = placer._cursor.direction; var_meta["__dir"] = (fn, ln)
-    vars_["__mltodir"] = placer._mltodir;          var_meta["__mltodir"] = (fn, ln)
+    for sysname, val in (
+        ("__cursorx", cx), ("__cursory", cy),
+        ("__cx", cx),      ("__cy", cy),
+        ("__cursor", (cx, cy)),
+        ("__dir", placer._cursor.direction),
+        ("__mltodir", placer._mltodir),
+    ):
+        vars_[sysname] = val
+        var_meta[sysname] = (fn, ln)
+        _maybe_trace(sysname, vars_, var_meta)
