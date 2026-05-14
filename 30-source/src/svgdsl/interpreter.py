@@ -65,6 +65,7 @@ _BARE_OPEN_RE = re.compile(r'^\{\s*$')
 
 
 TupleVal = tuple[float | str, ...]
+VarMeta  = dict[str, tuple[str, int]]   # name -> (filename, lineno of last write)
 
 
 def execute_dsl(
@@ -82,11 +83,12 @@ def execute_dsl(
         "__date": datetime.now().strftime("%Y-%m-%d"),
         "__stopped": 0.0,
     }
+    var_meta: VarMeta = {}
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
     if source_path is not None:
         seen = seen | {source_path.resolve()}
-    _execute_text(text, source_path, vars_, placer, seen)
+    _execute_text(text, source_path, vars_, var_meta, placer, seen)
     return placer._elements
 
 
@@ -94,6 +96,7 @@ def _execute_text(
     text: str,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -101,7 +104,7 @@ def _execute_text(
     vars_["__dsl_filename"] = filename
 
     lines: list[tuple[int, str]] = list(enumerate(text.splitlines(), start=1))
-    _execute_block(lines, 0, len(lines), source_path, vars_, placer, seen)
+    _execute_block(lines, 0, len(lines), source_path, vars_, var_meta, placer, seen)
 
 
 def _execute_block(
@@ -110,6 +113,7 @@ def _execute_block(
     end: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -138,7 +142,7 @@ def _execute_block(
             body_end = _find_matching_close(lines, i, lineno)
             body_lines = _capture_body(lines, i + 1, body_end)
             _execute_for(var, s_expr, e_expr, step_expr, body_lines,
-                         lineno, source_path, vars_, placer, seen)
+                         lineno, source_path, vars_, var_meta, placer, seen)
             i = body_end + 1
             continue
 
@@ -147,7 +151,7 @@ def _execute_block(
             chain, after = _collect_if_chain(lines, i, lineno)
             for cond, b_start, b_end in chain:
                 if cond is None or _eval_condition(cond, vars_, lineno):
-                    _execute_block(lines, b_start, b_end, source_path, vars_, placer, seen)
+                    _execute_block(lines, b_start, b_end, source_path, vars_, var_meta, placer, seen)
                     break
             i = after
             continue
@@ -155,7 +159,7 @@ def _execute_block(
         m_bare = _BARE_OPEN_RE.match(line)
         if m_bare:
             body_end = _find_matching_close(lines, i, lineno)
-            _execute_block(lines, i + 1, body_end, source_path, vars_, placer, seen)
+            _execute_block(lines, i + 1, body_end, source_path, vars_, var_meta, placer, seen)
             i = body_end + 1
             continue
 
@@ -167,7 +171,7 @@ def _execute_block(
         for stmt in _split_statements(line):
             stmt = stmt.strip()
             if stmt:
-                _execute_stmt(stmt, lineno, source_path, vars_, placer, seen)
+                _execute_stmt(stmt, lineno, source_path, vars_, var_meta, placer, seen)
                 if vars_.get("__stopped", 0.0):
                     break
         i += 1
@@ -285,6 +289,7 @@ def _execute_for(
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -317,7 +322,8 @@ def _execute_for(
 
     for k in range(n):
         vars_[var] = start_val + k * step_val
-        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, placer, seen)
+        var_meta[var] = (str(vars_.get("__dsl_filename", "")), lineno)
+        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, var_meta, placer, seen)
 
 
 def _execute_stmt(
@@ -325,6 +331,7 @@ def _execute_stmt(
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -346,21 +353,21 @@ def _execute_stmt(
 
     if canonical == "include":
         tokens = tokenize(stmt, lineno)
-        _execute_include(tokens, lineno, source_path, vars_, placer, seen)
+        _execute_include(tokens, lineno, source_path, vars_, var_meta, placer, seen)
         return
 
     if canonical == "vardump":
-        _execute_vardump(stmt, lineno, source_path, vars_)
+        _execute_vardump(stmt, lineno, source_path, vars_, var_meta)
         return
 
     m_decl = _DECL_RE.match(stmt)
     if m_decl:
-        _execute_declaration(m_decl, lineno, vars_)
+        _execute_declaration(m_decl, lineno, vars_, var_meta)
         return
 
     m_unpack = _UNPACK_RE.match(stmt)
     if m_unpack:
-        _execute_unpack(m_unpack, lineno, vars_)
+        _execute_unpack(m_unpack, lineno, vars_, var_meta)
         return
 
     m_idx = _INDEX_ASSIGN_RE.match(stmt)
@@ -398,6 +405,7 @@ def _execute_stmt(
         elems = list(existing)
         elems[idx_int] = new_val
         vars_[name] = tuple(elems)
+        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
         return
 
     m = _ASSIGNMENT_RE.match(stmt)
@@ -427,6 +435,7 @@ def _execute_stmt(
             elif op == '/':
                 lhs = existing if isinstance(existing, tuple) else ()
                 vars_[name] = _tuple_op(lhs, rhs_val, '/', lineno)
+            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
             return
         is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
         if is_string_ctx:
@@ -438,6 +447,7 @@ def _execute_stmt(
             else:
                 prev = existing if isinstance(existing, str) else ""
                 vars_[name] = prev + value
+            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
             return
         if op in ('*', '/'):
             raise ParseError(f"Line {lineno}: '{op}=' is only valid on tuple variables")
@@ -453,6 +463,7 @@ def _execute_stmt(
                 vars_[name] += value  # type: ignore[operator]
             else:
                 vars_[name] -= value  # type: ignore[operator]
+        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
         return
 
     sub_stmt = _substitute_vars(stmt, vars_, lineno)
@@ -463,13 +474,14 @@ def _execute_stmt(
     node = _parse_line(tokens, lineno)
     if node is not None:
         placer._dispatch(node)
-        _update_system_vars(placer, vars_)
+        _update_system_vars(placer, vars_, var_meta)
 
 
 def _execute_declaration(
     match: re.Match,
     lineno: int,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
 ) -> None:
     """Handle `string`/`numeric`/`tuple` declarations (with optional initializer or multi-decl)."""
     type_name = match.group(1)
@@ -488,14 +500,17 @@ def _execute_declaration(
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
 
+    fn = str(vars_.get("__dsl_filename", ""))
     if expr_raw is None:
         if type_name == "tuple":
             for name in names:
                 vars_[name] = ()
+                var_meta[name] = (fn, lineno)
         else:
             default: float | str = "" if type_name == "string" else 0.0
             for name in names:
                 vars_[name] = default
+                var_meta[name] = (fn, lineno)
         return
 
     expr_raw = expr_raw.strip()
@@ -507,12 +522,14 @@ def _execute_declaration(
         expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
         vars_[names[0]] = _eval_expr(expr_sub, lineno)
+    var_meta[names[0]] = (fn, lineno)
 
 
 def _execute_unpack(
     match: re.Match,
     lineno: int,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
 ) -> None:
     # Two alternatives: parenthesized (groups 1,2) or bare (groups 3,4)
     names_str = match.group(1) if match.group(1) is not None else match.group(3)
@@ -528,8 +545,10 @@ def _execute_unpack(
         raise ParseError(
             f"Line {lineno}: unpack length mismatch — {len(names)} names but tuple has {len(tval)} elements"
         )
+    fn = str(vars_.get("__dsl_filename", ""))
     for name, elem in zip(names, tval):
         vars_[name] = elem
+        var_meta[name] = (fn, lineno)
 
 
 def _vardump_format_value(val: float | str | TupleVal) -> str:
@@ -548,6 +567,7 @@ def _execute_vardump(
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
 ) -> None:
     # Parse optional filepath argument (quoted or bare word after "vardump")
     rest = stmt.split(None, 1)[1].strip() if len(stmt.split(None, 1)) > 1 else ""
@@ -561,16 +581,24 @@ def _execute_vardump(
     user_vars = sorted((k, v) for k, v in vars_.items() if not k.startswith('__'))
 
     type_code = {float: 'N', str: 'S', tuple: 'T'}
-    rows: list[tuple[str, str, str]] = []
+    rows: list[tuple[str, str, str, str, str]] = []
     for name, val in sys_vars + user_vars:
         tc = type_code.get(type(val), '?')
-        rows.append((name, tc, _vardump_format_value(val)))
+        fn, ln = var_meta.get(name, ("", 0))
+        rows.append((name, tc, fn or "-", str(ln) if ln else "-", _vardump_format_value(val)))
 
     name_w = max((len(r[0]) for r in rows), default=4)
     name_w = max(name_w, 4)
-    header = f"{'NAME':<{name_w}}  TYPE  VALUE"
-    sep    = f"{'----':<{name_w}}  ----  -----"
-    lines  = [header, sep] + [f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]}" for r in rows]
+    file_w = max((len(r[2]) for r in rows), default=4)
+    file_w = max(file_w, 4)
+    line_w = max((len(r[3]) for r in rows), default=4)
+    line_w = max(line_w, 4)
+    header = f"{'NAME':<{name_w}}  TYPE  {'FILE':<{file_w}}  {'LINE':>{line_w}}  VALUE"
+    sep    = f"{'----':<{name_w}}  ----  {'----':<{file_w}}  {'----':>{line_w}}  -----"
+    lines  = [header, sep] + [
+        f"{r[0]:<{name_w}}  {r[1]:<4}  {r[2]:<{file_w}}  {r[3]:>{line_w}}  {r[4]}"
+        for r in rows
+    ]
     table  = '\n'.join(lines)
 
     if filepath_str:
@@ -589,6 +617,7 @@ def _execute_include(
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
     placer: ElementPlacer,
     seen: frozenset[Path],
 ) -> None:
@@ -610,7 +639,7 @@ def _execute_include(
         raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
 
     saved_filename = vars_["__dsl_filename"]
-    _execute_text(inc_path.read_text(), inc_path, vars_, placer, seen | {inc_path})
+    _execute_text(inc_path.read_text(), inc_path, vars_, var_meta, placer, seen | {inc_path})
     vars_["__dsl_filename"] = saved_filename
 
 
@@ -1273,14 +1302,20 @@ def _eval_expr(expr: str, lineno: int) -> float:
         raise ParseError(f"Line {lineno}: expression error in {expr!r}: {e}")
 
 
-def _update_system_vars(placer: ElementPlacer, vars_: dict[str, float | str | TupleVal]) -> None:
+def _update_system_vars(
+    placer: ElementPlacer,
+    vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
+) -> None:
     ox, oy = placer._canvas_origin
     cx = placer._cursor.x - ox
     cy = placer._cursor.y - oy
-    vars_["__cursorx"] = cx
-    vars_["__cursory"] = cy
-    vars_["__cx"] = cx
-    vars_["__cy"] = cy
-    vars_["__cursor"] = (cx, cy)
-    vars_["__dir"] = placer._cursor.direction
-    vars_["__mltodir"] = placer._mltodir
+    fn = str(vars_.get("__dsl_filename", ""))
+    ln = int(vars_.get("__dsl_file_lineno", 0))
+    vars_["__cursorx"] = cx;  var_meta["__cursorx"] = (fn, ln)
+    vars_["__cursory"] = cy;  var_meta["__cursory"] = (fn, ln)
+    vars_["__cx"]      = cx;  var_meta["__cx"]      = (fn, ln)
+    vars_["__cy"]      = cy;  var_meta["__cy"]      = (fn, ln)
+    vars_["__cursor"]  = (cx, cy); var_meta["__cursor"] = (fn, ln)
+    vars_["__dir"]     = placer._cursor.direction; var_meta["__dir"] = (fn, ln)
+    vars_["__mltodir"] = placer._mltodir;          var_meta["__mltodir"] = (fn, ln)
