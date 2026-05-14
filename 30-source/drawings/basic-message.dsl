@@ -1,4 +1,5 @@
 # Basic message output
+vartrace trace.txt
 include page-letter-landscape-def.dsl
 
 mto 0 0; include border.dsl

@@ -90,4 +90,17 @@ dir 90
 mto 5 7; p 0px C=red dim=off @p1; textline center 18 "Master Bedroom" p1
 mto 0 1; include ruler.dsl
 
+# -----------------------
+s= 1,2,3; ls=len(s)
+c55=5,4; (c55x,c55y) = $c55
+mto $c55
+lb 24 "${c55x} - ${c55y}"
+vardump x.txt
+
+
+
+
+
+
+
 #end

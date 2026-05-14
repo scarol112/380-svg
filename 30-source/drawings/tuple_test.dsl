@@ -37,3 +37,4 @@ tuple origin = 1, 1
 r 10 8 $origin
 r 10 8 (2, 2)
 r 10 8 2,2
+vardump x.txt
