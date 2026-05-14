@@ -350,11 +350,11 @@ def _parse_arc(tokens: list[Token], lineno: int) -> ArcElem:
     ccw = any(tok.kind == "WORD" and tok.value.lower() == "ccw" for tok in tokens)
     start_angle = 0.0
     for tok in tokens:
-        if tok.kind == "WORD" and tok.value.lower().startswith("start="):
+        if tok.kind == "WORD" and tok.value.lower().startswith("arcstart="):
             try:
-                start_angle = float(tok.value[6:])
+                start_angle = float(tok.value[9:])
             except ValueError:
-                raise ParseError(f"Line {lineno}: invalid start= angle: {tok.value[6:]!r}")
+                raise ParseError(f"Line {lineno}: invalid arcstart= angle: {tok.value[9:]!r}")
     c = _extract_common(tokens, lineno)
     return ArcElem(radius=radius, sweep=sweep, ccw=ccw, start_angle=start_angle,
                    lw=c["lw"], dash=c["dash"],

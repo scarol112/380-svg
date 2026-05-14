@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.31 $ $Date: 2026/05/14 02:55:17 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.32 $ $Date: 2026/05/14 03:32:57 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -616,14 +616,14 @@ window 4 A=22,3
 A general-purpose arc, drawn clockwise from the element's start point.
 
 ```
-arc <radius> <sweep-degrees> [ccw] [start=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+arc <radius> <sweep-degrees> [ccw] [arcstart=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
 ```
 
 The optional keyword `ccw` draws the arc counter-clockwise instead of clockwise.
 
-The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
+The optional `arcstart=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
 
-| `start=` value | Position on circle |
+| `arcstart=` value | Position on circle |
 |---|---|
 | `0` | 12 o'clock (top) — **default** |
 | `90` | 3 o'clock (right) |
@@ -638,8 +638,8 @@ The arc's bounding box for annotation placement is computed from the actual arc 
 arc 3 90                    # quarter circle, 3ft radius, clockwise from 12 o'clock
 arc 5 180                   # semicircle, 5ft radius, clockwise from 12 o'clock
 arc 3 90 ccw                # quarter circle, counter-clockwise from 12 o'clock
-arc 4 90 start=0            # quarter circle starting at 12 o'clock (top)
-arc 3 180 ccw start=180     # semicircle counter-clockwise starting at 6 o'clock
+arc 4 90 arcstart=0            # quarter circle starting at 12 o'clock (top)
+arc 3 180 ccw arcstart=180     # semicircle counter-clockwise starting at 6 o'clock
 ```
 
 ---
