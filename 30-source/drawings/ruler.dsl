@@ -1,5 +1,4 @@
-# variable length horiz ruler
-
+# variable length, direction, divisions ruler
 
 if ($rulerlength == 0) {
 l = 10

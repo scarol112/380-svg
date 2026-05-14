@@ -1,10 +1,15 @@
-head	1.2;
+head	1.3;
 access;
 symbols;
 locks
-	scarol:1.2; strict;
+	scarol:1.3; strict;
 comment	@# @;
 
+
+1.3
+date	2026.05.14.18.02.26;	author scarol;	state Exp;
+branches;
+next	1.2;
 
 1.2
 date	2026.05.13.17.55.54;	author scarol;	state Exp;
@@ -22,7 +27,7 @@ desc
 @
 
 
-1.2
+1.3
 log
 @*** empty log message ***
 @
@@ -92,6 +97,7 @@ mto $cx1 $cy1
 dir 0; l 29"
 dir 270; l 33"
 dir 0; l 135"
+    rulerpoint = $__cursor
 dir 90; l 33"
 dir 0; l 48.2"
  
@@ -114,12 +120,37 @@ w = (22/12) ; l = 5
 r 60" 22" A=($cx2 + 0.13),($cy2 - 2.03)
 
 color black
-
 dir 90
+
+# Decorations
 mto 5 7; p 0px C=red dim=off @@p1; textline center 18 "Master Bedroom" p1
-mto 0 1; include rulerh10.dsl
+
+mto ($rulerpoint + 0,5); rulerlength=16; include ruler.dsl
+
+
+
+
+
+
+
 
 #end
+@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@d66 1
+d89 1
+d91 1
+a91 1
+dir 90
+d93 9
+a101 1
+mto 0 1; include rulerh10.dsl
 @
 
 

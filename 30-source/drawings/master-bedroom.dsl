@@ -63,6 +63,7 @@ mto $cx1 $cy1
 dir 0; l 29"
 dir 270; l 33"
 dir 0; l 135"
+    rulerpoint = $__cursor
 dir 90; l 33"
 dir 0; l 48.2"
  
@@ -85,17 +86,13 @@ w = (22/12) ; l = 5
 r 60" 22" A=($cx2 + 0.13),($cy2 - 2.03)
 
 color black
-
 dir 90
-mto 5 7; p 0px C=red dim=off @p1; textline center 18 "Master Bedroom" p1
-mto 0 1; include ruler.dsl
 
-# -----------------------
-s= 1,2,3; ls=len(s)
-c55=5,4; (c55x,c55y) = $c55
-mto $c55
-lb 24 "${c55x} - ${c55y}"
-vardump x.txt
+# Decorations
+mto 5 7; p 0px C=red dim=off @p1; textline center 18 "Master Bedroom" p1
+
+mto ($rulerpoint + 0,5); rulerlength=16; include ruler.dsl
+
 
 
 
