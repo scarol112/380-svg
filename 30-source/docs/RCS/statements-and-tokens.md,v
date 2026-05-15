@@ -1,10 +1,15 @@
-head	1.9;
+head	1.10;
 access;
 symbols;
 locks
-	scarol:1.9; strict;
+	scarol:1.10; strict;
 comment	@# @;
 
+
+1.10
+date	2026.05.15.15.52.44;	author scarol;	state Exp;
+branches;
+next	1.9;
 
 1.9
 date	2026.05.14.13.34.22;	author scarol;	state Exp;
@@ -57,9 +62,9 @@ desc
 @
 
 
-1.9
+1.10
 log
-@Document vardump directive (issue #45)
+@issue #8: document def/return/call, scope, recursion cap
 @
 text
 @# DSL Statements and Token Support
@@ -414,7 +419,85 @@ t[1] = (t[0] * 2)
 | `match(s, pattern)` | numeric | **yes** | `re.search`; matches anywhere in `s` — anchor with `^`/`$` to restrict |
 | `replace(s, pattern, repl)` | string | **pattern only** | `re.sub`; replaces all occurrences; `repl` is a literal string supporting backreferences (`\1`, `\g<name>`) |
 
-Builtin arguments may be string literals, numeric literals, bare variable names, or nested builtin calls — not compound expressions like `x + 1`.
+Builtin arguments may be string literals, numeric literals, bare variable names, nested builtin calls, nested user-function calls, or parenthesized expressions like `(x + 1)`.
+
+---
+
+#### `def` — function definition
+
+```
+def <name>(<params>) {
+    <body>
+}
+```
+
+Registers a named, callable block. `<params>` is a comma-separated list of parameter names (may be empty). The body captures the lines between the braces exactly like `for`/`if` bodies.
+
+Grammar:
+
+```
+<def>    ::= "def" <name> "(" <params> ")" "{"
+<params> ::= "" | <name> ( "," <name> )*
+```
+
+Constraints:
+- The function name must not be a reserved keyword (`def`, `return`, `for`, `if`, ...) or a builtin (`len`, `substr`, `match`, `replace`).
+- The name must not start with `__`.
+- Parameter names must be valid identifiers; no `__` prefix; no duplicates.
+- Re-registering an existing name silently overwrites it (last definition wins).
+
+---
+
+#### `return` — return from function
+
+```
+return [<expr>]
+```
+
+Unwinds the current function call and delivers `<expr>` as the return value. A bare `return` (no expression) yields `0.0`. Fall-off (reaching the end of the body without a `return`) also yields `0.0`.
+
+Return type is inferred from the expression:
+- Tuple expression: `return (x, y)` — parentheses required for multi-element tuples
+- String expression: `return "prefix" + name`
+- Numeric expression: `return (a + b)`
+
+`return` outside any function body is a parse error.
+
+---
+
+#### Function call (user-defined)
+
+**As a statement:**
+
+```
+<name>(<args>)
+```
+
+Executes the function body; return value is discarded. Drawing side effects execute against the real canvas.
+
+**As an expression (call-as-expression):**
+
+```
+numeric x = <name>(<args>)
+numeric y = (2 * <name>(<args>) + 1)
+string s  = <name>(<args>)
+(<name>(<args>))
+```
+
+The return value is used in the surrounding expression. Drawing side effects execute against the real canvas when the call is a direct assignment target; when nested inside another call's argument list, side effects go to an internal throwaway placer.
+
+**Argument forms** (same as builtin arguments, extended):
+- Quoted string literal
+- Numeric literal
+- Bare variable name (resolved to current value)
+- Nested builtin or user-function call
+- Parenthesized arithmetic expression: `(x + 1)`, `(a * b)`
+
+Arity must match the definition exactly; mismatch is a parse error.
+
+**Scope:** see `def` above.
+
+**Recursion cap:** 256 call levels; exceeding raises a parse error.
 
 ---
 
@@ -446,6 +529,17 @@ The parser counts all MEASUREMENT/NUMBER tokens and captures a NUMBER as font si
 
 **Note 9 — `textstyle/tstyle` with no arguments is a silent no-op.**
 `textstyle` accepts zero arguments and produces a `TextStyleDirective` with both `size` and `font_family` set to `None`. The directive is applied without error but changes nothing.
+@
+
+
+1.9
+log
+@Document vardump directive (issue #45)
+@
+text
+@d353 79
+a431 1
+Builtin arguments may be string literals, numeric literals, bare variable names, or nested builtin calls — not compound expressions like `x + 1`.
 @
 
 

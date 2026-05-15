@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.15.15.53.17;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@function verification drawing for issue #8
+@
+
+
+1.1
+log
+@issue #8: function verification drawing
+@
+text
+@# func_recursion_overflow.dsl — self-call to depth 256; expect ParseError
+
+def infinite(n) {
+    return infinite((n + 1))
+}
+
+# This should raise: maximum recursion depth (256) exceeded
+numeric x = infinite(0)
+@

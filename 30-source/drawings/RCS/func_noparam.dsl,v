@@ -1,0 +1,38 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.15.15.53.17;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@function verification drawing for issue #8
+@
+
+
+1.1
+log
+@issue #8: function verification drawing
+@
+text
+@# func_noparam.dsl — def + call-as-statement; drawing inside body
+
+def draw_cross() {
+    mto 1,1
+    l 1 0px
+    mto 1.5,0.5
+    dir 0
+    l 1 0px
+}
+
+draw_cross()
+
+lb 0.2,0.5 12 "no-param function ran"
+@

@@ -1,10 +1,15 @@
-head	1.21;
+head	1.22;
 access;
 symbols;
 locks
-	scarol:1.21; strict;
+	scarol:1.22; strict;
 comment	@# @;
 
+
+1.22
+date	2026.05.15.15.52.43;	author scarol;	state Exp;
+branches;
+next	1.21;
 
 1.21
 date	2026.05.14.16.23.03;	author scarol;	state Exp;
@@ -116,9 +121,9 @@ desc
 @@
 
 
-1.21
+1.22
 log
-@vartrace summary: blank line when variable name or filename changes (issue #48)
+@issue #8: def/return/call syntax, locals scope, recursion cap
 @
 text
 @from __future__ import annotations
@@ -126,6 +131,7 @@ text
 import math
 import re
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -147,6 +153,7 @@ _ALL_KEYWORDS = {
     "len", "substr", "match", "replace",
     "stop", "start",
     "vardump", "vartrace",
+    "def", "return",
 }
 
 _RESERVED_EXPR_NAMES = frozenset({"True", "False", "and", "or", "not"})
@@ -186,6 +193,29 @@ _ELIF_HDR_RE = re.compile(r'^\}\s*elif\s*\((.+)\)\s*\{\s*$', re.IGNORECASE)
 _ELSE_HDR_RE = re.compile(r'^\}\s*else\s*\{\s*$', re.IGNORECASE)
 _BARE_OPEN_RE = re.compile(r'^\{\s*$')
 
+# Function definition / call regexes
+_DEF_HDR_RE   = re.compile(r'^def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*\{\s*$')
+_RETURN_RE    = re.compile(r'^return\b\s*(.*)$')
+# Anchored form for statement-start detection
+_CALL_STMT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*\(')
+# Unanchored form for scanning inside expressions (used with .match(text, pos))
+_CALL_EXPR_RE = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)\s*\(')
+
+
+@@dataclass(frozen=True)
+class _FuncDef:
+    name: str
+    params: tuple[str, ...]
+    body: list[tuple[int, str]]
+    def_file: str
+    def_lineno: int
+
+
+class _ReturnSignal(Exception):
+    __slots__ = ("value",)
+    def __init__(self, value: object) -> None:
+        self.value = value
+
 
 TupleVal = tuple[float | str, ...]
 VarMeta  = dict[str, tuple[str, int]]   # name -> (filename, lineno of last write)
@@ -221,13 +251,23 @@ def execute_dsl(
         "__stopped": 0.0,
     }
     var_meta: VarMeta = {}
+    funcs: dict[str, _FuncDef] = {}
+    depth: list[int] = [0]
     global _current_trace
     _current_trace = _Trace()
     placer = ElementPlacer()
     seen: frozenset[Path] = frozenset()
     if source_path is not None:
         seen = seen | {source_path.resolve()}
-    _execute_text(text, source_path, vars_, var_meta, placer, seen)
+    # Each DSL recursion level uses ~10 Python frames; raise limit to support 256 levels
+    old_limit = sys.getrecursionlimit()
+    sys.setrecursionlimit(max(old_limit, 256 * 12 + 500))
+    try:
+        _execute_text(text, source_path, vars_, var_meta, funcs, depth, placer, seen)
+    except _ReturnSignal:
+        raise ParseError("'return' outside function")
+    finally:
+        sys.setrecursionlimit(old_limit)
     _print_trace_summary(_current_trace, source_path)
     _current_trace = None
     return placer._elements
@@ -238,14 +278,17 @@ def _execute_text(
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
     placer: ElementPlacer,
     seen: frozenset[Path],
+    locals_: dict[str, float | str | TupleVal] | None = None,
 ) -> None:
     filename = source_path.name if source_path else ""
     vars_["__dsl_filename"] = filename
 
     lines: list[tuple[int, str]] = list(enumerate(text.splitlines(), start=1))
-    _execute_block(lines, 0, len(lines), source_path, vars_, var_meta, placer, seen)
+    _execute_block(lines, 0, len(lines), source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
 
 
 def _execute_block(
@@ -255,8 +298,11 @@ def _execute_block(
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
     placer: ElementPlacer,
     seen: frozenset[Path],
+    locals_: dict[str, float | str | TupleVal] | None = None,
 ) -> None:
     i = start
     while i < end:
@@ -274,6 +320,35 @@ def _execute_block(
             i += 1
             continue
 
+        m_def = _DEF_HDR_RE.match(line)
+        if m_def:
+            fname = m_def.group(1)
+            params_raw = m_def.group(2).strip()
+            if fname in _ALL_KEYWORDS:
+                raise ParseError(f"Line {lineno}: '{fname}' is a reserved keyword and cannot be used as a function name")
+            if fname in BUILTINS:
+                raise ParseError(f"Line {lineno}: '{fname}' is a builtin and cannot be redefined")
+            if fname.startswith('__'):
+                raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
+            params: tuple[str, ...] = ()
+            if params_raw:
+                raw_params = [p.strip() for p in params_raw.split(',')]
+                for p in raw_params:
+                    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', p):
+                        raise ParseError(f"Line {lineno}: invalid parameter name {p!r}")
+                    if p.startswith('__'):
+                        raise ParseError(f"Line {lineno}: parameter name {p!r} cannot start with '__'")
+                if len(raw_params) != len(set(raw_params)):
+                    raise ParseError(f"Line {lineno}: duplicate parameter name in function {fname!r}")
+                params = tuple(raw_params)
+            body_end = _find_matching_close(lines, i, lineno)
+            body_lines = _capture_body(lines, i + 1, body_end)
+            fn_file = str(vars_.get("__dsl_filename", ""))
+            funcs[fname] = _FuncDef(name=fname, params=params, body=body_lines,
+                                    def_file=fn_file, def_lineno=lineno)
+            i = body_end + 1
+            continue
+
         m_for = _FOR_HDR_RE.match(line)
         if m_for:
             var = m_for.group(1)
@@ -283,7 +358,7 @@ def _execute_block(
             body_end = _find_matching_close(lines, i, lineno)
             body_lines = _capture_body(lines, i + 1, body_end)
             _execute_for(var, s_expr, e_expr, step_expr, body_lines,
-                         lineno, source_path, vars_, var_meta, placer, seen)
+                         lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
             i = body_end + 1
             continue
 
@@ -291,8 +366,9 @@ def _execute_block(
         if m_if:
             chain, after = _collect_if_chain(lines, i, lineno)
             for cond, b_start, b_end in chain:
-                if cond is None or _eval_condition(cond, vars_, lineno):
-                    _execute_block(lines, b_start, b_end, source_path, vars_, var_meta, placer, seen)
+                if cond is None or _eval_condition(cond, vars_, funcs, depth, locals_, lineno,
+                                                    source_path, var_meta, placer, seen):
+                    _execute_block(lines, b_start, b_end, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
                     break
             i = after
             continue
@@ -300,7 +376,7 @@ def _execute_block(
         m_bare = _BARE_OPEN_RE.match(line)
         if m_bare:
             body_end = _find_matching_close(lines, i, lineno)
-            _execute_block(lines, i + 1, body_end, source_path, vars_, var_meta, placer, seen)
+            _execute_block(lines, i + 1, body_end, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
             i = body_end + 1
             continue
 
@@ -312,7 +388,7 @@ def _execute_block(
         for stmt in _split_statements(line):
             stmt = stmt.strip()
             if stmt:
-                _execute_stmt(stmt, lineno, source_path, vars_, var_meta, placer, seen)
+                _execute_stmt(stmt, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
                 if vars_.get("__stopped", 0.0):
                     break
         i += 1
@@ -414,9 +490,109 @@ def _collect_if_chain(
     return chain, i
 
 
-def _eval_condition(expr_text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> bool:
-    expr_sub = _substitute_vars(expr_text, vars_, lineno)
-    expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, lineno)
+def _effective_vars(
+    vars_: dict[str, float | str | TupleVal],
+    locals_: dict[str, float | str | TupleVal] | None,
+) -> dict[str, float | str | TupleVal]:
+    """Return a merged view of globals + locals for read-only lookups.
+
+    Locals shadow globals for user names; system vars (__-prefixed) always
+    come from globals regardless.  Returns a new dict — do not mutate it.
+    """
+    if locals_ is None:
+        return vars_
+    merged = dict(vars_)
+    merged.update(locals_)
+    return merged
+
+
+def _write(
+    name: str,
+    value: float | str | TupleVal,
+    vars_: dict[str, float | str | TupleVal],
+    locals_: dict[str, float | str | TupleVal] | None,
+    var_meta: VarMeta,
+    lineno: int,
+) -> None:
+    """Write `name = value` to the correct scope.
+
+    System vars (__-prefixed) always go to globals.  User vars go to locals
+    when inside a function (locals_ is not None), else to globals.
+    """
+    fn = str(vars_.get("__dsl_filename", ""))
+    if name.startswith('__') or locals_ is None:
+        vars_[name] = value
+        var_meta[name] = (fn, lineno)
+    else:
+        locals_[name] = value
+        # Keep var_meta in globals for vardump/vartrace — record last write location
+        var_meta[name] = (fn, lineno)
+
+
+def _invoke_function(
+    fn: _FuncDef,
+    args: list[object],
+    lineno: int,
+    source_path: Path | None,
+    vars_: dict[str, float | str | TupleVal],
+    var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    placer: object,
+    seen: frozenset[Path],
+) -> float | str | TupleVal:
+    """Execute a user-defined function and return its value.
+
+    Validates arity, builds a fresh locals dict, and runs the captured body
+    inside _execute_block.  _ReturnSignal unwinds the call; fall-off yields 0.0.
+    """
+    if len(args) != len(fn.params):
+        raise ParseError(
+            f"Line {lineno}: function {fn.name!r} expects {len(fn.params)} argument(s), got {len(args)}"
+        )
+    depth[0] += 1
+    if depth[0] > 256:
+        depth[0] -= 1
+        raise ParseError(
+            f"Line {lineno}: maximum recursion depth (256) exceeded in call to {fn.name!r}"
+        )
+    new_locals: dict[str, float | str | TupleVal] = {}
+    for pname, aval in zip(fn.params, args):
+        if isinstance(aval, (float, int)):
+            new_locals[pname] = float(aval)
+        else:
+            new_locals[pname] = aval  # type: ignore[assignment]
+    # Placer may be None when called from expression context; create a throwaway
+    from .layout.placer import ElementPlacer as _EP
+    eff_placer = placer if placer is not None else _EP()
+    try:
+        _execute_block(
+            fn.body, 0, len(fn.body),
+            source_path, vars_, var_meta, funcs, depth,
+            eff_placer, seen, new_locals,  # type: ignore[arg-type]
+        )
+        return 0.0
+    except _ReturnSignal as sig:
+        return sig.value
+    finally:
+        depth[0] -= 1
+
+
+def _eval_condition(
+    expr_text: str,
+    vars_: dict[str, float | str | TupleVal],
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    locals_: dict[str, float | str | TupleVal] | None,
+    lineno: int,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
+) -> bool:
+    expr_sub = _substitute_vars(expr_text, _effective_vars(vars_, locals_), lineno)
+    expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, funcs, depth, locals_, lineno,
+                                           source_path, var_meta, placer, seen)
     result = _eval_expr(expr_sub, lineno)
     return bool(result)
 
@@ -431,19 +607,26 @@ def _execute_for(
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
     placer: ElementPlacer,
     seen: frozenset[Path],
+    locals_: dict[str, float | str | TupleVal] | None = None,
 ) -> None:
+    eff = _effective_vars(vars_, locals_)
     start_val = _eval_expr(
-        _evaluate_inline_exprs_bare(_substitute_vars(s_expr, vars_, lineno), vars_, lineno),
+        _evaluate_inline_exprs_bare(_substitute_vars(s_expr, eff, lineno), vars_, funcs, depth, locals_, lineno,
+                                    source_path, var_meta, placer, seen),
         lineno,
     )
     end_val = _eval_expr(
-        _evaluate_inline_exprs_bare(_substitute_vars(e_expr, vars_, lineno), vars_, lineno),
+        _evaluate_inline_exprs_bare(_substitute_vars(e_expr, eff, lineno), vars_, funcs, depth, locals_, lineno,
+                                    source_path, var_meta, placer, seen),
         lineno,
     )
     step_val = _eval_expr(
-        _evaluate_inline_exprs_bare(_substitute_vars(step_expr, vars_, lineno), vars_, lineno),
+        _evaluate_inline_exprs_bare(_substitute_vars(step_expr, eff, lineno), vars_, funcs, depth, locals_, lineno,
+                                    source_path, var_meta, placer, seen),
         lineno,
     )
 
@@ -462,10 +645,10 @@ def _execute_for(
         )
 
     for k in range(n):
-        vars_[var] = start_val + k * step_val
-        var_meta[var] = (str(vars_.get("__dsl_filename", "")), lineno)
+        # for-loop variable: write to locals if inside function, else globals
+        _write(var, start_val + k * step_val, vars_, locals_, var_meta, lineno)
         _maybe_trace(var, vars_, var_meta)
-        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, var_meta, placer, seen)
+        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
 
 
 def _execute_stmt(
@@ -474,8 +657,11 @@ def _execute_stmt(
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
     placer: ElementPlacer,
     seen: frozenset[Path],
+    locals_: dict[str, float | str | TupleVal] | None = None,
 ) -> None:
     vars_["__dsl_file_lineno"] = float(lineno)
 
@@ -495,7 +681,7 @@ def _execute_stmt(
 
     if canonical == "include":
         tokens = tokenize(stmt, lineno)
-        _execute_include(tokens, lineno, source_path, vars_, var_meta, placer, seen)
+        _execute_include(tokens, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
         return
 
     if canonical == "vardump":
@@ -506,14 +692,35 @@ def _execute_stmt(
         _execute_vartrace(stmt, lineno, source_path)
         return
 
+    # return statement — only valid inside a function (_ReturnSignal unwinds)
+    m_ret = _RETURN_RE.match(stmt)
+    if m_ret:
+        expr_raw = m_ret.group(1).strip()
+        if not expr_raw:
+            raise _ReturnSignal(0.0)
+        eff = _effective_vars(vars_, locals_)
+        # Detect return type: tuple, string, or numeric
+        if _rhs_is_tuple_expr(expr_raw, eff):
+            raise _ReturnSignal(_eval_tuple_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                                 source_path, var_meta, placer, seen))
+        if _rhs_is_string_expr(expr_raw):
+            raise _ReturnSignal(_eval_string_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                                  source_path, var_meta, placer, seen))
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, eff, lineno), eff, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, funcs, depth, locals_, lineno,
+                                          source_path, var_meta, placer, seen)
+        raise _ReturnSignal(_eval_expr(expr_sub, lineno))
+
     m_decl = _DECL_RE.match(stmt)
     if m_decl:
-        _execute_declaration(m_decl, lineno, vars_, var_meta)
+        _execute_declaration(m_decl, lineno, vars_, var_meta, funcs, depth, locals_,
+                             source_path, placer, seen)
         return
 
     m_unpack = _UNPACK_RE.match(stmt)
     if m_unpack:
-        _execute_unpack(m_unpack, lineno, vars_, var_meta)
+        _execute_unpack(m_unpack, lineno, vars_, var_meta, funcs, depth, locals_,
+                        source_path, placer, seen)
         return
 
     m_idx = _INDEX_ASSIGN_RE.match(stmt)
@@ -521,11 +728,13 @@ def _execute_stmt(
         name, idx_expr, val_expr = m_idx.group(1), m_idx.group(2).strip(), m_idx.group(3).strip()
         if name.startswith('__'):
             raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
-        existing = vars_.get(name)
+        eff = _effective_vars(vars_, locals_)
+        existing = eff.get(name)
         if not isinstance(existing, tuple):
             raise ParseError(f"Line {lineno}: '{name}' is not a tuple variable")
-        idx_sub = _substitute_vars(idx_expr, vars_, lineno)
-        idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
+        idx_sub = _substitute_vars(idx_expr, eff, lineno)
+        idx_sub = _evaluate_inline_exprs(idx_sub, vars_, funcs, depth, locals_, lineno,
+                                         source_path, var_meta, placer, seen)
         idx_val = _eval_expr(idx_sub, lineno)
         if idx_val != int(idx_val) or int(idx_val) < 0:
             raise ParseError(f"Line {lineno}: tuple index must be a non-negative integer")
@@ -539,19 +748,21 @@ def _execute_stmt(
         if isinstance(slot_val, str) and not rhs_is_str:
             val_ref = val_expr.strip()
             if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', val_ref):
-                ref_val = vars_.get(val_ref)
+                ref_val = eff.get(val_ref)
                 if isinstance(ref_val, float):
                     raise ParseError(f"Line {lineno}: type mismatch: slot {idx_int} is string, got numeric")
         if isinstance(slot_val, str):
-            new_val: float | str = _eval_string_expr(val_expr, vars_, lineno)
+            new_val: float | str = _eval_string_expr(val_expr, eff, lineno, funcs, depth, locals_,
+                                                      source_path, var_meta, placer, seen)
         else:
-            v_sub = _substitute_tuple_indexing(_substitute_vars(val_expr, vars_, lineno), vars_, lineno)
-            v_sub = _evaluate_inline_exprs(v_sub, vars_, lineno)
+            v_sub = _substitute_tuple_indexing(_substitute_vars(val_expr, eff, lineno), eff, lineno)
+            v_sub = _evaluate_inline_exprs(v_sub, vars_, funcs, depth, locals_, lineno,
+                                           source_path, var_meta, placer, seen)
             new_val = _eval_expr(v_sub, lineno)
         elems = list(existing)
         elems[idx_int] = new_val
-        vars_[name] = tuple(elems)
-        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+        new_tuple = tuple(elems)
+        _write(name, new_tuple, vars_, locals_, var_meta, lineno)
         _maybe_trace(name, vars_, var_meta)
         return
 
@@ -562,62 +773,83 @@ def _execute_stmt(
             raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
-        existing = vars_.get(name)
-        is_tuple_ctx = isinstance(existing, tuple) or _rhs_is_tuple_expr(expr_raw, vars_)
+        eff = _effective_vars(vars_, locals_)
+        existing = eff.get(name)
+        is_tuple_ctx = isinstance(existing, tuple) or _rhs_is_tuple_expr(expr_raw, eff)
         if is_tuple_ctx:
             if op in ('*', '/') and not isinstance(existing, tuple):
                 raise ParseError(f"Line {lineno}: '*=' and '/=' are only valid on tuple variables")
-            rhs_val = _eval_tuple_expr(expr_raw, vars_, lineno)
+            rhs_val = _eval_tuple_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                        source_path, var_meta, placer, seen)
             if op is None:
-                vars_[name] = rhs_val
+                new_tval = rhs_val
             elif op == '+':
                 lhs = existing if isinstance(existing, tuple) else ()
-                vars_[name] = _tuple_op(lhs, rhs_val, '+', lineno)
+                new_tval = _tuple_op(lhs, rhs_val, '+', lineno)
             elif op == '-':
                 lhs = existing if isinstance(existing, tuple) else ()
-                vars_[name] = _tuple_op(lhs, rhs_val, '-', lineno)
+                new_tval = _tuple_op(lhs, rhs_val, '-', lineno)
             elif op == '*':
                 lhs = existing if isinstance(existing, tuple) else ()
-                vars_[name] = _tuple_op(lhs, rhs_val, '*', lineno)
+                new_tval = _tuple_op(lhs, rhs_val, '*', lineno)
             elif op == '/':
                 lhs = existing if isinstance(existing, tuple) else ()
-                vars_[name] = _tuple_op(lhs, rhs_val, '/', lineno)
-            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+                new_tval = _tuple_op(lhs, rhs_val, '/', lineno)
+            else:
+                new_tval = rhs_val
+            _write(name, new_tval, vars_, locals_, var_meta, lineno)
             _maybe_trace(name, vars_, var_meta)
             return
         is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
         if is_string_ctx:
             if op in ('-', '*', '/'):
                 raise ParseError(f"Line {lineno}: '{op}=' is not defined on string variables")
-            value = _eval_string_expr(expr_raw, vars_, lineno)
+            value_s = _eval_string_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                        source_path, var_meta, placer, seen)
             if op is None:
-                vars_[name] = value
+                new_sv: float | str = value_s
             else:
                 prev = existing if isinstance(existing, str) else ""
-                vars_[name] = prev + value
-            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+                new_sv = prev + value_s
+            _write(name, new_sv, vars_, locals_, var_meta, lineno)
             _maybe_trace(name, vars_, var_meta)
             return
         if op in ('*', '/'):
             raise ParseError(f"Line {lineno}: '{op}=' is only valid on tuple variables")
-        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
-        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
-        value = _eval_expr(expr_sub, lineno)
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, eff, lineno), eff, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, funcs, depth, locals_, lineno,
+                                          source_path, var_meta, placer, seen)
+        value_n = _eval_expr(expr_sub, lineno)
         if op is None:
-            vars_[name] = value
+            new_nv: float | str | TupleVal = value_n
         else:
-            if name not in vars_:
-                vars_[name] = 0.0
+            old_n = eff.get(name, 0.0)
+            if not isinstance(old_n, float):
+                old_n = 0.0
             if op == '+':
-                vars_[name] += value  # type: ignore[operator]
+                new_nv = old_n + value_n
             else:
-                vars_[name] -= value  # type: ignore[operator]
-        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+                new_nv = old_n - value_n
+        _write(name, new_nv, vars_, locals_, var_meta, lineno)
         _maybe_trace(name, vars_, var_meta)
         return
 
-    sub_stmt = _substitute_vars(stmt, vars_, lineno)
-    sub_stmt = _evaluate_inline_exprs(sub_stmt, vars_, lineno)
+    # Call-as-statement: user-defined function call (e.g. `draw_box(10, 20)`)
+    m_call = _CALL_STMT_RE.match(stmt)
+    if m_call:
+        fname = m_call.group(1)
+        if fname in funcs:
+            paren_pos = stmt.index('(', len(fname))
+            args, _ = _parse_call_args(stmt, paren_pos, vars_, funcs, depth, locals_, lineno,
+                                       source_path, var_meta, placer, seen)
+            _invoke_function(funcs[fname], args, lineno, source_path, vars_, var_meta,
+                             funcs, depth, placer, seen)
+            return
+
+    eff = _effective_vars(vars_, locals_)
+    sub_stmt = _substitute_vars(stmt, eff, lineno)
+    sub_stmt = _evaluate_inline_exprs(sub_stmt, vars_, funcs, depth, locals_, lineno,
+                                      source_path, var_meta, placer, seen)
     tokens = tokenize(sub_stmt, lineno)
     if not tokens:
         return
@@ -632,6 +864,12 @@ def _execute_declaration(
     lineno: int,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    source_path: Path | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> None:
     """Handle `string`/`numeric`/`tuple` declarations (with optional initializer or multi-decl)."""
     type_name = match.group(1)
@@ -650,31 +888,32 @@ def _execute_declaration(
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
 
-    fn = str(vars_.get("__dsl_filename", ""))
+    eff = _effective_vars(vars_, locals_)
     if expr_raw is None:
         if type_name == "tuple":
             for name in names:
-                vars_[name] = ()
-                var_meta[name] = (fn, lineno)
+                _write(name, (), vars_, locals_, var_meta, lineno)
                 _maybe_trace(name, vars_, var_meta)
         else:
             default: float | str = "" if type_name == "string" else 0.0
             for name in names:
-                vars_[name] = default
-                var_meta[name] = (fn, lineno)
+                _write(name, default, vars_, locals_, var_meta, lineno)
                 _maybe_trace(name, vars_, var_meta)
         return
 
     expr_raw = expr_raw.strip()
     if type_name == "string":
-        vars_[names[0]] = _eval_string_expr(expr_raw, vars_, lineno)
+        val_s: float | str | TupleVal = _eval_string_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                                           source_path, var_meta, placer, seen)
     elif type_name == "tuple":
-        vars_[names[0]] = _eval_tuple_expr(expr_raw, vars_, lineno)
+        val_s = _eval_tuple_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                                 source_path, var_meta, placer, seen)
     else:
-        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
-        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
-        vars_[names[0]] = _eval_expr(expr_sub, lineno)
-    var_meta[names[0]] = (fn, lineno)
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, eff, lineno), eff, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, funcs, depth, locals_, lineno,
+                                          source_path, var_meta, placer, seen)
+        val_s = _eval_expr(expr_sub, lineno)
+    _write(names[0], val_s, vars_, locals_, var_meta, lineno)
     _maybe_trace(names[0], vars_, var_meta)
 
 
@@ -683,6 +922,12 @@ def _execute_unpack(
     lineno: int,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    source_path: Path | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> None:
     # Two alternatives: parenthesized (groups 1,2) or bare (groups 3,4)
     names_str = match.group(1) if match.group(1) is not None else match.group(3)
@@ -693,15 +938,15 @@ def _execute_unpack(
             raise ParseError(f"Line {lineno}: names starting with '__' are reserved for system variables")
         if name in _ALL_KEYWORDS:
             raise ParseError(f"Line {lineno}: '{name}' is a reserved keyword and cannot be assigned")
-    tval = _eval_tuple_expr(expr_raw, vars_, lineno)
+    eff = _effective_vars(vars_, locals_)
+    tval = _eval_tuple_expr(expr_raw, eff, lineno, funcs, depth, locals_,
+                            source_path, var_meta, placer, seen)
     if len(tval) != len(names):
         raise ParseError(
             f"Line {lineno}: unpack length mismatch — {len(names)} names but tuple has {len(tval)} elements"
         )
-    fn = str(vars_.get("__dsl_filename", ""))
     for name, elem in zip(names, tval):
-        vars_[name] = elem
-        var_meta[name] = (fn, lineno)
+        _write(name, elem, vars_, locals_, var_meta, lineno)
         _maybe_trace(name, vars_, var_meta)
 
 
@@ -896,8 +1141,11 @@ def _execute_include(
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
     var_meta: VarMeta,
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
     placer: ElementPlacer,
     seen: frozenset[Path],
+    locals_: dict[str, float | str | TupleVal] | None = None,
 ) -> None:
     if len(tokens) < 2:
         raise ParseError(f"Line {lineno}: include requires a filename")
@@ -917,7 +1165,7 @@ def _execute_include(
         raise ParseError(f"Line {lineno}: include file not found: {inc_path}")
 
     saved_filename = vars_["__dsl_filename"]
-    _execute_text(inc_path.read_text(), inc_path, vars_, var_meta, placer, seen | {inc_path})
+    _execute_text(inc_path.read_text(), inc_path, vars_, var_meta, funcs, depth, placer, seen | {inc_path}, locals_)
     vars_["__dsl_filename"] = saved_filename
 
 
@@ -949,7 +1197,18 @@ def _substitute_vars(text: str, vars_: dict[str, float | str | TupleVal], lineno
     return _VARREF_RE.sub(replace, text)
 
 
-def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
+def _evaluate_inline_exprs(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    funcs: dict[str, _FuncDef] | None = None,
+    depth: list[int] | None = None,
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    lineno: int = 0,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
+) -> str:
     """Replace builtin calls and (expr) groups outside quoted strings with their values.
 
     Builtin calls (`len(s)`, `match(s, p)`, ...) are substituted first at any
@@ -957,8 +1216,12 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], 
     identifiers inside resolved as variable references. Quoted strings are
     skipped throughout.
     """
-    text = _substitute_tuple_indexing(text, vars_, lineno)
-    text = _substitute_builtins_in_expr(text, vars_, lineno)
+    _funcs = funcs if funcs is not None else {}
+    _depth = depth if depth is not None else [0]
+    eff = _effective_vars(vars_, locals_)
+    text = _substitute_tuple_indexing(text, eff, lineno)
+    text = _substitute_builtins_in_expr(text, vars_, _funcs, _depth, locals_, lineno,
+                                        source_path, var_meta, placer, seen)
     result: list[str] = []
     i = 0
     in_quote = False
@@ -970,21 +1233,21 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], 
             i += 1
         elif ch == '(' and not in_quote:
             j = i + 1
-            depth = 1
-            while j < len(text) and depth > 0:
+            pdepth = 1
+            while j < len(text) and pdepth > 0:
                 if text[j] == '(':
-                    depth += 1
+                    pdepth += 1
                 elif text[j] == ')':
-                    depth -= 1
+                    pdepth -= 1
                 j += 1
-            if depth != 0:
+            if pdepth != 0:
                 result.append(ch)
                 i += 1
             else:
                 inner = text[i + 1:j - 1]
                 # tuple literal (x, y) — if inner has a top-level comma, emit as COORD
                 if _has_top_level_comma(inner):
-                    tval = _eval_tuple_expr(inner, vars_, lineno)
+                    tval = _eval_tuple_expr(inner, eff, lineno)
                     if len(tval) != 2:
                         raise ParseError(
                             f"Line {lineno}: coordinate expects 2-element tuple, got {len(tval)}"
@@ -995,7 +1258,11 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], 
                     ))
                     i = j
                 else:
-                    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+                    # Substitute any nested function/builtin calls inside before
+                    # resolving bare variable names.
+                    inner = _substitute_builtins_in_expr(inner, vars_, _funcs, _depth, locals_, lineno,
+                                                        source_path, var_meta, placer, seen)
+                    def sub_id(m: re.Match, _v: dict = eff, _l: int = lineno) -> str:  # type: ignore[type-arg]
                         name = m.group()
                         if name in _RESERVED_EXPR_NAMES:
                             return name
@@ -1014,15 +1281,30 @@ def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], 
     return ''.join(result)
 
 
-def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
+def _evaluate_inline_exprs_bare(
+    text: str,
+    vars_: dict[str, float | str | TupleVal],
+    funcs: dict[str, _FuncDef] | None = None,
+    depth: list[int] | None = None,
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    lineno: int = 0,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
+) -> str:
     """Like _evaluate_inline_exprs but also substitutes bare identifiers at the top level.
 
     Used for evaluating condition expressions and for/step bounds that are not
     wrapped in parentheses.
     """
-    text = _substitute_tuple_indexing(text, vars_, lineno)
-    text = _substitute_builtins_in_expr(text, vars_, lineno)
-    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+    _funcs = funcs if funcs is not None else {}
+    _depth = depth if depth is not None else [0]
+    eff = _effective_vars(vars_, locals_)
+    text = _substitute_tuple_indexing(text, eff, lineno)
+    text = _substitute_builtins_in_expr(text, vars_, _funcs, _depth, locals_, lineno,
+                                        source_path, var_meta, placer, seen)
+    def sub_id(m: re.Match, _v: dict = eff, _l: int = lineno) -> str:  # type: ignore[type-arg]
         name = m.group()
         if name in _RESERVED_EXPR_NAMES:
             return name
@@ -1039,15 +1321,22 @@ def _parse_call_args(
     text: str,
     paren_pos: int,
     vars_: dict[str, float | str | TupleVal],
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    locals_: dict[str, float | str | TupleVal] | None,
     lineno: int,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> tuple[list[object], int]:
     """Parse a comma-separated argument list starting at the `(` at paren_pos.
 
     Returns (args, position_after_closing_paren). Each arg is one of:
       - quoted string literal ("..." or '...')
-      - bare identifier resolved against `vars_` (may yield str or float)
+      - bare identifier resolved against effective vars (may yield str or float)
       - numeric literal
-      - nested builtin call (resolved recursively)
+      - nested builtin or user-function call (resolved recursively)
     Compound numeric expressions (e.g. `x + 1`) are NOT supported as args.
     """
     if paren_pos >= len(text) or text[paren_pos] != '(':
@@ -1055,6 +1344,9 @@ def _parse_call_args(
     i = paren_pos + 1
     n = len(text)
     args: list[object] = []
+    eff = _effective_vars(vars_, locals_)
+    _seen = seen if seen is not None else frozenset()
+    _vm: VarMeta = var_meta if var_meta is not None else {}
 
     # Skip whitespace; handle empty arg list
     while i < n and text[i].isspace():
@@ -1087,14 +1379,49 @@ def _parse_call_args(
             while k < n and text[k].isspace():
                 k += 1
             if k < n and text[k] == '(':
-                if name not in BUILTINS:
+                # Builtins take priority (guaranteed no collision with user funcs at def time)
+                if name in BUILTINS:
+                    inner_args, end = _parse_call_args(text, k, vars_, funcs, depth, locals_, lineno,
+                                                       source_path, _vm, placer, _seen)
+                    args.append(BUILTINS[name](inner_args, lineno))
+                    i = end
+                elif name in funcs:
+                    inner_args, end = _parse_call_args(text, k, vars_, funcs, depth, locals_, lineno,
+                                                       source_path, _vm, placer, _seen)
+                    args.append(_invoke_function(funcs[name], inner_args, lineno, source_path, vars_, _vm,
+                                                 funcs, depth, placer, _seen))
+                    i = end
+                else:
                     raise ParseError(f"Line {lineno}: unknown function {name!r}")
-                inner_args, end = _parse_call_args(text, k, vars_, lineno)
-                args.append(BUILTINS[name](inner_args, lineno))
-                i = end
             else:
-                args.append(vars_.get(name, 0.0))
+                args.append(eff.get(name, 0.0))
                 i = j
+        elif ch == '(':
+            # Parenthesized expression — evaluate as numeric
+            j = i + 1
+            pd = 1
+            while j < n and pd > 0:
+                if text[j] == '(':
+                    pd += 1
+                elif text[j] == ')':
+                    pd -= 1
+                j += 1
+            if pd != 0:
+                raise ParseError(f"Line {lineno}: unterminated '(' in argument list")
+            inner_expr = text[i + 1:j - 1]
+            # Substitute function calls and vars inside, then eval
+            inner_expr = _substitute_builtins_in_expr(inner_expr, vars_, funcs, depth, locals_, lineno)
+            def _sub_arg_id(m: re.Match, _v: dict = eff, _l: int = lineno) -> str:  # type: ignore[type-arg]
+                name = m.group()
+                if name in _RESERVED_EXPR_NAMES:
+                    return name
+                val = _v.get(name, 0.0)
+                if isinstance(val, (str, tuple)):
+                    raise ParseError(f"Line {_l}: variable {name!r} is not numeric")
+                return _fmt_float(float(val))
+            inner_expr = _BARE_ID_RE.sub(_sub_arg_id, inner_expr)
+            args.append(_eval_expr(inner_expr, lineno))
+            i = j
         elif ch == '-' or ch.isdigit() or ch == '.':
             j = i
             if text[j] == '-':
@@ -1126,14 +1453,24 @@ def _parse_call_args(
 def _substitute_builtins_in_expr(
     text: str,
     vars_: dict[str, float | str | TupleVal],
+    funcs: dict[str, _FuncDef],
+    depth: list[int],
+    locals_: dict[str, float | str | TupleVal] | None,
     lineno: int,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> str:
-    """Replace numeric-returning builtin calls with their decimal value.
+    """Replace numeric-returning builtin/user-function calls with their decimal value.
 
     Walks `text` skipping content inside "..." and '...' string literals.
-    `substr`/`replace` (string-returning) raise ParseError — they're only valid
-    in string-expression context.
+    `substr`/`replace` (string-returning builtins) raise ParseError — they're only valid
+    in string-expression context.  User functions that return strings also raise ParseError
+    when used in a numeric expression context.
     """
+    _seen = seen if seen is not None else frozenset()
+    _vm: VarMeta = var_meta if var_meta is not None else {}
     out: list[str] = []
     i = 0
     n = len(text)
@@ -1154,7 +1491,8 @@ def _substitute_builtins_in_expr(
         if m and (i == 0 or not (text[i - 1].isalnum() or text[i - 1] == '_')):
             name = m.group(1)
             paren_pos = m.end() - 1
-            args, after = _parse_call_args(text, paren_pos, vars_, lineno)
+            args, after = _parse_call_args(text, paren_pos, vars_, funcs, depth, locals_, lineno,
+                                           source_path, _vm, placer, _seen)
             if name in BUILTIN_RETURNS_STRING:
                 raise ParseError(
                     f"Line {lineno}: {name}() returns a string and is not valid in a numeric expression"
@@ -1163,6 +1501,27 @@ def _substitute_builtins_in_expr(
             out.append(_fmt_float(float(result)))
             i = after
             continue
+        # Check for user-defined function call in numeric-expression context
+        m_uf = _CALL_EXPR_RE.match(text, i)
+        if m_uf and (i == 0 or not (text[i - 1].isalnum() or text[i - 1] == '_')):
+            fname = m_uf.group(1)
+            if fname in funcs:
+                paren_pos = m_uf.end() - 1
+                args_uf, after_uf = _parse_call_args(text, paren_pos, vars_, funcs, depth, locals_, lineno,
+                                                     source_path, _vm, placer, _seen)
+                ret = _invoke_function(funcs[fname], args_uf, lineno, source_path, vars_, _vm,
+                                       funcs, depth, placer, _seen)
+                if isinstance(ret, str):
+                    raise ParseError(
+                        f"Line {lineno}: function {fname!r} returns a string and is not valid in a numeric expression"
+                    )
+                if isinstance(ret, tuple):
+                    raise ParseError(
+                        f"Line {lineno}: function {fname!r} returns a tuple and is not valid in a numeric expression"
+                    )
+                out.append(_fmt_float(float(ret)))
+                i = after_uf
+                continue
         out.append(ch)
         i += 1
     return ''.join(out)
@@ -1172,23 +1531,33 @@ def _eval_string_expr(
     text: str,
     vars_: dict[str, float | str | TupleVal],
     lineno: int,
+    funcs: dict[str, _FuncDef] | None = None,
+    depth: list[int] | None = None,
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> str:
     """Evaluate a string expression: terms joined by `+`.
 
     Each term is: a quoted literal, a bare variable reference (must be string),
-    a ${name}/$name reference, or a string-returning builtin call. Numeric
-    terms (literals, numeric vars, len/match results) raise ParseError — there
-    is no implicit numeric-to-string coercion.
+    a ${name}/$name reference, or a string-returning builtin/user-function call.
+    Numeric terms (literals, numeric vars, len/match results) raise ParseError —
+    there is no implicit numeric-to-string coercion.
     """
+    _funcs = funcs if funcs is not None else {}
+    _depth = depth if depth is not None else [0]
+    eff = _effective_vars(vars_, locals_)
     # Pre-substitute tuple indexing so name[i] yields the slot's string value
-    text = _substitute_tuple_indexing(text, vars_, lineno)
+    text = _substitute_tuple_indexing(text, eff, lineno)
     parts: list[str] = []
     i = 0
     n = len(text)
     expect_term = True
 
     def lookup_str(name: str) -> str:
-        val = vars_.get(name)
+        val = eff.get(name)
         if val is None:
             return ""
         if isinstance(val, str):
@@ -1243,15 +1612,29 @@ def _eval_string_expr(
                 while k < n and text[k].isspace():
                     k += 1
                 if k < n and text[k] == '(':
-                    if name not in BUILTINS:
+                    if name in BUILTINS:
+                        args, end = _parse_call_args(text, k, vars_, _funcs, _depth, locals_, lineno)
+                        if name in BUILTIN_RETURNS_NUMERIC:
+                            raise ParseError(
+                                f"Line {lineno}: {name}() returns a numeric value, cannot be used in a string expression"
+                            )
+                        parts.append(BUILTINS[name](args, lineno))
+                        i = end
+                    elif name in _funcs:
+                        _vm: VarMeta = var_meta if var_meta is not None else {}
+                        _seen = seen if seen is not None else frozenset()
+                        args, end = _parse_call_args(text, k, vars_, _funcs, _depth, locals_, lineno,
+                                                     source_path, _vm, placer, _seen)
+                        ret = _invoke_function(_funcs[name], args, lineno, source_path, vars_, _vm,
+                                               _funcs, _depth, placer, _seen)
+                        if not isinstance(ret, str):
+                            raise ParseError(
+                                f"Line {lineno}: function {name!r} does not return a string; cannot be used in a string expression"
+                            )
+                        parts.append(ret)
+                        i = end
+                    else:
                         raise ParseError(f"Line {lineno}: unknown function {name!r}")
-                    args, end = _parse_call_args(text, k, vars_, lineno)
-                    if name in BUILTIN_RETURNS_NUMERIC:
-                        raise ParseError(
-                            f"Line {lineno}: {name}() returns a numeric value, cannot be used in a string expression"
-                        )
-                    parts.append(BUILTINS[name](args, lineno))
-                    i = end
                 else:
                     parts.append(lookup_str(name))
                     i = j
@@ -1328,9 +1711,34 @@ def _eval_tuple_expr(
     text: str,
     vars_: dict[str, float | str | TupleVal],
     lineno: int,
+    funcs: dict[str, _FuncDef] | None = None,
+    depth: list[int] | None = None,
+    locals_: dict[str, float | str | TupleVal] | None = None,
+    source_path: Path | None = None,
+    var_meta: VarMeta | None = None,
+    placer: object = None,
+    seen: frozenset[Path] | None = None,
 ) -> TupleVal:
     """Evaluate a tuple expression and return a TupleVal."""
+    _funcs = funcs if funcs is not None else {}
+    _depth = depth if depth is not None else [0]
     text = text.strip()
+
+    # User-defined function call returning a tuple
+    m_call = _CALL_STMT_RE.match(text)
+    if m_call:
+        fname = m_call.group(1)
+        if fname in _funcs:
+            _vm2: VarMeta = var_meta if var_meta is not None else {}
+            _seen2 = seen if seen is not None else frozenset()
+            paren_pos = text.index('(', len(fname))
+            args, _ = _parse_call_args(text, paren_pos, vars_, _funcs, _depth, locals_, lineno,
+                                       source_path, _vm2, placer, _seen2)
+            ret = _invoke_function(_funcs[fname], args, lineno, source_path, vars_, _vm2,
+                                   _funcs, _depth, placer, _seen2)
+            if not isinstance(ret, tuple):
+                return (ret,)  # type: ignore[return-value]
+            return ret
 
     # Operation form: find top-level +/-/*/÷ with at least one tuple operand
     op_char, left_s, right_s = _split_top_level_op(text)
@@ -1452,7 +1860,7 @@ def _eval_scalar_element(
         if val is None:
             return 0.0
     expr_sub = _substitute_tuple_indexing(_substitute_vars(t, vars_, lineno), vars_, lineno)
-    expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+    expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno=lineno)
     return _eval_expr(expr_sub, lineno)
 
 
@@ -1550,7 +1958,7 @@ def _substitute_tuple_indexing(
             val = vars_.get(name)
             if isinstance(val, tuple):
                 idx_sub = _substitute_vars(idx_expr, vars_, lineno)
-                idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
+                idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno=lineno)
                 idx_float = _eval_expr(idx_sub, lineno)
                 if idx_float != int(idx_float) or int(idx_float) < 0:
                     raise ParseError(f"Line {lineno}: tuple index must be a non-negative integer")
@@ -1600,6 +2008,295 @@ def _update_system_vars(
         vars_[sysname] = val
         var_meta[sysname] = (fn, ln)
         _maybe_trace(sysname, vars_, var_meta)
+@
+
+
+1.21
+log
+@vartrace summary: blank line when variable name or filename changes (issue #48)
+@
+text
+@d6 1
+d28 1
+d68 23
+d126 2
+d134 9
+a142 1
+    _execute_text(text, source_path, vars_, var_meta, placer, seen)
+d153 2
+d157 1
+d163 1
+a163 1
+    _execute_block(lines, 0, len(lines), source_path, vars_, var_meta, placer, seen)
+d173 2
+d177 1
+d195 29
+d233 1
+a233 1
+                         lineno, source_path, vars_, var_meta, placer, seen)
+d241 3
+a243 2
+                if cond is None or _eval_condition(cond, vars_, lineno):
+                    _execute_block(lines, b_start, b_end, source_path, vars_, var_meta, placer, seen)
+d251 1
+a251 1
+            _execute_block(lines, i + 1, body_end, source_path, vars_, var_meta, placer, seen)
+d263 1
+a263 1
+                _execute_stmt(stmt, lineno, source_path, vars_, var_meta, placer, seen)
+d365 103
+a467 3
+def _eval_condition(expr_text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> bool:
+    expr_sub = _substitute_vars(expr_text, vars_, lineno)
+    expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, lineno)
+d482 2
+d486 1
+d488 1
+d490 2
+a491 1
+        _evaluate_inline_exprs_bare(_substitute_vars(s_expr, vars_, lineno), vars_, lineno),
+d495 2
+a496 1
+        _evaluate_inline_exprs_bare(_substitute_vars(e_expr, vars_, lineno), vars_, lineno),
+d500 2
+a501 1
+        _evaluate_inline_exprs_bare(_substitute_vars(step_expr, vars_, lineno), vars_, lineno),
+d520 2
+a521 2
+        vars_[var] = start_val + k * step_val
+        var_meta[var] = (str(vars_.get("__dsl_filename", "")), lineno)
+d523 1
+a523 1
+        _execute_block(body_lines, 0, len(body_lines), source_path, vars_, var_meta, placer, seen)
+d532 2
+d536 1
+d556 1
+a556 1
+        _execute_include(tokens, lineno, source_path, vars_, var_meta, placer, seen)
+d567 19
+d588 2
+a589 1
+        _execute_declaration(m_decl, lineno, vars_, var_meta)
+d594 2
+a595 1
+        _execute_unpack(m_unpack, lineno, vars_, var_meta)
+d603 2
+a604 1
+        existing = vars_.get(name)
+d607 3
+a609 2
+        idx_sub = _substitute_vars(idx_expr, vars_, lineno)
+        idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
+d623 1
+a623 1
+                ref_val = vars_.get(val_ref)
+d627 2
+a628 1
+            new_val: float | str = _eval_string_expr(val_expr, vars_, lineno)
+d630 3
+a632 2
+            v_sub = _substitute_tuple_indexing(_substitute_vars(val_expr, vars_, lineno), vars_, lineno)
+            v_sub = _evaluate_inline_exprs(v_sub, vars_, lineno)
+d636 2
+a637 2
+        vars_[name] = tuple(elems)
+        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+d648 3
+a650 2
+        existing = vars_.get(name)
+        is_tuple_ctx = isinstance(existing, tuple) or _rhs_is_tuple_expr(expr_raw, vars_)
+d654 2
+a655 1
+            rhs_val = _eval_tuple_expr(expr_raw, vars_, lineno)
+d657 1
+a657 1
+                vars_[name] = rhs_val
+d660 1
+a660 1
+                vars_[name] = _tuple_op(lhs, rhs_val, '+', lineno)
+d663 1
+a663 1
+                vars_[name] = _tuple_op(lhs, rhs_val, '-', lineno)
+d666 1
+a666 1
+                vars_[name] = _tuple_op(lhs, rhs_val, '*', lineno)
+d669 4
+a672 2
+                vars_[name] = _tuple_op(lhs, rhs_val, '/', lineno)
+            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+d679 2
+a680 1
+            value = _eval_string_expr(expr_raw, vars_, lineno)
+d682 1
+a682 1
+                vars_[name] = value
+d685 2
+a686 2
+                vars_[name] = prev + value
+            var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+d691 4
+a694 3
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+        value = _eval_expr(expr_sub, lineno)
+d696 1
+a696 1
+            vars_[name] = value
+d698 3
+a700 2
+            if name not in vars_:
+                vars_[name] = 0.0
+d702 1
+a702 1
+                vars_[name] += value  # type: ignore[operator]
+d704 2
+a705 2
+                vars_[name] -= value  # type: ignore[operator]
+        var_meta[name] = (str(vars_.get("__dsl_filename", "")), lineno)
+d709 16
+a724 2
+    sub_stmt = _substitute_vars(stmt, vars_, lineno)
+    sub_stmt = _evaluate_inline_exprs(sub_stmt, vars_, lineno)
+d739 6
+d763 1
+a763 1
+    fn = str(vars_.get("__dsl_filename", ""))
+d767 1
+a767 2
+                vars_[name] = ()
+                var_meta[name] = (fn, lineno)
+d772 1
+a772 2
+                vars_[name] = default
+                var_meta[name] = (fn, lineno)
+d778 2
+a779 1
+        vars_[names[0]] = _eval_string_expr(expr_raw, vars_, lineno)
+d781 2
+a782 1
+        vars_[names[0]] = _eval_tuple_expr(expr_raw, vars_, lineno)
+d784 5
+a788 4
+        expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, vars_, lineno), vars_, lineno)
+        expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+        vars_[names[0]] = _eval_expr(expr_sub, lineno)
+    var_meta[names[0]] = (fn, lineno)
+d797 6
+d813 3
+a815 1
+    tval = _eval_tuple_expr(expr_raw, vars_, lineno)
+a819 1
+    fn = str(vars_.get("__dsl_filename", ""))
+d821 1
+a821 2
+        vars_[name] = elem
+        var_meta[name] = (fn, lineno)
+d1016 2
+d1020 1
+d1040 1
+a1040 1
+    _execute_text(inc_path.read_text(), inc_path, vars_, var_meta, placer, seen | {inc_path})
+d1072 12
+a1083 1
+def _evaluate_inline_exprs(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
+d1091 6
+a1096 2
+    text = _substitute_tuple_indexing(text, vars_, lineno)
+    text = _substitute_builtins_in_expr(text, vars_, lineno)
+d1108 2
+a1109 2
+            depth = 1
+            while j < len(text) and depth > 0:
+d1111 1
+a1111 1
+                    depth += 1
+d1113 1
+a1113 1
+                    depth -= 1
+d1115 1
+a1115 1
+            if depth != 0:
+d1122 1
+a1122 1
+                    tval = _eval_tuple_expr(inner, vars_, lineno)
+d1133 5
+a1137 1
+                    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+d1156 12
+a1167 1
+def _evaluate_inline_exprs_bare(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> str:
+d1173 7
+a1179 3
+    text = _substitute_tuple_indexing(text, vars_, lineno)
+    text = _substitute_builtins_in_expr(text, vars_, lineno)
+    def sub_id(m: re.Match, _v: dict = vars_, _l: int = lineno) -> str:  # type: ignore[type-arg]
+d1196 3
+d1200 4
+d1209 1
+a1209 1
+      - bare identifier resolved against `vars_` (may yield str or float)
+d1211 1
+a1211 1
+      - nested builtin call (resolved recursively)
+d1219 3
+d1254 13
+a1266 1
+                if name not in BUILTINS:
+a1267 3
+                inner_args, end = _parse_call_args(text, k, vars_, lineno)
+                args.append(BUILTINS[name](inner_args, lineno))
+                i = end
+d1269 1
+a1269 1
+                args.append(vars_.get(name, 0.0))
+d1271 26
+d1328 3
+d1332 4
+d1337 1
+a1337 1
+    """Replace numeric-returning builtin calls with their decimal value.
+d1340 3
+a1342 2
+    `substr`/`replace` (string-returning) raise ParseError — they're only valid
+    in string-expression context.
+d1344 2
+d1366 2
+a1367 1
+            args, after = _parse_call_args(text, paren_pos, vars_, lineno)
+d1376 21
+d1406 7
+d1417 3
+a1419 3
+    a ${name}/$name reference, or a string-returning builtin call. Numeric
+    terms (literals, numeric vars, len/match results) raise ParseError — there
+    is no implicit numeric-to-string coercion.
+d1421 3
+d1425 1
+a1425 1
+    text = _substitute_tuple_indexing(text, vars_, lineno)
+d1432 1
+a1432 1
+        val = vars_.get(name)
+d1487 22
+a1508 1
+                    if name not in BUILTINS:
+a1509 7
+                    args, end = _parse_call_args(text, k, vars_, lineno)
+                    if name in BUILTIN_RETURNS_NUMERIC:
+                        raise ParseError(
+                            f"Line {lineno}: {name}() returns a numeric value, cannot be used in a string expression"
+                        )
+                    parts.append(BUILTINS[name](args, lineno))
+                    i = end
+d1586 7
+d1595 2
+d1599 16
+d1735 1
+a1735 1
+    expr_sub = _evaluate_inline_exprs(expr_sub, vars_, lineno)
+d1833 1
+a1833 1
+                idx_sub = _evaluate_inline_exprs(idx_sub, vars_, lineno)
 @
 
 

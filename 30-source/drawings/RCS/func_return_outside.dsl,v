@@ -1,0 +1,29 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.15.15.53.17;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@function verification drawing for issue #8
+@
+
+
+1.1
+log
+@issue #8: function verification drawing
+@
+text
+@# func_return_outside.dsl — top-level return should raise ParseError
+
+lb 0.5,1 12 "about to return outside function"
+return 42
+@

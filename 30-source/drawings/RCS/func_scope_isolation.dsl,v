@@ -1,0 +1,42 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.15.15.53.17;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@function verification drawing for issue #8
+@
+
+
+1.1
+log
+@issue #8: function verification drawing
+@
+text
+@# func_scope_isolation.dsl — local writes don't leak; __cursorx mutation does
+
+numeric x = 100
+numeric y = 200
+
+def modify_locals() {
+    numeric x = 999
+    numeric y = 888
+    mto 3,3
+}
+
+modify_locals()
+
+# x and y should still be 100 and 200
+# __cursorx should be 3 after mto 3,3 inside the function
+lb 0.5,0.5 12 "x=100 y=200 after function"
+vardump
+@

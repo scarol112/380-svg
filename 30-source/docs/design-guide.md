@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.9 $ $Date: 2026/05/14 13:05:27 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/design-guide.md,v $ $Revision: 1.10 $ $Date: 2026/05/15 15:52:44 $ -->
 # App working title: svg
 
 ## Project tools
@@ -277,7 +277,67 @@ For-loops are limited to 100 000 iterations. Exceeding this limit raises `ParseE
 
 #### Keywords reserved against assignment
 
-`_ALL_KEYWORDS` is extended with `if elif else for to step True False and or not`. Any attempt to assign to these names (or any name starting with `__`) raises `ParseError`.
+`_ALL_KEYWORDS` is extended with `if elif else for to step True False and or not def return`. Any attempt to assign to these names (or any name starting with `__`) raises `ParseError`.
+
+### Named functions (`def` / `return`)
+
+Functions are implemented entirely at the interpreter level (no AST changes), consistent with the rationale in the control-flow section above.
+
+#### Data structures
+
+```python
+@dataclass(frozen=True)
+class _FuncDef:
+    name: str
+    params: tuple[str, ...]
+    body: list[tuple[int, str]]   # captured by _capture_body
+    def_file: str
+    def_lineno: int
+
+class _ReturnSignal(Exception):
+    __slots__ = ("value",)
+    def __init__(self, value): self.value = value
+```
+
+`funcs: dict[str, _FuncDef]` is threaded alongside `vars_` through every interpreter helper. `depth: list[int]` (a single-element list used as a mutable cell) tracks call depth without polluting `vars_`.
+
+#### Scope model
+
+Python-like: reads fall through from locals to globals; writes default to locals when inside a function; system vars (`__`-prefixed) always go to globals. Two helpers implement this:
+
+- `_effective_vars(vars_, locals_)` — returns a merged dict for read-only lookups (locals shadow globals).
+- `_write(name, value, vars_, locals_, var_meta, lineno)` — writes to `locals_` when non-None and the name is not `__`-prefixed; otherwise to `vars_`.
+
+`vardump` shows only `vars_` (globals). `vartrace` does not fire on local writes — both behaviors are consistent with the "locals are invisible outside the call" model.
+
+#### `def` registration
+
+`_DEF_HDR_RE` is checked first in `_execute_block`'s main loop, before `_FOR_HDR_RE`. On match, the function body is captured with the existing `_capture_body` helper and registered in `funcs`. Validation at registration time: name not in `_ALL_KEYWORDS`, not in `BUILTINS`, not `__`-prefixed, no duplicate params.
+
+Builtins win on name collision — rejecting at `def` time rather than at call time ensures there can be no runtime ambiguity in `_substitute_builtins_in_expr`.
+
+#### `return` unwinding
+
+`_ReturnSignal(value)` is raised by the `return` statement handler in `_execute_stmt` and caught by `_invoke_function`. Since it is an exception, it cleanly unwinds nested `for`/`if`/bare blocks without per-block handling. A `_ReturnSignal` that escapes all function frames is caught in `execute_dsl` and re-raised as `ParseError("'return' outside function")`.
+
+#### Call-as-statement vs call-as-expression
+
+- **Statement**: `_CALL_STMT_RE` (anchored, `^name(`) probe in `_execute_stmt` after all other statement forms are tried. The real `placer` is passed to `_invoke_function`; side effects fire normally.
+- **Expression**: `_CALL_EXPR_RE` (unanchored) probe in `_substitute_builtins_in_expr`. The numeric return value replaces the call in the expression text. When the call is in a direct assignment RHS, the real placer is available; in deeper nesting (e.g., inside another call's args), a throwaway `ElementPlacer` is used — drawing side effects are silently discarded in that case.
+- **String context**: `_eval_string_expr` checks `_funcs` for the identifier when followed by `(`, verifying the return type is a string.
+- **Tuple context**: `_eval_tuple_expr` checks `_funcs` first, calling `_invoke_function` and expecting a tuple return.
+
+#### Parenthesized args
+
+`_parse_call_args` was extended with a `(expr)` case that evaluates arithmetic inside parenthesized arguments, allowing `factorial((n - 1))` patterns common in recursive functions.
+
+#### Recursion cap
+
+The `depth` cell is incremented in `_invoke_function` before entering the body and decremented in a `finally` clause. When `depth[0] > 256`, a `ParseError` is raised before the body executes. Python's own recursion limit is raised to `max(existing, 256 * 12 + 500)` at the start of `execute_dsl` and restored in a `finally` clause — approximately 12 Python frames are consumed per DSL call level.
+
+#### Namespace separation
+
+Function names and variable names occupy different namespaces. `foo = 3` and `def foo() {...}` can coexist without collision. A bare `foo` in expression context reads the variable; `foo(` triggers function dispatch. This is consistent with how builtins (`len`, `match`) already coexist with any variable named `len` or `match`.
 
 ### Element naming
 

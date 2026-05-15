@@ -1,4 +1,4 @@
-<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.33 $ $Date: 2026/05/14 13:05:27 $ -->
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.34 $ $Date: 2026/05/15 15:52:44 $ -->
 # Floor Plan Generator — User's Guide
 
 ### Running the program
@@ -486,6 +486,106 @@ for i = 0 to (n - 1) {
 ```
 
 `include` works inside a loop body; the included file executes once per iteration with the loop variable in scope.
+
+---
+
+#### Named functions (`def` / `return`)
+
+Functions encapsulate reusable drawing logic or calculations.
+
+**Definition:**
+
+```
+def name(param1, param2, ...) {
+    ...
+    return expr
+}
+```
+
+- `def` must appear at the top level or inside a bare block — not inside another function.
+- The parameter list may be empty: `def draw_border() { ... }`.
+- The closing `}` follows the same brace rules as `if`/`for` blocks.
+- A function with no `return` (or a bare `return`) yields `0.0` when used as an expression.
+
+**Call as a statement** (return value discarded):
+
+```
+draw_border()
+draw_room(12, 10, "Living Room")
+```
+
+**Call as an expression** (return value used):
+
+```
+numeric area = compute_area(12, 10)
+numeric total = (compute_area(12, 10) + compute_area(8, 8))
+```
+
+**Return values:**
+
+```
+def add(a, b) {
+    return (a + b)       # numeric
+}
+
+def greet(name) {
+    return "Hello, " + name   # string
+}
+
+def make_pt(x, y) {
+    return (x, y)        # tuple — parens required
+}
+```
+
+- `return` with no expression returns `0.0`.
+- Fall-off (reaching the end of the body without a `return`) also returns `0.0`.
+- Tuple returns require parentheses: `return (x, y)`. Bare `return x, y` is a parse error.
+
+**Scope rules:**
+
+- Parameters and variables assigned inside a function are **local** — they do not overwrite global variables of the same name.
+- Reading a variable that is not a local falls through to the global scope.
+- System variables (`__cursorx`, `__dir`, etc.) are always global — writes inside a function affect the drawing state.
+- `vardump` shows only global variables. `vartrace` does not fire on local writes.
+
+```
+numeric x = 10
+
+def modify() {
+    numeric x = 99      # local x — does not change global x
+    mto 3,3             # moves the real cursor (side effect)
+}
+
+modify()
+# x is still 10; cursor moved to 3,3
+```
+
+**Side effects in functions:**
+
+Drawing statements (`rect`, `line`, `mto`, etc.) inside a function body execute against the real drawing canvas, even when the function is called in expression context. However, when a function is called as part of a larger expression (e.g. nested inside another call's arguments), drawing side effects go to an internal throwaway — only the return value is used.
+
+**Recursion:**
+
+Functions may call themselves. The maximum call depth is **256**; exceeding it raises a parse error.
+
+```
+def factorial(n) {
+    if ($n <= 1) {
+        return 1
+    }
+    return (n * factorial((n - 1)))
+}
+
+numeric result = factorial(6)    # → 720
+```
+
+**Constraints:**
+
+- A function name that matches a built-in (`len`, `substr`, `match`, `replace`) is rejected at definition time.
+- Names starting with `__` are not allowed as function names or parameter names.
+- Duplicate parameter names in the same definition are an error.
+- A `return` statement outside any function is a parse error.
+- Functions are defined once and never redefined; redefining is allowed (last wins) but not recommended.
 
 ---
 
