@@ -1,0 +1,45 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.16.11.36.33;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/bash
+
+# Set the refresh interval in 380-032.js to a new value
+
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+
+    sed -i.bkp "/const REFRESH_MS/s/^.*$/const REFRESH_MS = ${1};/" ../assets/380-032.js
+
+    echo ""
+    echo "[green]Refresh inteval set to $1.[/]" | rich -p -
+    echo "[cyan]Refresh the web page. [/]" | rich -p -
+    echo ""
+else
+    echo ""
+    echo "[dark_orange]$0 <integer milliseconds>" | rich -p -
+    echo "Sets the refresh interval in 380-032.js to a new value" | rich -p -
+    echo ""
+fi
+
+
+# end
+@
