@@ -1,10 +1,15 @@
-head	1.3;
+head	1.4;
 access;
 symbols;
 locks
-	scarol:1.3; strict;
+	scarol:1.4; strict;
 comment	@# @;
 
+
+1.4
+date	2026.05.16.11.34.00;	author scarol;	state Exp;
+branches;
+next	1.3;
 
 1.3
 date	2026.05.14.21.31.27;	author scarol;	state Exp;
@@ -26,9 +31,9 @@ desc
 @@
 
 
-1.3
+1.4
 log
-@begain switching to tuples
+@removed test values
 @
 text
 @# 10x8 (default) unit grid with 1 (default) unit squares
@@ -39,10 +44,7 @@ color Gainsboro
 # future ===========
 grid_bounds = 0,0,10,8
 tuple grid_center = (grid_bounds[2],grid_bounds[3]) / 2
-showvalues = True
-grid_xmax=20
-grid_ymax=16
-grid_size =0.25 
+
 # future ===========
 
 if ($grid_size == 0) {
@@ -91,6 +93,20 @@ dir 90
 lb 12 c=red "pgrid_bounds = $grid_bounds"
 p 2px x=red a=($__cursor - (0.75,0))
 # future ===========
+@
+
+
+1.3
+log
+@begain switching to tuples
+@
+text
+@d9 1
+a9 4
+showvalues = True
+grid_xmax=20
+grid_ymax=16
+grid_size =0.25 
 @
 
 

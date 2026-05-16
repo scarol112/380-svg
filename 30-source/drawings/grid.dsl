@@ -6,10 +6,7 @@ color Gainsboro
 # future ===========
 grid_bounds = 0,0,10,8
 tuple grid_center = (grid_bounds[2],grid_bounds[3]) / 2
-showvalues = True
-grid_xmax=20
-grid_ymax=16
-grid_size =0.25 
+
 # future ===========
 
 if ($grid_size == 0) {
