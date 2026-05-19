@@ -46,6 +46,7 @@ _DECL_RE = re.compile(
 )
 _BUILTIN_CALL_HEAD_RE = re.compile(r'\b(len|substr|match|replace)\s*\(')
 _SAFE_EXPR_RE = re.compile(r'^[\d\s.+\-*/()<>=!\[\]A-Za-z_,]+$')
+_SAFE_COND_RE = re.compile(r"^[\d\s.+\-*/()<>=!\[\]A-Za-z_,'\"\\.]+$")
 # (expr) inline arithmetic — bare identifiers inside are variable references
 _INLINE_EXPR_RE = re.compile(r'\(([^)]*)\)')
 _BARE_ID_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
@@ -462,11 +463,31 @@ def _eval_condition(
     placer: object = None,
     seen: frozenset[Path] | None = None,
 ) -> bool:
-    expr_sub = _substitute_vars(expr_text, _effective_vars(vars_, locals_), lineno)
+    eff = _effective_vars(vars_, locals_)
+
+    def _sub_typed(m: re.Match) -> str:  # type: ignore[type-arg]
+        name = m.group(1) if m.group(1) is not None else m.group(2)
+        val = eff.get(name, 0.0)
+        if isinstance(val, str):
+            return repr(val)   # becomes 'letter' — a Python string literal
+        if isinstance(val, tuple):
+            return '0'
+        return _fmt_float(val)
+
+    expr_sub = _VARREF_RE.sub(_sub_typed, expr_text)
     expr_sub = _evaluate_inline_exprs_bare(expr_sub, vars_, funcs, depth, locals_, lineno,
                                            source_path, var_meta, placer, seen)
-    result = _eval_expr(expr_sub, lineno)
-    return bool(result)
+    if '__' in expr_sub:
+        raise ParseError(f"Line {lineno}: invalid condition: {expr_sub!r}")
+    if not _SAFE_COND_RE.match(expr_sub):
+        raise ParseError(f"Line {lineno}: invalid condition: {expr_sub!r}")
+    try:
+        result = eval(expr_sub, {"__builtins__": {}, "True": True, "False": False}, {})
+        return bool(result)
+    except ZeroDivisionError:
+        raise ParseError(f"Line {lineno}: division by zero in condition: {expr_sub!r}")
+    except Exception as e:
+        raise ParseError(f"Line {lineno}: condition error in {expr_sub!r}: {e}")
 
 
 def _execute_for(
@@ -1202,7 +1223,31 @@ def _evaluate_inline_exprs_bare(
         if isinstance(val, tuple):
             raise ParseError(f"Line {_l}: variable '{name}' is a tuple, not numeric")
         return _fmt_float(val)
-    return _BARE_ID_RE.sub(sub_id, text)
+    # Substitute bare identifiers outside quoted sections
+    bare_result: list[str] = []
+    i = 0
+    n = len(text)
+    in_quote: str | None = None
+    while i < n:
+        ch = text[i]
+        if in_quote:
+            bare_result.append(ch)
+            if ch == in_quote:
+                in_quote = None
+            i += 1
+        elif ch in ('"', "'"):
+            in_quote = ch
+            bare_result.append(ch)
+            i += 1
+        else:
+            bm = _BARE_ID_RE.match(text, i)
+            if bm:
+                bare_result.append(sub_id(bm))
+                i = bm.end()
+            else:
+                bare_result.append(ch)
+                i += 1
+    return ''.join(bare_result)
 
 
 def _parse_call_args(
