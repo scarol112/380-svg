@@ -1154,17 +1154,22 @@ def _evaluate_inline_exprs(
                 i += 1
             else:
                 inner = text[i + 1:j - 1]
-                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD
+                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD;
+                # 4-element tuples are kept parenthesized for rect corner syntax
                 if _has_top_level_comma(inner):
                     tval = _eval_tuple_expr(inner, eff, lineno)
-                    if len(tval) != 2:
-                        raise ParseError(
-                            f"Line {lineno}: coordinate expects 2-element tuple, got {len(tval)}"
-                        )
-                    result.append(','.join(
+                    flat = ','.join(
                         v if isinstance(v, str) else _fmt_float(v)
                         for v in tval
-                    ))
+                    )
+                    if len(tval) == 4:
+                        result.append('(' + flat + ')')
+                    elif len(tval) == 2:
+                        result.append(flat)
+                    else:
+                        raise ParseError(
+                            f"Line {lineno}: inline tuple must have 2 or 4 elements, got {len(tval)}"
+                        )
                     i = j
                 else:
                     # Substitute any nested function/builtin calls inside before

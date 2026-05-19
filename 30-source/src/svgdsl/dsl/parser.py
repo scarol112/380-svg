@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
@@ -235,6 +236,10 @@ def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:
 _DASH_STYLES = {"dashed", "shortdash", "dotted", "center", "hidden"}
 _ALIGN_WORDS = {"left", "center", "right"}
 
+_NUM = r'-?\d+(?:\.\d+)?'
+_PAREN_2_RE = re.compile(rf'^\(\s*({_NUM})\s*,\s*({_NUM})\s*\)$')
+_PAREN_4_RE = re.compile(rf'^\(\s*({_NUM})\s*,\s*({_NUM})\s*,\s*({_NUM})\s*,\s*({_NUM})\s*\)$')
+
 
 def _extract_common(tokens: list[Token], lineno: int) -> dict:
     """Pull lw, dash, coords (begin/end), absolute, label, name, font_family from tokens."""
@@ -301,10 +306,52 @@ def _parse_line_elem(tokens: list[Token], lineno: int) -> LineElem:
 
 
 def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
-    length, width = _leading_measurements(tokens, 2, lineno)
-    c = _extract_common(tokens, lineno)
+    length: float | None = None
+    width: float | None = None
+    absolute_override: tuple[float, float] | None = None
+    rest = tokens
+
+    if tokens:
+        first = tokens[0]
+        if first.kind == "WORD":
+            m4 = _PAREN_4_RE.match(first.value)
+            if m4:
+                tx, ty, bx, by = map(float, m4.groups())
+                if bx - tx <= 0 or by - ty <= 0:
+                    raise ParseError(
+                        f"Line {lineno}: 4-element rect tuple requires bottomright > topleft, "
+                        f"got ({tx},{ty})->({bx},{by})"
+                    )
+                length, width, absolute_override = bx - tx, by - ty, (tx, ty)
+                rest = tokens[1:]
+            else:
+                m2 = _PAREN_2_RE.match(first.value)
+                if m2:
+                    length, width = float(m2.group(1)), float(m2.group(2))
+                    rest = tokens[1:]
+        elif first.kind == "COORD":
+            if len(tokens) >= 2 and tokens[1].kind == "COORD":
+                tx, ty = parse_coord(first)
+                bx, by = parse_coord(tokens[1])
+                if bx - tx <= 0 or by - ty <= 0:
+                    raise ParseError(
+                        f"Line {lineno}: 4-element rect requires bottomright > topleft, "
+                        f"got ({tx},{ty})->({bx},{by})"
+                    )
+                length, width, absolute_override = bx - tx, by - ty, (tx, ty)
+                rest = tokens[2:]
+            else:
+                xdim, ydim = parse_coord(first)
+                length, width = xdim, ydim
+                rest = tokens[1:]
+
+    if length is None:
+        length, width = _leading_measurements(tokens, 2, lineno)
+
+    c = _extract_common(rest, lineno)
+    abs_pos = absolute_override if absolute_override is not None else c["absolute"]
     return RectElem(length=length, width=width, lw=c["lw"], dash=c["dash"], color=c["color"],
-                    label=c["label"], begin=c["begin"], end=c["end"], absolute=c["absolute"],
+                    label=c["label"], begin=c["begin"], end=c["end"], absolute=abs_pos,
                     name=c["name"], show_dims_override=c["show_dims"], source_line=lineno)
 
 

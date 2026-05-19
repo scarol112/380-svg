@@ -1,10 +1,15 @@
-head	1.27;
+head	1.28;
 access;
 symbols;
 locks
-	scarol:1.27; strict;
+	scarol:1.28; strict;
 comment	@# @;
 
+
+1.28
+date	2026.05.19.16.14.44;	author scarol;	state Exp;
+branches;
+next	1.27;
 
 1.27
 date	2026.05.19.15.05.38;	author scarol;	state Exp;
@@ -146,9 +151,9 @@ desc
 @@
 
 
-1.27
+1.28
 log
-@Fix issue #55: spread tuple vars in tuple literals.
+@Pass 4-element inline tuples through for rect corner syntax (closes #56)
 @
 text
 @from __future__ import annotations
@@ -1307,17 +1312,22 @@ def _evaluate_inline_exprs(
                 i += 1
             else:
                 inner = text[i + 1:j - 1]
-                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD
+                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD;
+                # 4-element tuples are kept parenthesized for rect corner syntax
                 if _has_top_level_comma(inner):
                     tval = _eval_tuple_expr(inner, eff, lineno)
-                    if len(tval) != 2:
-                        raise ParseError(
-                            f"Line {lineno}: coordinate expects 2-element tuple, got {len(tval)}"
-                        )
-                    result.append(','.join(
+                    flat = ','.join(
                         v if isinstance(v, str) else _fmt_float(v)
                         for v in tval
-                    ))
+                    )
+                    if len(tval) == 4:
+                        result.append('(' + flat + ')')
+                    elif len(tval) == 2:
+                        result.append(flat)
+                    else:
+                        raise ParseError(
+                            f"Line {lineno}: inline tuple must have 2 or 4 elements, got {len(tval)}"
+                        )
                     i = j
                 else:
                     # Substitute any nested function/builtin calls inside before
@@ -2137,6 +2147,28 @@ def _update_system_vars(
         vars_[sysname] = val
         var_meta[sysname] = (fn, ln)
         _maybe_trace(sysname, vars_, var_meta)
+@
+
+
+1.27
+log
+@Fix issue #55: spread tuple vars in tuple literals.
+@
+text
+@d1157 2
+a1158 1
+                # tuple literal (x, y) — if inner has a top-level comma, emit as COORD
+d1161 9
+a1169 1
+                    if len(tval) != 2:
+d1171 1
+a1171 1
+                            f"Line {lineno}: coordinate expects 2-element tuple, got {len(tval)}"
+a1172 4
+                    result.append(','.join(
+                        v if isinstance(v, str) else _fmt_float(v)
+                        for v in tval
+                    ))
 @
 
 
