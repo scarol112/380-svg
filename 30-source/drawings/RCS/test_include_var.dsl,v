@@ -1,0 +1,29 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.13.08.14;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Test for issue #53: include via dollar-ref string variable.
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# issue #53 — $-ref include
+string tmpl = "page-letter-portrait-def.dsl"
+include $tmpl
+lb 1,1 12 "included via dollar-ref"
+@

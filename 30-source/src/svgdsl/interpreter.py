@@ -1032,6 +1032,13 @@ def _execute_include(
         raise ParseError(f"Line {lineno}: include requires a filename")
 
     raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    eff = _effective_vars(vars_, locals_)
+    if raw.startswith('$'):
+        raw = _substitute_vars(raw, eff, lineno)
+    elif re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', raw):
+        val = eff.get(raw)
+        if isinstance(val, str):
+            raw = val
     inc_path = Path(raw)
 
     if not inc_path.is_absolute():

@@ -1,10 +1,15 @@
-head	1.24;
+head	1.25;
 access;
 symbols;
 locks
-	scarol:1.24; strict;
+	scarol:1.25; strict;
 comment	@# @;
 
+
+1.25
+date	2026.05.19.13.08.09;	author scarol;	state Exp;
+branches;
+next	1.24;
 
 1.24
 date	2026.05.19.12.50.12;	author scarol;	state Exp;
@@ -131,9 +136,9 @@ desc
 @@
 
 
-1.24
+1.25
 log
-@Fix issue #52: auto-type string/numeric bare-var refs in plain assignments.
+@Fix issue #53: resolve string variable references in include filenames.
 @
 text
 @from __future__ import annotations
@@ -1170,6 +1175,13 @@ def _execute_include(
         raise ParseError(f"Line {lineno}: include requires a filename")
 
     raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    eff = _effective_vars(vars_, locals_)
+    if raw.startswith('$'):
+        raw = _substitute_vars(raw, eff, lineno)
+    elif re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', raw):
+        val = eff.get(raw)
+        if isinstance(val, str):
+            raw = val
     inc_path = Path(raw)
 
     if not inc_path.is_absolute():
@@ -2046,6 +2058,15 @@ def _update_system_vars(
         vars_[sysname] = val
         var_meta[sysname] = (fn, ln)
         _maybe_trace(sysname, vars_, var_meta)
+@
+
+
+1.24
+log
+@Fix issue #52: auto-type string/numeric bare-var refs in plain assignments.
+@
+text
+@d1035 7
 @
 
 
