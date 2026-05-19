@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.05.19.17.39.24;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.05.13.19.11.02;	author scarol;	state Exp;
@@ -32,9 +37,9 @@ desc
 @
 
 
-1.4
+1.5
 log
-@Accept single-quoted strings as QUOTED tokens (issue #38)
+@Add COORD4 token for bare 4-element corner tuples (issue #56 fix)
 @
 text
 @import re
@@ -43,7 +48,7 @@ from dataclasses import dataclass
 
 @@dataclass
 class Token:
-    kind: str   # MEASUREMENT | PX | COORD | ABSOLUTE | QUOTED | KEYWORD | WORD | NUMBER
+    kind: str   # MEASUREMENT | PX | COORD4 | COORD | ABSOLUTE | QUOTED | KEYWORD | WORD | NUMBER
     value: str
     lineno: int
 
@@ -53,6 +58,7 @@ _FEET_ONLY   = re.compile(r"(\d+(?:\.\d+)?)'")
 _INCHES_ONLY = re.compile(r"(\d+(?:\.\d+)?)\"|\"")
 _NUMBER      = re.compile(r"\d+(?:\.\d+)?")
 _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
+_COORD4      = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
@@ -122,6 +128,12 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
             i = m.end()
             continue
 
+        m = _COORD4.match(raw, i)
+        if m:
+            tokens.append(Token("COORD4", m.group(), lineno))
+            i = m.end()
+            continue
+
         m = _COORD.match(raw, i)
         if m:
             tokens.append(Token("COORD", m.group(), lineno))
@@ -171,11 +183,32 @@ def parse_coord(token: Token) -> tuple[float, float]:
     return float(m.group(1)), float(m.group(2))
 
 
+def parse_coord4(token: Token) -> tuple[float, float, float, float]:
+    m = _COORD4.fullmatch(token.value)
+    if not m:
+        raise ValueError(f"Not a coord4: {token.value!r}")
+    return float(m.group(1)), float(m.group(2)), float(m.group(3)), float(m.group(4))
+
+
 def parse_absolute(token: Token) -> tuple[float, float]:
     m = _ABSOLUTE.fullmatch(token.value)
     if not m:
         raise ValueError(f"Not an absolute offset: {token.value!r}")
     return float(m.group(1)), float(m.group(2))
+@
+
+
+1.4
+log
+@Accept single-quoted strings as QUOTED tokens (issue #38)
+@
+text
+@d7 1
+a7 1
+    kind: str   # MEASUREMENT | PX | COORD | ABSOLUTE | QUOTED | KEYWORD | WORD | NUMBER
+d17 1
+d87 6
+d140 7
 @
 
 

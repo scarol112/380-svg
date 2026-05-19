@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Token:
-    kind: str   # MEASUREMENT | PX | COORD | ABSOLUTE | QUOTED | KEYWORD | WORD | NUMBER
+    kind: str   # MEASUREMENT | PX | COORD4 | COORD | ABSOLUTE | QUOTED | KEYWORD | WORD | NUMBER
     value: str
     lineno: int
 
@@ -14,6 +14,7 @@ _FEET_ONLY   = re.compile(r"(\d+(?:\.\d+)?)'")
 _INCHES_ONLY = re.compile(r"(\d+(?:\.\d+)?)\"|\"")
 _NUMBER      = re.compile(r"\d+(?:\.\d+)?")
 _PX          = re.compile(r"(\d+(?:\.\d+)?)px", re.IGNORECASE)
+_COORD4      = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _COORD       = re.compile(r"(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)")
 _ABSOLUTE    = re.compile(r"A=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)", re.IGNORECASE)
 _QUOTED      = re.compile(r'"([^"]*)"')
@@ -83,6 +84,12 @@ def tokenize(raw: str, lineno: int) -> list[Token]:
             i = m.end()
             continue
 
+        m = _COORD4.match(raw, i)
+        if m:
+            tokens.append(Token("COORD4", m.group(), lineno))
+            i = m.end()
+            continue
+
         m = _COORD.match(raw, i)
         if m:
             tokens.append(Token("COORD", m.group(), lineno))
@@ -130,6 +137,13 @@ def parse_coord(token: Token) -> tuple[float, float]:
     if not m:
         raise ValueError(f"Not a coord: {token.value!r}")
     return float(m.group(1)), float(m.group(2))
+
+
+def parse_coord4(token: Token) -> tuple[float, float, float, float]:
+    m = _COORD4.fullmatch(token.value)
+    if not m:
+        raise ValueError(f"Not a coord4: {token.value!r}")
+    return float(m.group(1)), float(m.group(2)), float(m.group(3)), float(m.group(4))
 
 
 def parse_absolute(token: Token) -> tuple[float, float]:

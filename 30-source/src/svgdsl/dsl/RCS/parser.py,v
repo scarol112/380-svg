@@ -1,10 +1,15 @@
-head	1.26;
+head	1.27;
 access;
 symbols;
 locks
-	scarol:1.26; strict;
+	scarol:1.27; strict;
 comment	@# @;
 
+
+1.27
+date	2026.05.19.17.39.24;	author scarol;	state Exp;
+branches;
+next	1.26;
 
 1.26
 date	2026.05.19.17.26.10;	author scarol;	state Exp;
@@ -142,9 +147,9 @@ desc
 @
 
 
-1.26
+1.27
 log
-@Use origin/bottom-right-corner naming in 4-element rect tuple (#56 follow-up)
+@Handle COORD4 token in _parse_rect for bare r origx,origy,brx,bry form (issue #56 fix)
 @
 text
 @import re
@@ -157,7 +162,7 @@ from .ast import (
     MoveToElem, LineToElem,
     TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
-from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
+from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_coord4, parse_absolute
 
 
 class ParseError(Exception):
@@ -462,7 +467,16 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
 
     if tokens:
         first = tokens[0]
-        if first.kind == "WORD":
+        if first.kind == "COORD4":
+            origx, origy, brx, bry = parse_coord4(first)
+            if brx - origx <= 0 or bry - origy <= 0:
+                raise ParseError(
+                    f"Line {lineno}: 4-element rect requires bottom-right corner > origin, "
+                    f"got origin ({origx},{origy}), corner ({brx},{bry})"
+                )
+            length, width, absolute_override = brx - origx, bry - origy, (origx, origy)
+            rest = tokens[1:]
+        elif first.kind == "WORD":
             m4 = _PAREN_4_RE.match(first.value)
             if m4:
                 origx, origy, brx, bry = map(float, m4.groups())
@@ -828,6 +842,20 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.26
+log
+@Use origin/bottom-right-corner naming in 4-element rect tuple (#56 follow-up)
+@
+text
+@d11 1
+a11 1
+from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
+d316 10
+a325 1
+        if first.kind == "WORD":
 @
 
 

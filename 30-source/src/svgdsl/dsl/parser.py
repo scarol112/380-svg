@@ -8,7 +8,7 @@ from .ast import (
     MoveToElem, LineToElem,
     TextStyleDirective, TextLineElem, TextBreakElem, TextBoxElem, TextAppendElem,
 )
-from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_absolute
+from .lexer import Token, tokenize, parse_measurement, parse_coord, parse_coord4, parse_absolute
 
 
 class ParseError(Exception):
@@ -313,7 +313,16 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
 
     if tokens:
         first = tokens[0]
-        if first.kind == "WORD":
+        if first.kind == "COORD4":
+            origx, origy, brx, bry = parse_coord4(first)
+            if brx - origx <= 0 or bry - origy <= 0:
+                raise ParseError(
+                    f"Line {lineno}: 4-element rect requires bottom-right corner > origin, "
+                    f"got origin ({origx},{origy}), corner ({brx},{bry})"
+                )
+            length, width, absolute_override = brx - origx, bry - origy, (origx, origy)
+            rest = tokens[1:]
+        elif first.kind == "WORD":
             m4 = _PAREN_4_RE.match(first.value)
             if m4:
                 origx, origy, brx, bry = map(float, m4.groups())
