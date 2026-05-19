@@ -1,0 +1,36 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.12.50.16;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Acceptance test for issue #52 auto-typing.
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# issue #52 acceptance test
+string s = "hello"
+b = s              # bare ref to string var → should be S "hello"
+c = $s             # $-ref to string var → should be S "hello"
+d = "world"        # literal → still works
+tuple t = (1,2)
+t2 = t             # bare tuple ref → still works
+numeric n = 5
+n2 = $n            # $-ref numeric → still works
+n3 = n             # bare numeric ref → should be N 5 (NEW)
+vardump
+@

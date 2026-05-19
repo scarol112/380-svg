@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.12.50.16;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Auto-type exploratory tests (issue #52).
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# type inference from a string variable reference
+string a = "hello"
+b = a              # bare ref to string var
+c = $a             # $-ref to string var
+tuple t1 = (1,2)
+t2 = t1            # bare ref to tuple var
+t3 = $t1           # $-ref to tuple var
+vardump
+@

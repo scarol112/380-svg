@@ -575,7 +575,7 @@ def _execute_stmt(
         if _rhs_is_tuple_expr(expr_raw, eff):
             raise _ReturnSignal(_eval_tuple_expr(expr_raw, eff, lineno, funcs, depth, locals_,
                                                  source_path, var_meta, placer, seen))
-        if _rhs_is_string_expr(expr_raw):
+        if _rhs_is_string_expr(expr_raw, eff):
             raise _ReturnSignal(_eval_string_expr(expr_raw, eff, lineno, funcs, depth, locals_,
                                                   source_path, var_meta, placer, seen))
         expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, eff, lineno), eff, lineno)
@@ -614,7 +614,7 @@ def _execute_stmt(
         if idx_int >= len(existing):
             raise ParseError(f"Line {lineno}: tuple index {idx_int} out of range (len={len(existing)})")
         slot_val = existing[idx_int]
-        rhs_is_str = _rhs_is_string_expr(val_expr)
+        rhs_is_str = _rhs_is_string_expr(val_expr, eff)
         if isinstance(slot_val, float) and rhs_is_str:
             raise ParseError(f"Line {lineno}: type mismatch: slot {idx_int} is numeric, got string")
         if isinstance(slot_val, str) and not rhs_is_str:
@@ -672,7 +672,7 @@ def _execute_stmt(
             _write(name, new_tval, vars_, locals_, var_meta, lineno)
             _maybe_trace(name, vars_, var_meta)
             return
-        is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw)
+        is_string_ctx = isinstance(existing, str) or _rhs_is_string_expr(expr_raw, eff)
         if is_string_ctx:
             if op in ('-', '*', '/'):
                 raise ParseError(f"Line {lineno}: '{op}=' is not defined on string variables")
@@ -691,6 +691,15 @@ def _execute_stmt(
         expr_sub = _substitute_tuple_indexing(_substitute_vars(expr_raw, eff, lineno), eff, lineno)
         expr_sub = _evaluate_inline_exprs(expr_sub, vars_, funcs, depth, locals_, lineno,
                                           source_path, var_meta, placer, seen)
+        def _sub_bare(m: re.Match, _v: dict = eff, _l: int = lineno) -> str:  # type: ignore[type-arg]
+            n_ = m.group()
+            if n_ in _RESERVED_EXPR_NAMES:
+                return n_
+            val = _v.get(n_)
+            if isinstance(val, float):
+                return _fmt_float(val)
+            return n_
+        expr_sub = _BARE_ID_RE.sub(_sub_bare, expr_sub)
         value_n = _eval_expr(expr_sub, lineno)
         if op is None:
             new_nv: float | str | TupleVal = value_n
@@ -1524,14 +1533,26 @@ def _eval_string_expr(
     return ''.join(parts)
 
 
-def _rhs_is_string_expr(text: str) -> bool:
-    """Quick check: does the RHS start with a string literal?
+def _rhs_is_string_expr(text: str, vars_: dict[str, float | str | TupleVal] | None = None) -> bool:
+    """Quick check: does the RHS look like a string expression?
 
     Used to dispatch plain `name = expr` assignments when the LHS is not
     already-typed as a string variable.
     """
-    stripped = text.lstrip()
-    return bool(stripped) and stripped[0] in ('"', "'")
+    stripped = text.strip()
+    if not stripped:
+        return False
+    if stripped[0] in ('"', "'"):
+        return True
+    if vars_ is None:
+        return False
+    if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', stripped):
+        return isinstance(vars_.get(stripped), str)
+    m_ref = re.fullmatch(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)', stripped)
+    if m_ref:
+        name = m_ref.group(1) if m_ref.group(1) is not None else m_ref.group(2)
+        return isinstance(vars_.get(name), str)
+    return False
 
 
 def _has_top_level_comma(text: str) -> bool:

@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.12.50.16;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Auto-type exploratory tests (issue #52).
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# confirm what already works today
+x = "literal"
+y = (1,2)
+z = 42
+tuple t = (3,4)
+t2 = t
+t3 = $t
+vardump
+@
