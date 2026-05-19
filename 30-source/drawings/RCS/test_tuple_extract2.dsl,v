@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.11.45.09;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Repro for issue #51: numeric vs string slot extraction.
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# numeric extract works?
+tuple nums = (3, 7)
+numeric a = nums[0]
+numeric b = nums[1]
+# string extract?
+tuple paper = ("letter", "landscape")
+string p0 = paper[0]
+vardump
+@

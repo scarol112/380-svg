@@ -1840,7 +1840,14 @@ def _substitute_tuple_indexing(
                         f"Line {lineno}: tuple index {idx_int} out of range (len={len(val)})"
                     )
                 slot = val[idx_int]
-                result.append(slot if isinstance(slot, str) else _fmt_float(slot))
+                if isinstance(slot, str):
+                    # Wrap in quotes so _eval_string_expr treats it as a literal,
+                    # not a bare identifier.  Escape backslash and \n for round-trip
+                    # safety (the DSL string-literal parser converts \\n → \n).
+                    escaped = slot.replace('\\', '\\\\').replace('\n', '\\n')
+                    result.append('"' + escaped + '"')
+                else:
+                    result.append(_fmt_float(slot))
                 i = m.end()
                 continue
         result.append(ch)

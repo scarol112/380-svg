@@ -1,0 +1,31 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.11.45.09;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Repro for issue #51: tuple slot in string concat and (expr).
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# test: string slot used in concat, and inside (expr) for numeric tuple
+tuple paper = ("letter", "landscape")
+string msg = "paper: " + paper[0] + " / " + paper[1]
+tuple nums = (3, 7)
+numeric sum = (nums[0] + nums[1])
+vardump
+@

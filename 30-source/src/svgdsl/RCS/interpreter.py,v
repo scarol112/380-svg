@@ -1,10 +1,15 @@
-head	1.22;
+head	1.23;
 access;
 symbols;
 locks
-	scarol:1.22; strict;
+	scarol:1.23; strict;
 comment	@# @;
 
+
+1.23
+date	2026.05.19.11.45.05;	author scarol;	state Exp;
+branches;
+next	1.22;
 
 1.22
 date	2026.05.15.15.52.43;	author scarol;	state Exp;
@@ -121,9 +126,9 @@ desc
 @@
 
 
-1.22
+1.23
 log
-@issue #8: def/return/call syntax, locals scope, recursion cap
+@Fix issue #51: quote string slots in _substitute_tuple_indexing so string x = t[i] yields the slot's value instead of empty string.
 @
 text
 @from __future__ import annotations
@@ -1968,7 +1973,14 @@ def _substitute_tuple_indexing(
                         f"Line {lineno}: tuple index {idx_int} out of range (len={len(val)})"
                     )
                 slot = val[idx_int]
-                result.append(slot if isinstance(slot, str) else _fmt_float(slot))
+                if isinstance(slot, str):
+                    # Wrap in quotes so _eval_string_expr treats it as a literal,
+                    # not a bare identifier.  Escape backslash and \n for round-trip
+                    # safety (the DSL string-literal parser converts \\n → \n).
+                    escaped = slot.replace('\\', '\\\\').replace('\n', '\\n')
+                    result.append('"' + escaped + '"')
+                else:
+                    result.append(_fmt_float(slot))
                 i = m.end()
                 continue
         result.append(ch)
@@ -2008,6 +2020,17 @@ def _update_system_vars(
         vars_[sysname] = val
         var_meta[sysname] = (fn, ln)
         _maybe_trace(sysname, vars_, var_meta)
+@
+
+
+1.22
+log
+@issue #8: def/return/call syntax, locals scope, recursion cap
+@
+text
+@d1843 8
+a1850 1
+                result.append(slot if isinstance(slot, str) else _fmt_float(slot))
 @
 
 
