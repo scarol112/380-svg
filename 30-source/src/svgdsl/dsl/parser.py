@@ -316,13 +316,13 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
         if first.kind == "WORD":
             m4 = _PAREN_4_RE.match(first.value)
             if m4:
-                tx, ty, bx, by = map(float, m4.groups())
-                if bx - tx <= 0 or by - ty <= 0:
+                origx, origy, brx, bry = map(float, m4.groups())
+                if brx - origx <= 0 or bry - origy <= 0:
                     raise ParseError(
-                        f"Line {lineno}: 4-element rect tuple requires bottomright > topleft, "
-                        f"got ({tx},{ty})->({bx},{by})"
+                        f"Line {lineno}: 4-element rect requires bottom-right corner > origin, "
+                        f"got origin ({origx},{origy}), corner ({brx},{bry})"
                     )
-                length, width, absolute_override = bx - tx, by - ty, (tx, ty)
+                length, width, absolute_override = brx - origx, bry - origy, (origx, origy)
                 rest = tokens[1:]
             else:
                 m2 = _PAREN_2_RE.match(first.value)
@@ -331,14 +331,14 @@ def _parse_rect(tokens: list[Token], lineno: int) -> RectElem:
                     rest = tokens[1:]
         elif first.kind == "COORD":
             if len(tokens) >= 2 and tokens[1].kind == "COORD":
-                tx, ty = parse_coord(first)
-                bx, by = parse_coord(tokens[1])
-                if bx - tx <= 0 or by - ty <= 0:
+                origx, origy = parse_coord(first)
+                brx, bry = parse_coord(tokens[1])
+                if brx - origx <= 0 or bry - origy <= 0:
                     raise ParseError(
-                        f"Line {lineno}: 4-element rect requires bottomright > topleft, "
-                        f"got ({tx},{ty})->({bx},{by})"
+                        f"Line {lineno}: 4-element rect requires bottom-right corner > origin, "
+                        f"got origin ({origx},{origy}), corner ({brx},{bry})"
                     )
-                length, width, absolute_override = bx - tx, by - ty, (tx, ty)
+                length, width, absolute_override = brx - origx, bry - origy, (origx, origy)
                 rest = tokens[2:]
             else:
                 xdim, ydim = parse_coord(first)
