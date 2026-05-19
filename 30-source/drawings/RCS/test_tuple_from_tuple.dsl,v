@@ -1,0 +1,35 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.19.15.05.38;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@Acceptance test for issue #55: tuple-from-tuple spread.
+@
+
+
+1.1
+log
+@initial
+@
+text
+@# issue #55 acceptance test
+tuple a = (1, 2)
+tuple b = (3, 4)
+tuple c = a, b           # (1, 2, 3, 4)
+tuple d = (a, b)         # (1, 2, 3, 4)
+tuple e = (0, a, 5)      # (0, 1, 2, 5)
+tuple f = ($a, $b)       # (1, 2, 3, 4)
+tuple g = a + b          # (4, 6) — element-wise still works
+tuple h = (a[0], 5)      # (1, 5) — indexing still works
+vardump
+@

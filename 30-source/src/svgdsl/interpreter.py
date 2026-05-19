@@ -1760,7 +1760,12 @@ def _resolve_tuple_operand(
 
 
 def _eval_tuple_literal(text: str, vars_: dict[str, float | str | TupleVal], lineno: int) -> TupleVal:
-    """Split on top-level commas and evaluate each element as a scalar."""
+    """Split on top-level commas and evaluate each element.
+
+    If an element is a bare identifier or $ref resolving to a tuple variable,
+    its elements are spread (flattened) into the result. Otherwise the element
+    is evaluated as a scalar.
+    """
     parts: list[str] = []
     depth = 0
     in_quote = False
@@ -1784,7 +1789,26 @@ def _eval_tuple_literal(text: str, vars_: dict[str, float | str | TupleVal], lin
         else:
             current.append(ch)
     parts.append(''.join(current).strip())
-    return tuple(_eval_scalar_element(p, vars_, lineno) for p in parts)
+
+    elements: list[float | str] = []
+    for p in parts:
+        t = p.strip()
+        # bare tuple var → spread its elements
+        if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t):
+            val = vars_.get(t)
+            if isinstance(val, tuple):
+                elements.extend(val)
+                continue
+        # $name / ${name} → spread if tuple
+        m_ref = re.fullmatch(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)', t)
+        if m_ref:
+            name = m_ref.group(1) if m_ref.group(1) is not None else m_ref.group(2)
+            val = vars_.get(name)
+            if isinstance(val, tuple):
+                elements.extend(val)
+                continue
+        elements.append(_eval_scalar_element(t, vars_, lineno))
+    return tuple(elements)
 
 
 def _eval_scalar_element(
