@@ -1,0 +1,51 @@
+head	1.2;
+access;
+symbols;
+locks
+	scarol:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2026.04.29.15.03.19;	author scarol;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2026.04.26.17.44.19;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@spaces brainstorm, added inch numbers to rulerh10
+@
+text
+@# 10x8 border
+eid off
+dim off
+sxy off
+dir 90
+l 10
+dir 180
+l 8
+dir 270
+l 10
+dir 0
+l 8
+dir 90
+@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@d5 1
+@

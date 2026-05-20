@@ -1,0 +1,41 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.20.11.41.50;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@eid off
+dimensions off
+
+yl=1; include circlerow.dsl
+#yl=2; include circlerow.dsl
+yl=3; include circlerow.dsl
+#yl=4; include circlerow.dsl
+yl=5; include circlerow.dsl
+#yl=6; include circlerow.dsl
+yl=7; include circlerow.dsl
+
+
+
+
+mto 0 0
+include grid10x8-halfs.dsl
+include border.dsl
+@
