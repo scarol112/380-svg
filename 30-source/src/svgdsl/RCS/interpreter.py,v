@@ -1,10 +1,15 @@
-head	1.28;
+head	1.29;
 access;
 symbols;
 locks
-	scarol:1.28; strict;
+	scarol:1.29; strict;
 comment	@# @;
 
+
+1.29
+date	2026.05.20.12.46.24;	author scarol;	state Exp;
+branches;
+next	1.28;
 
 1.28
 date	2026.05.19.16.14.44;	author scarol;	state Exp;
@@ -151,9 +156,9 @@ desc
 @@
 
 
-1.28
+1.29
 log
-@Pass 4-element inline tuples through for rect corner syntax (closes #56)
+@*** empty log message ***
 @
 text
 @from __future__ import annotations
@@ -732,7 +737,7 @@ def _execute_stmt(
 
     if canonical == "include":
         tokens = tokenize(stmt, lineno)
-        _execute_include(tokens, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
+        _execute_include(tokens, stmt, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
         return
 
     if canonical == "vardump":
@@ -1197,6 +1202,7 @@ def _execute_vardump(
 
 def _execute_include(
     tokens: list,
+    raw_stmt: str,
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
@@ -1210,7 +1216,13 @@ def _execute_include(
     if len(tokens) < 2:
         raise ParseError(f"Line {lineno}: include requires a filename")
 
-    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    # Extract filename from raw statement to preserve exact characters (hyphens, digits).
+    # Token joining loses hyphens between digit-only segments (e.g. "380-107-name.dsl").
+    if tokens[1].kind == "QUOTED":
+        raw = tokens[1].value
+    else:
+        keyword = tokens[0].value
+        raw = raw_stmt[len(keyword):].strip()
     eff = _effective_vars(vars_, locals_)
     if raw.startswith('$'):
         raw = _substitute_vars(raw, eff, lineno)
@@ -2147,6 +2159,21 @@ def _update_system_vars(
         vars_[sysname] = val
         var_meta[sysname] = (fn, ln)
         _maybe_trace(sysname, vars_, var_meta)
+@
+
+
+1.28
+log
+@Pass 4-element inline tuples through for rect corner syntax (closes #56)
+@
+text
+@d577 1
+a577 1
+        _execute_include(tokens, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
+d1042 1
+d1056 7
+a1062 1
+    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
 @
 
 

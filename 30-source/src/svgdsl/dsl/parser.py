@@ -74,7 +74,7 @@ def parse_file(
             if not tokens:
                 continue
             if _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower()) == "include":
-                nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
+                nodes.extend(_resolve_include(tokens, stmt, lineno, source_path, _seen))
             else:
                 node = _parse_line(tokens, lineno)
                 if node is not None:
@@ -84,6 +84,7 @@ def parse_file(
 
 def _resolve_include(
     tokens: list[Token],
+    raw_stmt: str,
     lineno: int,
     source_path: Path | None,
     _seen: frozenset[Path],
@@ -91,8 +92,14 @@ def _resolve_include(
     if len(tokens) < 2:
         raise ParseError(f"Line {lineno}: include requires a filename")
 
-    # Filename may be quoted or bare
-    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    # Filename may be quoted or bare. For bare filenames, extract from the raw statement
+    # text (after the keyword) to preserve exact characters — token joining loses hyphens
+    # between digit-only segments (e.g. "380-107-name.dsl" tokenizes as NUMBER + WORD).
+    if tokens[1].kind == "QUOTED":
+        raw = tokens[1].value
+    else:
+        keyword = tokens[0].value
+        raw = raw_stmt[len(keyword):].strip()
     inc_path = Path(raw)
 
     # Resolve relative to the including file's directory, or cwd if from stdin

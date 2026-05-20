@@ -574,7 +574,7 @@ def _execute_stmt(
 
     if canonical == "include":
         tokens = tokenize(stmt, lineno)
-        _execute_include(tokens, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
+        _execute_include(tokens, stmt, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
         return
 
     if canonical == "vardump":
@@ -1039,6 +1039,7 @@ def _execute_vardump(
 
 def _execute_include(
     tokens: list,
+    raw_stmt: str,
     lineno: int,
     source_path: Path | None,
     vars_: dict[str, float | str | TupleVal],
@@ -1052,7 +1053,13 @@ def _execute_include(
     if len(tokens) < 2:
         raise ParseError(f"Line {lineno}: include requires a filename")
 
-    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    # Extract filename from raw statement to preserve exact characters (hyphens, digits).
+    # Token joining loses hyphens between digit-only segments (e.g. "380-107-name.dsl").
+    if tokens[1].kind == "QUOTED":
+        raw = tokens[1].value
+    else:
+        keyword = tokens[0].value
+        raw = raw_stmt[len(keyword):].strip()
     eff = _effective_vars(vars_, locals_)
     if raw.startswith('$'):
         raw = _substitute_vars(raw, eff, lineno)

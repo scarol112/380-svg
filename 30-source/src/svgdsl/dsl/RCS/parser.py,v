@@ -1,10 +1,15 @@
-head	1.27;
+head	1.28;
 access;
 symbols;
 locks
-	scarol:1.27; strict;
+	scarol:1.28; strict;
 comment	@# @;
 
+
+1.28
+date	2026.05.20.12.46.24;	author scarol;	state Exp;
+branches;
+next	1.27;
 
 1.27
 date	2026.05.19.17.39.24;	author scarol;	state Exp;
@@ -147,9 +152,9 @@ desc
 @
 
 
-1.27
+1.28
 log
-@Handle COORD4 token in _parse_rect for bare r origx,origy,brx,bry form (issue #56 fix)
+@*** empty log message ***
 @
 text
 @import re
@@ -228,7 +233,7 @@ def parse_file(
             if not tokens:
                 continue
             if _ALIASES.get(tokens[0].value.lower(), tokens[0].value.lower()) == "include":
-                nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
+                nodes.extend(_resolve_include(tokens, stmt, lineno, source_path, _seen))
             else:
                 node = _parse_line(tokens, lineno)
                 if node is not None:
@@ -238,6 +243,7 @@ def parse_file(
 
 def _resolve_include(
     tokens: list[Token],
+    raw_stmt: str,
     lineno: int,
     source_path: Path | None,
     _seen: frozenset[Path],
@@ -245,8 +251,14 @@ def _resolve_include(
     if len(tokens) < 2:
         raise ParseError(f"Line {lineno}: include requires a filename")
 
-    # Filename may be quoted or bare
-    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
+    # Filename may be quoted or bare. For bare filenames, extract from the raw statement
+    # text (after the keyword) to preserve exact characters — token joining loses hyphens
+    # between digit-only segments (e.g. "380-107-name.dsl" tokenizes as NUMBER + WORD).
+    if tokens[1].kind == "QUOTED":
+        raw = tokens[1].value
+    else:
+        keyword = tokens[0].value
+        raw = raw_stmt[len(keyword):].strip()
     inc_path = Path(raw)
 
     # Resolve relative to the including file's directory, or cwd if from stdin
@@ -842,6 +854,22 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.27
+log
+@Handle COORD4 token in _parse_rect for bare r origx,origy,brx,bry form (issue #56 fix)
+@
+text
+@d77 1
+a77 1
+                nodes.extend(_resolve_include(tokens, lineno, source_path, _seen))
+d87 1
+d95 8
+a102 2
+    # Filename may be quoted or bare
+    raw = tokens[1].value if tokens[1].kind == "QUOTED" else " ".join(t.value for t in tokens[1:])
 @
 
 
