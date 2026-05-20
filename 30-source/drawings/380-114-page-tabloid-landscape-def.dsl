@@ -1,3 +1,4 @@
+#tag physical page defs - tabloid
 # Page Letter-tabloid Definitions
 # physical
 pgheight=11

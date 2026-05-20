@@ -1,4 +1,4 @@
-# 20x16 grid
+#tag 20x16 grid flat code
 eid off
 dim off
 sxy off

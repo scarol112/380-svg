@@ -1,3 +1,4 @@
+#tag border with parameters and loops 
 # 10x8 border
 mto 0 0
 dir 90

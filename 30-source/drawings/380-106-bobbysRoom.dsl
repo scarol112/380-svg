@@ -1,3 +1,4 @@
+#tag Bobbys room floorplan
 # Bobby's Room
 eid off
 sxy on

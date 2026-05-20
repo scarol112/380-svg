@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.26.17.44.06;	author scarol;	state Exp;
@@ -16,12 +21,13 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Substitute long keyword names with short aliases
+@*** empty log message ***
 @
 text
-@inc border.dsl
+@#tag columns and boxes early test
+inc border.dsl
 
 #showcornerxy on
 
@@ -55,4 +61,13 @@ dir 270        ; l 4.5
 dir 0          ; l 3.5
 dir 90
 
+@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@d1 1
 @

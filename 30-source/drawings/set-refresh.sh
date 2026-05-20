@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Set the refresh interval in 380-032.js to a new value
+#tag Set the refresh interval in 380-032.js to a new value
 
 if [[ "$1" =~ ^[0-9]+$ ]]; then
 

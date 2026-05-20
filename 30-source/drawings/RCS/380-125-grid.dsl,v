@@ -1,10 +1,15 @@
-head	1.4;
+head	1.5;
 access;
 symbols;
 locks
-	scarol:1.4; strict;
+	scarol:1.5; strict;
 comment	@# @;
 
+
+1.5
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.4;
 
 1.4
 date	2026.05.16.11.34.00;	author scarol;	state Exp;
@@ -31,13 +36,15 @@ desc
 @@
 
 
-1.4
+1.5
 log
-@removed test values
+@*** empty log message ***
 @
 text
-@# 10x8 (default) unit grid with 1 (default) unit squares
+@#tag grid with parameters and loops
+# 10x8 (default) unit grid with 1 (default) unit squares
 
+mto 0 0
 dir 90
 color Gainsboro
 
@@ -64,6 +71,9 @@ if ($grid_ymax == 0) {
 r $grid_xmax $grid_ymax A=0,0
 
 maxval = $grid_ymax - $grid_size
+
+
+
 for y=$grid_size to $maxval step $grid_size {
     l $grid_xmax ${grid_stroke}px A=0,$y
     if ($showvalues) {
@@ -71,11 +81,16 @@ for y=$grid_size to $maxval step $grid_size {
     }
 }
 
+
+
 dir 180
 if (showvalues) {
     lb "${grid_size} units" 9 c=red a=(0,(${grid_ymax} + 0.4))
 }
 maxval = $grid_xmax - $grid_size
+
+
+
 for x=$grid_size to $maxval step $grid_size {
     l $grid_ymax ${grid_stroke}px  A=$x,0
     if ($showvalues) {
@@ -83,8 +98,33 @@ for x=$grid_size to $maxval step $grid_size {
     }
 }
 
+
 mto 0 0
 dir 90
+color black
+# future ===========
+#mto $grid_center
+#dir 90
+#lb 12 c=red "pgrid_bounds = $grid_bounds"
+#p 2px x=red a=($__cursor - (0.75,0))
+#
+#mto 0 0
+@
+
+
+1.4
+log
+@removed test values
+@
+text
+@d1 1
+d4 1
+d31 3
+d41 2
+d48 3
+d58 1
+d61 1
+a61 7
 
 stop
 # future ===========
@@ -92,7 +132,7 @@ mto $grid_center
 dir 90
 lb 12 c=red "pgrid_bounds = $grid_bounds"
 p 2px x=red a=($__cursor - (0.75,0))
-# future ===========
+d63 6
 @
 
 

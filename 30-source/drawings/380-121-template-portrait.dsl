@@ -1,3 +1,4 @@
+#tag template portrait test
 # template
 include page-letter-portrait-def.dsl
 

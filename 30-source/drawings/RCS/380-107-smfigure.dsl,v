@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.29.15.03.19;	author scarol;	state Exp;
@@ -16,12 +21,13 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Initial revision
+@*** empty log message ***
 @
 text
-@dir 90
+@#tag Small fig for viewpoint tests
+dir 90
 p 5px C=darkorange
 dir 135; l 0.2 0px
 dir 90
@@ -31,4 +37,13 @@ r 0.2 0.2
 dir 270; l 0.2 0px
 
 p 5px C=darkorange
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
 @

@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.26.17.44.19;	author scarol;	state Exp;
@@ -16,12 +21,13 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Substitute long keyword names with short aliases
+@*** empty log message ***
 @
 text
-@eid off
+@#tag Dining Room and Office floorplan
+eid off
 sxy on
 # kitchen wall
 l 8'8"
@@ -101,4 +107,13 @@ lb "Office" 24 A=23.5,5
 lb "Dining Room" 24 A=7.8,5
 
 
+@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@d1 1
 @

@@ -1,10 +1,15 @@
-head	1.3;
+head	1.4;
 access;
 symbols;
 locks
-	scarol:1.3; strict;
+	scarol:1.4; strict;
 comment	@# @;
 
+
+1.4
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.3;
 
 1.3
 date	2026.05.14.18.02.26;	author scarol;	state Exp;
@@ -27,12 +32,13 @@ desc
 @
 
 
-1.3
+1.4
 log
 @*** empty log message ***
 @
 text
-@# ==============
+@#tag Master Bedroom floorplan
+# ==============
 # Master Bedroom
 # ==============
 include page-letter-landscape-def.dsl
@@ -135,6 +141,15 @@ mto ($rulerpoint + 0,5); rulerlength=16; include ruler.dsl
 
 
 #end
+@
+
+
+1.3
+log
+@*** empty log message ***
+@
+text
+@d1 1
 @
 
 

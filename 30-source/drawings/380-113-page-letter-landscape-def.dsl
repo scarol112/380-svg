@@ -1,3 +1,4 @@
+#tag physical page defs - letter
 # Page Letter-landscape Definitions
 # physical
 pgheight=8.5

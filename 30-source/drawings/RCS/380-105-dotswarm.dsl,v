@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.26.17.44.19;	author scarol;	state Exp;
@@ -16,12 +21,12 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Substitute long keyword names with short aliases
+@*** empty log message ***
 @
 text
-@# test
+@#tag Claude-gend Dotswarm test
 # dotswarm — 50 random points
 # Claude Code prompt
 # generate 250 unique strings "point C=z A=x,y" where x and y are random numbers between 0.10 and 7.9 and z is a random string from the set (red, blue, green, magenta, cyan, darkorange). Append them to @@drawings/dotswarm.dsl
@@ -281,4 +286,15 @@ p C=red A=2.9,7.42
 p C=red A=1.63,0.8
 p C=red A=2.97,1.58
 p C=magenta A=3.39,5.13
+@
+
+
+1.1
+log
+@Substitute long keyword names with short aliases
+@
+text
+@d1 1
+a1 1
+# test
 @

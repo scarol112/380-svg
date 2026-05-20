@@ -1,3 +1,4 @@
+#tag visual for various dims and origins
 eid off
 dim off
 sxy off
@@ -16,7 +17,7 @@ dir 135; l 0.075 0px A=1.5,2; l 0.1; l 0.05 0px; lb "VP origin"; dir 90
 
 l 0 0px A=3,3
 dir 90;l 2 dotted; dir 180; l 0.5 dotted; dir 270; l 2 dotted; dir 0; line 0.5 dotted; dir 90
-include smfigure.dsl
+include 380-107-smfigure.dsl
 dir 90
 dir 45; l 0.075 0px A=3,3; l 0.1; l 0.05 0px; lb "Drawing origin"; dir 90
 
@@ -25,7 +26,7 @@ p 5px C=darkorange A=6.8,5
 dir 45; l 0.075 0px A=6.8,5; l 0.1; l 0.05 0px; lb "VP origin"; dir 90
 
 l 0 0px A=7,5.2
-include smfigure.dsl
+include 380-107-smfigure.dsl
 dir 90
 dir 70; l 0.075 0px A=7,5.2; l 0.1; l 0.05 0px; lb "Drawing origin"; dir 90
 dir 300; l 0.075 0px A=8.34,5.34; l 0.1; l 0.05 0px; lb "Elem origin"; dir 90
@@ -35,7 +36,7 @@ l 0 0px A=0,0
 lb "Print Space, Model Space, Origins, Dimensions" 24 A=2,-0.2
 
 l 0 0px A=0,0
-include border.dsl
+include 380-112-border.dsl
 
 #l 0 0px A=0,8; include rulerh10.dsl
 #include grid10x8.dsl

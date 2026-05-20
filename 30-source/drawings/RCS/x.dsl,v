@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.04.26.17.44.20;	author scarol;	state Exp;
@@ -16,12 +21,44 @@ desc
 @@
 
 
+1.2
+log
+@*** empty log message ***
+@
+text
+@
+include border.dsl
+paper= "letter","landscape"
+
+pname, porient = paper
+
+
+z=1,2
+z0=z[0]
+
+wall 20 0.25 A=1,1
+dir 270; l 1" 0px
+dir 180; wall 10 0.25
+dir 45; l 1.80" 0px;
+dir 270; wall 5 0.25
+window 30" 3"
+wall 2" 4"
+window 30" 3"
+wall 2" 4"
+window 30" 3"
+         wall  5 0.25
+
+@
+
+
 1.1
 log
 @Substitute long keyword names with short aliases
 @
 text
-@eid off
+@d1 21
+a21 17
+eid off
 sxy on
 l 10
 dir 180
@@ -38,5 +75,4 @@ dir 270
 a 1 315
 p C=green A=1,6
 l 1
-
 @

@@ -1,4 +1,4 @@
-# Line style demonstration
+#tag Line style demonstration
 
 dir 90
 

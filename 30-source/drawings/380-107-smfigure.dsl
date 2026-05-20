@@ -1,3 +1,4 @@
+#tag Small fig for viewpoint tests
 dir 90
 p 5px C=darkorange
 dir 135; l 0.2 0px

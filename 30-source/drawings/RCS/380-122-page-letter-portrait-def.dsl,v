@@ -1,0 +1,39 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@*** empty log message ***
+@
+text
+@#tag physical page defs - letter portrait
+# Page Letter-portrait Definitions
+
+# Physical
+pgheight, pgwidth= 11,8.5
+pgdim=pgheight,pgwidth
+margin=0.5
+
+# Visible
+pgxmax=$pgwidth - $margin; pgymax=$pgheight - $margin
+pgxymax = $pgxmax,pgymax
+
+
+xmax=$pgxmax
+ymax=$pgymax
+@

@@ -1,3 +1,4 @@
+#tag Dining Room and Office floorplan
 eid off
 sxy on
 # kitchen wall

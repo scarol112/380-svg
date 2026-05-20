@@ -1,3 +1,4 @@
+#tag columns and boxes early test
 inc border.dsl
 
 #showcornerxy on

@@ -1,3 +1,4 @@
+#tag ruler with parameters and loops
 # variable length, direction, divisions ruler
 # length and divisionsize are dimensionless grid coordinates
 

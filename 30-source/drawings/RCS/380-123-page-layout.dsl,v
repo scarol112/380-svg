@@ -1,4 +1,27 @@
-#tag set det page params from (size,orient)
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@*** empty log message ***
+@
+text
+@#tag set det page params from (size,orient)
 # page layout
 # requires page = (page size, orientation)
 vartrace
@@ -35,3 +58,4 @@ ymax       = $pgymax
 
  mto 0 0
 r $xmax $ymax
+@

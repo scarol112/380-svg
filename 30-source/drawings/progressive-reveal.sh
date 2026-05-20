@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#tag draw each line with sleep interval
+
 echo ""
 echo "Progressively executes lines from a dsl file and"
 echo "draws the SVG after each additional line."

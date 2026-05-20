@@ -1,3 +1,4 @@
+#tag Master Bedroom floorplan
 # ==============
 # Master Bedroom
 # ==============

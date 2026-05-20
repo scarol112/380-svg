@@ -1,3 +1,4 @@
+#tag John's room floorplan
 eid off
 sxy on
 # Entry wall

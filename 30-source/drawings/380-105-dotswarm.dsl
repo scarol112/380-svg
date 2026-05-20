@@ -1,4 +1,4 @@
-# test
+#tag Claude-gend Dotswarm test
 # dotswarm — 50 random points
 # Claude Code prompt
 # generate 250 unique strings "point C=z A=x,y" where x and y are random numbers between 0.10 and 7.9 and z is a random string from the set (red, blue, green, magenta, cyan, darkorange). Append them to @drawings/dotswarm.dsl

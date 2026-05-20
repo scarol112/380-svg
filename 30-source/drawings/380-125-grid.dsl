@@ -1,3 +1,4 @@
+#tag grid with parameters and loops
 # 10x8 (default) unit grid with 1 (default) unit squares
 
 mto 0 0

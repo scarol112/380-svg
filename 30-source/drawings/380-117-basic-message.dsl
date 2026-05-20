@@ -1,3 +1,4 @@
+#tag message rect, tapp test
 # Basic message output
 vartrace trace.txt
 include page-letter-landscape-def.dsl

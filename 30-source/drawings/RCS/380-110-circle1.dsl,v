@@ -1,10 +1,15 @@
-head	1.1;
+head	1.2;
 access;
 symbols;
 locks
-	scarol:1.1; strict;
+	scarol:1.2; strict;
 comment	@# @;
 
+
+1.2
+date	2026.05.20.13.26.36;	author scarol;	state Exp;
+branches;
+next	1.1;
 
 1.1
 date	2026.05.20.11.41.50;	author scarol;	state Exp;
@@ -16,12 +21,13 @@ desc
 @@
 
 
-1.1
+1.2
 log
-@Initial revision
+@*** empty log message ***
 @
 text
-@eid off
+@#tag circles test
+eid off
 dimensions off
 
 yl=1; include circlerow.dsl
@@ -38,4 +44,13 @@ yl=7; include circlerow.dsl
 mto 0 0
 include grid10x8-halfs.dsl
 include border.dsl
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
 @
