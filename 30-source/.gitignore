@@ -1,6 +1,7 @@
 x*
 *.tmp
 *.bkp
+backup-quick/*
 *.swp
 __pycache__/
 *.pyc
