@@ -1,3 +1,7 @@
+x*
+*.tmp
+*.bkp
+*.swp
 __pycache__/
 *.pyc
 .venv/
