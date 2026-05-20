@@ -1,0 +1,29 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.20.14.54.53;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@rename
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#tag set alias for draw cmd - execute with . <fn>
+
+alias draw='bash /srv/380-svg/30-source/bin/380-010.sh'
+
+@
