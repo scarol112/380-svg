@@ -23,7 +23,8 @@ _ALL_KEYWORDS = {
     "True", "False", "and", "or", "not",
     "string", "numeric", "tuple",
     "len", "substr", "match", "replace",
-    "stop", "start",
+    "stop", "start", "breakpoint",
+    "trace",
     "vardump", "vartrace",
     "def", "return",
 }
@@ -122,6 +123,9 @@ def execute_dsl(
         "__dsl_file_lineno": 0.0,
         "__date": datetime.now().strftime("%Y-%m-%d"),
         "__stopped": 0.0,
+        "__debug_singlestep": 0.0,
+        "__debug_count": 0.0,
+        "__debug_trace": 0.0,
     }
     var_meta: VarMeta = {}
     funcs: dict[str, _FuncDef] = {}
@@ -185,13 +189,21 @@ def _execute_block(
             i += 1
             continue
 
-        # When stopped, skip everything — block headers, statements, braces —
-        # until a bare 'start' directive is found.
+        # Breakpoint: enter interactive REPL before executing this line.
         if vars_.get("__stopped", 0.0):
-            if line.split()[0].lower() == "start":
-                vars_["__stopped"] = 0.0
-            i += 1
-            continue
+            vars_["__stopped"] = 0.0
+            _debug_repl(lineno, source_path, vars_, var_meta, line)
+            if vars_.get("__stopped", 0.0):
+                i += 1
+                continue
+        elif vars_.get("__debug_singlestep", 0.0):
+            _debug_repl(lineno, source_path, vars_, var_meta, line, is_step=True)
+            if vars_.get("__stopped", 0.0):
+                i += 1
+                continue
+
+        if vars_.get("__debug_trace", 0.0):
+            print(f"[trace] {lineno}: {line}", file=sys.stderr)
 
         m_def = _DEF_HDR_RE.match(line)
         if m_def:
@@ -220,6 +232,7 @@ def _execute_block(
             funcs[fname] = _FuncDef(name=fname, params=params, body=body_lines,
                                     def_file=fn_file, def_lineno=lineno)
             i = body_end + 1
+            _debug_step_done(vars_)
             continue
 
         m_for = _FOR_HDR_RE.match(line)
@@ -233,6 +246,7 @@ def _execute_block(
             _execute_for(var, s_expr, e_expr, step_expr, body_lines,
                          lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
             i = body_end + 1
+            _debug_step_done(vars_)
             continue
 
         m_if = _IF_HDR_RE.match(line)
@@ -244,6 +258,7 @@ def _execute_block(
                     _execute_block(lines, b_start, b_end, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
                     break
             i = after
+            _debug_step_done(vars_)
             continue
 
         m_bare = _BARE_OPEN_RE.match(line)
@@ -251,6 +266,7 @@ def _execute_block(
             body_end = _find_matching_close(lines, i, lineno)
             _execute_block(lines, i + 1, body_end, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
             i = body_end + 1
+            _debug_step_done(vars_)
             continue
 
         # Reject stray } or elif/else at top level of this block
@@ -264,6 +280,7 @@ def _execute_block(
                 _execute_stmt(stmt, lineno, source_path, vars_, var_meta, funcs, depth, placer, seen, locals_)
                 if vars_.get("__stopped", 0.0):
                     break
+        _debug_step_done(vars_)
         i += 1
 
 
@@ -570,6 +587,13 @@ def _execute_stmt(
 
     if canonical == "start":
         vars_["__stopped"] = 0.0
+        return
+
+    if canonical == "trace":
+        parts2 = stmt.split()
+        if len(parts2) < 2 or parts2[1].lower() not in ("on", "off"):
+            raise ParseError(f"Line {lineno}: trace requires 'on' or 'off'")
+        vars_["__debug_trace"] = 1.0 if parts2[1].lower() == "on" else 0.0
         return
 
     if canonical == "include":
@@ -1035,6 +1059,124 @@ def _execute_vardump(
         print(f"vardump: wrote {len(rows)} variables to {out_path}", file=sys.stderr)
     else:
         print(table, file=sys.stderr)
+
+
+def _debug_step_done(vars_: dict) -> None:
+    """Decrement the debug line countdown after a non-empty line is processed.
+
+    When the counter reaches zero, re-arms __stopped so the REPL fires again
+    on the next line.  Applies to both 'continue N' (run N lines) and
+    'next N' (single-step N lines) modes.
+    """
+    count = vars_.get("__debug_count", 0.0)
+    if count > 0:
+        vars_["__debug_count"] = count - 1
+        if vars_["__debug_count"] <= 0:
+            vars_["__debug_count"] = 0.0
+            vars_["__stopped"] = 1.0
+            vars_["__debug_singlestep"] = 0.0
+
+
+def _debug_repl(
+    lineno: int,
+    source_path: "Path | None",
+    vars_: dict,
+    var_meta: "VarMeta",
+    next_line: str,
+    *,
+    is_step: bool = False,
+) -> None:
+    """Interactive debug REPL.  Called when execution is paused at a breakpoint
+    or during single-step mode.  Updates debug state in vars_ and returns.
+
+    In step mode (is_step=True) a bare Enter steps one line; any explicit
+    command is still accepted.
+    """
+    if not sys.stdin.isatty():
+        print(
+            f"[debug] breakpoint at {source_path.name if source_path else 'stdin'}:"
+            f"{lineno} ignored (non-interactive stdin)",
+            file=sys.stderr,
+        )
+        return
+
+    loc = f"{source_path.name if source_path else 'stdin'}:{lineno}"
+    if is_step:
+        print(f"[step] {loc}: {next_line}", file=sys.stderr)
+        prompt = "[step] "
+    else:
+        print(f"[debug] stopped at {loc}: {next_line}", file=sys.stderr)
+        prompt = "[debug] "
+
+    _HELP = "commands: continue [N] | next [N] | vardump | trace on|off | quit"
+
+    while True:
+        try:
+            raw = input(prompt).strip()
+        except EOFError:
+            vars_["__stopped"] = 0.0
+            vars_["__debug_singlestep"] = 0.0
+            vars_["__debug_count"] = 0.0
+            return
+
+        if not raw:
+            if is_step:
+                # bare Enter = step one more line
+                vars_["__debug_singlestep"] = 1.0
+                vars_["__debug_count"] = 1.0
+                return
+            continue
+
+        parts = raw.split()
+        cmd = parts[0].lower()
+
+        if cmd in ("c", "continue"):
+            n = 0
+            if len(parts) > 1:
+                try:
+                    n = int(parts[1])
+                    if n < 0:
+                        raise ValueError
+                except ValueError:
+                    print("[debug] usage: continue [N]  (N = positive integer)", file=sys.stderr)
+                    continue
+            vars_["__stopped"] = 0.0
+            vars_["__debug_singlestep"] = 0.0
+            vars_["__debug_count"] = float(n)
+            return
+
+        if cmd in ("n", "next"):
+            n = 1
+            if len(parts) > 1:
+                try:
+                    n = int(parts[1])
+                    if n < 1:
+                        raise ValueError
+                except ValueError:
+                    print("[debug] usage: next [N]  (N = positive integer)", file=sys.stderr)
+                    continue
+            vars_["__stopped"] = 0.0
+            vars_["__debug_singlestep"] = 1.0
+            vars_["__debug_count"] = float(n)
+            return
+
+        if cmd in ("vd", "vardump"):
+            _execute_vardump(raw, lineno, source_path, vars_, var_meta)
+            continue
+
+        if cmd == "trace":
+            if len(parts) > 1 and parts[1].lower() in ("on", "off"):
+                state = parts[1].lower()
+                vars_["__debug_trace"] = 1.0 if state == "on" else 0.0
+                print(f"[debug] trace {state}", file=sys.stderr)
+            else:
+                print("[debug] usage: trace on|off", file=sys.stderr)
+            continue
+
+        if cmd in ("q", "quit", "exit"):
+            sys.exit(0)
+
+        print(f"[debug] {_HELP}", file=sys.stderr)
 
 
 def _execute_include(

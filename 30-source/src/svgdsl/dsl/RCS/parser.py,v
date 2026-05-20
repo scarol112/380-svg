@@ -1,10 +1,20 @@
-head	1.28;
+head	1.30;
 access;
 symbols;
 locks
-	scarol:1.28; strict;
+	scarol:1.30; strict;
 comment	@# @;
 
+
+1.30
+date	2026.05.20.15.32.22;	author scarol;	state Exp;
+branches;
+next	1.29;
+
+1.29
+date	2026.05.20.15.27.03;	author scarol;	state Exp;
+branches;
+next	1.28;
 
 1.28
 date	2026.05.20.12.46.24;	author scarol;	state Exp;
@@ -152,7 +162,7 @@ desc
 @
 
 
-1.28
+1.30
 log
 @*** empty log message ***
 @
@@ -293,6 +303,9 @@ _ALIASES: dict[str, str] = {
     "dim":    "dimensions",
     "col":    "color",
     "inc":    "include",
+    "bp":     "stop",
+    "breakpoint": "stop",
+    "tr":     "trace",
     "sxy":    "showcornerxy",
     "mto":    "moveto",
     "lto":    "lineto",
@@ -854,6 +867,24 @@ def _parse_textappend(tokens: list[Token], lineno: int) -> TextAppendElem:
     return TextAppendElem(text=text, element_name=element_name, align=align,
                           font_size=font_size, font_family=font_family, color=color,
                           source_line=lineno)
+@
+
+
+1.29
+log
+@*** empty log message ***
+@
+text
+@d139 1
+@
+
+
+1.28
+log
+@*** empty log message ***
+@
+text
+@d137 2
 @
 
 
