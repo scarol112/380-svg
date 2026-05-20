@@ -1,0 +1,410 @@
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/debugging-guide.md,v $ $Revision: 1.1 $ $Date: 2026/05/20 15:42:55 $ -->
+# Floor Plan Generator — Debugging Guide
+
+This guide covers the full set of tools available for understanding and troubleshooting DSL drawings:
+visual overlays, execution control, variable inspection, and the interactive debugger.
+
+---
+
+## Visual debugging
+
+### Element IDs and dimensions (`eid`, `dim`)
+
+By default the renderer annotates every element with a sequential ID number and
+its computed dimensions. These are useful for verifying placement and size.
+
+```
+elementid on       # show element ID numbers (default)
+elementid off      # hide them
+
+dimensions on      # show computed dimensions (default)
+dimensions off     # hide them
+```
+
+Short aliases: `eid on|off`, `dim on|off`.
+
+Both can be changed at any point in a file — only elements drawn after the
+directive are affected.
+
+```
+eid off; dim off   # suppress all annotations for a clean view
+rect 12 10 "Living Room"
+eid on             # re-enable IDs from here
+```
+
+### Corner-XY markers (`showcornerxy`, `sxy`)
+
+`showcornerxy` places a small orange dot at each element's origin and
+end-of-draw-cursor position, and prints the coordinates next to it. Use it to
+verify that walls meet correctly and cursors land where expected.
+
+```
+showcornerxy on    # (short: sxy on)
+wall 12
+wall 10
+showcornerxy off
+```
+
+`showcornerxy` is `off` by default.
+
+### Execution trace (`trace`)
+
+`trace on` echoes each DSL line to `stderr` as it is about to execute.
+This gives a real-time view of what the interpreter is processing.
+
+```
+trace on
+rect 5 3
+for i = 1 to 3 {
+    line i
+}
+trace off
+```
+
+Example output on stderr:
+
+```
+[trace] 2: rect 5 3
+[trace] 3: for i = 1 to 3 {
+[trace] 5:     line i
+[trace] 5:     line i
+[trace] 5:     line i
+[trace] 6: }
+[trace] 7: trace off
+```
+
+Note: `trace off` itself appears in the trace output because the trace check
+runs before the directive is processed. This is expected.
+
+Short alias: `tr on|off`. Trace state can also be toggled from the
+[interactive debugger](#interactive-debugger) with the same `trace on|off`
+command.
+
+---
+
+## Execution control
+
+### Breakpoints (`breakpoint`, `stop`)
+
+`breakpoint` (or its alias `bp`) pauses execution at that point. When running
+interactively, the interpreter enters a REPL where you can inspect variables,
+step through lines, and resume.
+
+```
+rect 12 10 "Living Room"
+breakpoint           # pause here
+rect 8 6 "Bedroom"
+```
+
+`stop` is a synonym for `breakpoint`. There is also a short alias `bp`.
+
+**Non-interactive use:** If stdin is not a terminal (e.g. piped input, CI), the
+breakpoint is skipped and a message is written to stderr:
+
+```
+[debug] breakpoint at myplan.dsl:5 ignored (non-interactive stdin)
+```
+
+---
+
+## Interactive debugger
+
+When execution pauses at a `breakpoint`, a prompt appears showing the file,
+line number, and the next line that will execute:
+
+```
+[debug] stopped at myplan.dsl:5: rect 8 6 "Bedroom"
+[debug]
+```
+
+Type a command at the `[debug]` prompt. Commands are case-insensitive.
+
+### Commands
+
+#### `continue` — resume execution
+
+```
+[debug] continue
+```
+
+Clears the breakpoint and resumes normal execution. No further pauses occur
+unless another `breakpoint` directive is reached.
+
+#### `continue N` — run N lines then pause again
+
+```
+[debug] continue 3
+```
+
+Executes the next 3 lines without pausing, then re-enters the REPL. Useful for
+skipping over code you are not interested in while staying close to a point of
+interest.
+
+#### `next` — single-step one line
+
+```
+[debug] next
+```
+
+Prints the next line, waits for you to press Enter, executes it, then shows the
+line after that and waits again. Each Enter steps one line. Entering any other
+command at the `[step]` prompt is also accepted.
+
+In step mode the prompt changes to `[step]`:
+
+```
+[step] myplan.dsl:6: rect 8 6 "Bedroom"
+[step]                      ← press Enter to execute
+[step] myplan.dsl:7: line 5
+[step]                      ← press Enter to execute
+```
+
+A bare Enter always means "step one more line." Any explicit command overrides
+stepping.
+
+#### `next N` — single-step N lines then pause
+
+```
+[debug] next 5
+```
+
+Steps through 5 lines interactively (showing each line and waiting for Enter),
+then re-enters the full `[debug]` REPL.
+
+#### `vardump` — inspect all variables
+
+```
+[debug] vardump
+```
+
+Prints a table of all current variable values to stderr. See
+[vardump](#vardump) below for the output format. An optional filename argument
+saves the output to a file:
+
+```
+[debug] vardump /tmp/vars.txt
+```
+
+#### `trace on|off` — toggle line tracing
+
+```
+[debug] trace on
+[debug] trace off
+```
+
+Enables or disables the `[trace]` echo of each line. Takes effect immediately
+for subsequent lines.
+
+#### `quit` — exit
+
+```
+[debug] quit
+```
+
+Terminates the interpreter immediately. Aliases: `q`, `exit`.
+
+### Keyboard shortcuts
+
+| Input | Meaning |
+|---|---|
+| Enter (blank line) | In step mode: step one more line. In debug mode: re-show prompt. |
+| Ctrl-D (EOF) | Resume execution (same as `continue`). |
+| Ctrl-C | Interrupt / kill the process. |
+
+---
+
+## Variable inspection
+
+### `vardump` — snapshot of all variables
+
+`vardump` prints a table of every variable in scope to stderr. Use it anywhere
+in a DSL file to capture variable state at that point, or from the interactive
+debugger REPL.
+
+```
+x = 5
+y = (x * 2)
+vardump
+```
+
+Output format:
+
+```
+NAME            TYPE  FILE            LINE  VALUE
+----            ----  ----            ----  -----
+__cursorx       N     -                  -  5
+__cursory       N     -                  -  0
+...
+x               N     myplan.dsl         1  5
+y               N     myplan.dsl         2  10
+```
+
+Columns:
+
+| Column | Meaning |
+|---|---|
+| `NAME` | Variable name. System variables (`__`-prefixed) appear first. |
+| `TYPE` | `N` = numeric, `S` = string, `T` = tuple |
+| `FILE` | File where the variable was last written |
+| `LINE` | Line number of the last write |
+| `VALUE` | Current value. Strings are quoted; tuples use `(a, b)` notation. |
+
+**Save to file:**
+
+```
+vardump /tmp/snapshot.txt
+vardump "path with spaces/snapshot.txt"
+```
+
+**Notes:**
+- `vardump` shows only global variables. Variables local to a function call are
+  not included.
+- System variables (`__cursorx`, `__cursory`, `__dir`, etc.) are always shown
+  and reflect live drawing state.
+
+### `vartrace` — watch variables change over time
+
+`vartrace` records the value of one or more variables every time they are
+written, and prints a summary at the end of execution.
+
+**Watch all variables:**
+
+```
+vartrace
+x = 1
+x = 2
+y = 10
+```
+
+**Watch specific variables:**
+
+```
+vartrace ("x", "room_width")
+x = 1
+room_width = 12
+x = 2
+```
+
+**Stop watching:**
+
+```
+vartrace ()
+```
+
+**Send output to a file** (instead of stderr):
+
+```
+vartrace /tmp/trace.txt
+vartrace ("x") /tmp/trace.txt
+```
+
+**Output format** (printed at end of run):
+
+```
+=== VARTRACE SUMMARY ===
+NAME      TYPE  FILE            LINE  VALUE
+----      ----  ----            ----  -----
+room_width  N   myplan.dsl         3  12
+
+x         N     myplan.dsl         1  1
+
+x         N     myplan.dsl         5  2
+```
+
+A blank line separates groups of writes to different variables or from different
+source locations. Consecutive identical values for the same variable are
+suppressed — only actual changes are reported.
+
+**Notes:**
+- `vartrace` records writes to global variables only. Writes to function-local
+  variables are not captured.
+- Multiple `vartrace` calls in the same file are allowed; each one updates the
+  watch list.
+- `vartrace ()` (empty parens) stops tracing entirely.
+
+---
+
+## Common workflows
+
+### Verifying cursor position after each wall
+
+```
+sxy on
+wall 12     # dot + coords shown at origin and end
+wall 10
+wall 12
+wall 10
+sxy off
+```
+
+### Narrowing down a layout problem
+
+1. Add `breakpoint` just before the problem area.
+2. Run the file — execution pauses.
+3. Type `trace on` to enable line echo.
+4. Type `next 10` to step through the next 10 lines.
+5. When you see the wrong output, type `vardump` to check variable values.
+6. Type `continue` to finish rendering the SVG.
+
+### Checking a variable at a specific point
+
+```
+x = compute_something()
+vardump         # snapshot of all vars including x
+rect x 5
+```
+
+Or, if you want to watch `x` across the whole run:
+
+```
+vartrace ("x")
+# ... rest of file
+```
+
+### Temporarily disabling a section
+
+Use `stop`/`start` to skip a section without deleting it.
+
+**Note:** `stop` in interactive mode opens the debugger REPL rather than
+skipping lines. To skip a block unconditionally, comment out the lines or
+use an `if (False) { ... }` block instead.
+
+### Enabling trace only inside a function
+
+```
+def draw_room(w, h) {
+    trace on
+    rect w h
+    line w
+    line h
+    trace off
+}
+```
+
+### Capturing a trace log to a file for later analysis
+
+```
+vartrace /tmp/run-trace.txt
+```
+
+The trace summary is appended (not overwritten) so multiple runs accumulate.
+
+---
+
+## Quick reference
+
+| Directive / Command | Where | Effect |
+|---|---|---|
+| `eid on\|off` | DSL file | Show/hide element ID numbers |
+| `dim on\|off` | DSL file | Show/hide dimension annotations |
+| `sxy on\|off` | DSL file | Show/hide cursor-position markers |
+| `trace on\|off` (`tr`) | DSL file or REPL | Echo each line to stderr |
+| `breakpoint` (`bp`, `stop`) | DSL file | Pause and open interactive REPL |
+| `vardump [file]` | DSL file or REPL | Snapshot all variables |
+| `vartrace [vars] [file]` | DSL file | Watch variable writes; summary at end |
+| `vartrace ()` | DSL file | Stop watching |
+| `continue [N]` | REPL | Resume; re-pause after N lines |
+| `next [N]` | REPL | Single-step N lines then re-pause |
+| `trace on\|off` | REPL | Toggle line echo |
+| `vardump [file]` | REPL | Snapshot all variables |
+| `quit` | REPL | Exit immediately |
