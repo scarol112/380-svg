@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: build-step4.dsl
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@eid on; dim on
+sxy on
+wall 20 0.5                                # one combined exterior wall
+rect 12 10 "Living"
+rect 8  10 "Bedroom"
+door 3 right A=2,10
+window 4 A=15,10                           # in the bedroom's bottom wall
+sxy off
+@

@@ -1,0 +1,27 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: build-step1.dsl
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@eid on; dim on
+rect 12 10 "Living"
+@

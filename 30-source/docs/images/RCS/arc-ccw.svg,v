@@ -1,0 +1,40 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.19;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: arc-ccw.svg
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="816" viewBox="0 0 1056 816">
+  <defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="4"
+            refX="6" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="black"/>
+    </marker>
+  </defs>
+  <g id="drawing">
+    <circle cx="48.0" cy="408.0" r="1.5" fill="red" stroke="red" stroke-width="1.0"/>
+    <path d="M 48.0,168.0 A 240.0,240.0 0 0,1 48.0,648.0" fill="none" stroke="black" stroke-width="2.0"/>
+    <circle cx="1008.0" cy="408.0" r="1.5" fill="red" stroke="red" stroke-width="1.0"/>
+    <path d="M 1008.0,168.0 A 240.0,240.0 0 0,0 1008.0,648.0" fill="none" stroke="black" stroke-width="2.0"/>
+    <text x="-132.0" y="108.0" font-size="10" font-family="sans-serif" fill="blue" text-anchor="start">default: clockwise</text>
+    <text x="828.0" y="108.0" font-size="10" font-family="sans-serif" fill="blue" text-anchor="start">ccw (counter-clockwise)</text>
+  </g>
+</svg>@

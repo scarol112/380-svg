@@ -1,0 +1,41 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: door-dir180.dsl
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@# dir 180 (down) — door swing right vs left
+eid off; dim off
+textstyle 10 normal
+
+direction 180
+line 1
+door 3 right @@r
+line 1
+label "dir 180, right" A=2,2.5
+
+mto 4,0
+direction 180
+line 1
+door 3 left @@l
+line 1
+label "dir 180, left" A=6,2.5
+@

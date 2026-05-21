@@ -1,0 +1,44 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: door-dir0.svg
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="816" viewBox="0 0 1056 816">
+  <defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="4"
+            refX="6" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="black"/>
+    </marker>
+  </defs>
+  <g id="drawing">
+    <line x1="397.1" y1="375.3" x2="397.1" y2="309.8" stroke="black" stroke-width="1.0"/>
+    <line x1="397.1" y1="309.8" x2="397.1" y2="113.5" stroke="black" stroke-width="1.0"/>
+    <path d="M 397.1,113.5 A 196.4,196.4 0 0,1 593.5,309.8" fill="none" stroke="black" stroke-width="1.0" stroke-dasharray="4,3"/>
+    <line x1="397.1" y1="113.5" x2="397.1" y2="48.0" stroke="black" stroke-width="1.0"/>
+    <line x1="658.9" y1="768.0" x2="658.9" y2="702.5" stroke="black" stroke-width="1.0"/>
+    <line x1="658.9" y1="702.5" x2="658.9" y2="506.2" stroke="black" stroke-width="1.0"/>
+    <path d="M 658.9,506.2 A 196.4,196.4 0 0,0 462.5,702.5" fill="none" stroke="black" stroke-width="1.0" stroke-dasharray="4,3"/>
+    <line x1="658.9" y1="506.2" x2="658.9" y2="440.7" stroke="black" stroke-width="1.0"/>
+    <text x="462.5" y="473.5" font-size="10" font-family="sans-serif" fill="black" text-anchor="start">dir 0, right</text>
+    <text x="724.4" y="473.5" font-size="10" font-family="sans-serif" fill="black" text-anchor="start">dir 0, left</text>
+  </g>
+</svg>@

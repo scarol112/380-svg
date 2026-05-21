@@ -1,0 +1,42 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: door-dir0.dsl
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@# dir 0 (up) — door swing right vs left
+eid off; dim off
+textstyle 10 normal
+
+direction 0
+mto 0,6
+line 1
+door 3 right @@r
+line 1
+label "dir 0, right" A=1,1.5
+
+mto 4,6
+direction 0
+line 1
+door 3 left @@l
+line 1
+label "dir 0, left" A=5,1.5
+@

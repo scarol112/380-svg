@@ -1,0 +1,36 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.20;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: build-step5.dsl
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@eid on; dim on
+livingw = 12
+bedw    = 8
+roomh   = 10
+wallt   = 0.5
+
+wall (livingw + bedw) $wallt
+rect $livingw $roomh "Living"
+rect $bedw    $roomh "Bedroom"
+door 3 right A=2,$roomh
+window 4 A=(livingw + 3),$roomh
+@

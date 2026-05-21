@@ -1,0 +1,42 @@
+head	1.1;
+access;
+symbols;
+locks
+	scarol:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2026.05.21.10.36.19;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@User Guide illustration: build-step2.svg
+@
+
+
+1.1
+log
+@Initial check-in
+@
+text
+@<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="816" viewBox="0 0 1056 816">
+  <defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="4"
+            refX="6" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="black"/>
+    </marker>
+  </defs>
+  <g id="drawing">
+    <rect x="48.0" y="168.0" width="576.0" height="480.0" fill="none" stroke="black" stroke-width="1.0"/>
+    <rect x="624.0" y="168.0" width="384.0" height="480.0" fill="none" stroke="black" stroke-width="1.0"/>
+    <text x="48.0" y="156.0" font-size="10" font-family="sans-serif" fill="red" text-anchor="middle">1</text>
+    <text x="336.0" y="660.0" font-size="11" font-family="sans-serif" fill="#555" text-anchor="middle">12' × 10'</text>
+    <text x="336.0" y="408.0" font-size="10" font-family="sans-serif" fill="black" text-anchor="middle" dominant-baseline="central">Living</text>
+    <text x="624.0" y="156.0" font-size="10" font-family="sans-serif" fill="red" text-anchor="middle">2</text>
+    <text x="816.0" y="660.0" font-size="11" font-family="sans-serif" fill="#555" text-anchor="middle">8' × 10'</text>
+    <text x="816.0" y="408.0" font-size="10" font-family="sans-serif" fill="black" text-anchor="middle" dominant-baseline="central">Bedroom</text>
+  </g>
+</svg>@

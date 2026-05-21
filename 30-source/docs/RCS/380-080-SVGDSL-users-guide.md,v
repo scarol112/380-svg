@@ -1,0 +1,5223 @@
+head	1.39;
+access;
+symbols;
+locks
+	scarol:1.39; strict;
+comment	@# @;
+
+
+1.39
+date	2026.05.21.12.59.45;	author scarol;	state Exp;
+branches;
+next	1.38;
+
+1.38
+date	2026.05.21.12.26.13;	author scarol;	state Exp;
+branches;
+next	1.37;
+
+1.37
+date	2026.05.21.11.46.49;	author scarol;	state Exp;
+branches;
+next	1.36;
+
+1.36
+date	2026.05.21.10.36.04;	author scarol;	state Exp;
+branches;
+next	1.35;
+
+1.35
+date	2026.05.21.01.24.40;	author scarol;	state Exp;
+branches;
+next	1.34;
+
+1.34
+date	2026.05.15.15.52.44;	author scarol;	state Exp;
+branches;
+next	1.33;
+
+1.33
+date	2026.05.14.13.05.27;	author scarol;	state Exp;
+branches;
+next	1.32;
+
+1.32
+date	2026.05.14.03.32.57;	author scarol;	state Exp;
+branches;
+next	1.31;
+
+1.31
+date	2026.05.14.02.55.17;	author scarol;	state Exp;
+branches;
+next	1.30;
+
+1.30
+date	2026.05.13.21.14.42;	author scarol;	state Exp;
+branches;
+next	1.29;
+
+1.29
+date	2026.05.13.20.10.26;	author scarol;	state Exp;
+branches;
+next	1.28;
+
+1.28
+date	2026.05.13.19.11.29;	author scarol;	state Exp;
+branches;
+next	1.27;
+
+1.27
+date	2026.05.13.02.53.21;	author scarol;	state Exp;
+branches;
+next	1.26;
+
+1.26
+date	2026.05.12.18.53.20;	author scarol;	state Exp;
+branches;
+next	1.25;
+
+1.25
+date	2026.05.12.16.25.07;	author scarol;	state Exp;
+branches;
+next	1.24;
+
+1.24
+date	2026.05.12.15.40.30;	author scarol;	state Exp;
+branches;
+next	1.23;
+
+1.23
+date	2026.05.11.19.13.39;	author scarol;	state Exp;
+branches;
+next	1.22;
+
+1.22
+date	2026.05.11.19.06.10;	author scarol;	state Exp;
+branches;
+next	1.21;
+
+1.21
+date	2026.05.10.22.46.09;	author scarol;	state Exp;
+branches;
+next	1.20;
+
+1.20
+date	2026.05.07.02.53.09;	author scarol;	state Exp;
+branches;
+next	1.19;
+
+1.19
+date	2026.05.03.01.57.48;	author scarol;	state Exp;
+branches;
+next	1.18;
+
+1.18
+date	2026.05.02.17.29.56;	author scarol;	state Exp;
+branches;
+next	1.17;
+
+1.17
+date	2026.05.02.11.15.05;	author scarol;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2026.04.30.02.03.02;	author scarol;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2026.04.29.23.42.31;	author scarol;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2026.04.29.22.24.20;	author scarol;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2026.04.29.21.53.19;	author scarol;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2026.04.29.21.21.49;	author scarol;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2026.04.26.17.20.04;	author scarol;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2026.04.26.15.03.31;	author scarol;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2026.04.26.03.29.53;	author scarol;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2026.04.24.14.27.32;	author scarol;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2026.04.21.15.40.29;	author scarol;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2026.04.21.15.38.38;	author scarol;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2026.04.21.15.27.45;	author scarol;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2026.04.20.19.28.49;	author scarol;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2026.04.20.18.34.22;	author scarol;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2026.04.20.17.16.50;	author scarol;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2026.04.20.15.45.22;	author scarol;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.39
+log
+@Remove <br /> tags from TOC entries; add blank line before and after every <div> and </div> tag.
+@
+text
+@<!-- $Source: /srv/380-svg/30-source/docs/RCS/380-080-SVGDSL-users-guide.md,v $ -->
+# SVG DSL User Guide
+
+A reference manual for the SVG DSL, a small text-based language for producing
+Scalable Vector Graphics (SVG) drawings. You write drawing commands in a `.dsl`
+file, run the `svgdsl` renderer, and view the result in any browser.
+
+---
+
+## Table of contents
+
+**Part I — Getting started**
+
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+
+1. Introduction
+1.1 What SVG DSL is
+1.2 Workflow
+1.3 Conventions used in this guide
+2. Overview
+2.1 Tutorial: quick start
+2.2 Running the program
+2.3 CLI options
+2.4 The browser viewer
+2.5 Output files
+
+</div>
+
+**Part II — Language overview**
+
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+
+3. Language overview
+3.1 Drawing statements
+3.2 Text statements
+3.3 Directives
+3.4 Numeric variables and math
+3.5 String variables and string functions
+3.6 Tuples
+3.7 Control flow
+3.8 Named functions
+3.9 Debugging statements
+
+</div>
+
+**Part III — Language reference**
+
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+
+4. Language reference
+4.1 Statement structure
+4.2 Comments and statement separators
+4.3 Measurements
+4.4 Numbers
+4.5 Strings
+4.6 Tuples
+4.7 Variable assignment and auto-typing
+4.8 Variable substitution and inline expressions
+4.9 System variables
+4.10 Built-in functions
+4.11 Coordinates and absolute placement
+4.12 Per-element color override (C=)
+4.13 Element naming (@@name)
+4.14 Line weight and dash patterns
+4.15 Drawing cursor and direction
+4.16 Control-flow syntax
+4.17 Function definition syntax
+4.18 Multiple statements per line
+4.19 Tutorial: building up a drawing
+
+</div>
+
+**Part IV — Alphabetical reference**
+
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+
+5. Alphabetical reference: statements & directives
+5.1 arc
+5.2 arrow
+5.3 circle
+5.4 color
+5.5 def
+5.6 dimensions
+5.7 direction
+5.8 door
+5.9 elementid
+5.10 for
+5.11 if / elif / else
+5.12 include
+5.13 label
+5.14 line
+5.15 lineto
+5.16 moveto
+5.17 point
+5.18 rect
+5.19 return
+5.20 showcornerxy
+5.21 textappend
+5.22 textbox
+5.23 textbreak
+5.24 textline
+5.25 textstyle
+5.26 wall
+5.27 window
+5.28 Tutorial: parametric reuse
+
+</div>
+
+**Part V — Debugging**
+
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+
+6. Debugging overview
+6.1 Visual debugging directives
+6.2 Execution control
+6.3 Variable inspection
+6.4 Trace mode
+6.5 Where to find full detail
+
+</div>
+
+---
+
+## 1. Introduction
+
+### 1.1 What SVG DSL is
+
+SVG DSL is a small domain-specific language for producing **Scalable Vector
+Graphics (SVG)** images from a text description. The pipeline is:
+
+```
+your-file.dsl  ──►  svgdsl  ──►  output.svg  ──►  any browser
+```
+
+You write drawing commands — lines, rectangles, walls, doors, arcs, labels,
+text — in a plain-text `.dsl` file. The `svgdsl` renderer converts the file
+into a self-contained SVG document. The SVG opens directly in any web browser;
+no plug-ins, no build pipeline.
+
+The language is small, declarative, and side-effect oriented. There is a
+drawing **cursor** that advances after most statements, a current drawing
+**direction**, and a small set of toggleable display states (element IDs,
+dimension labels, corner-coordinate markers). On top of that sit numeric,
+string, and tuple variables, `if`/`for` control flow, and user-defined
+functions for reuse.
+
+### 1.2 Workflow
+
+The intended development loop is:
+
+1. **Start the browser viewer** (see §[2.4](#24-the-browser-viewer)). It auto-refreshes every two seconds.
+2. **Edit** the `.dsl` source file in your editor of choice.
+3. **Run the renderer** (see §[2.2](#22-running-the-program)) to overwrite `output.svg`.
+4. **View** — the viewer picks up the new file automatically.
+5. **Iterate** — repeat until the drawing looks right.
+
+This loop is deliberately short. Most users alt-tab between editor and browser
+and re-run the renderer after each significant change.
+
+### 1.3 Conventions used in this guide
+
+| Notation in this guide | Meaning |
+|---|---|
+| `keyword` | A literal keyword in DSL source |
+| ***param*** | A required parameter — replace with your own value |
+| [`optional`] | An optional parameter (brackets are not typed) |
+| `alt1 \| alt2` | Choose one of the alternatives |
+| §N.N | Cross-reference to a section of this guide |
+| Aliases | Most statements and directives have short aliases (e.g. `r` for `rect`). Full names are documented first; aliases follow. |
+
+Placeholders are written in ***bold italic*** so they render reliably in any
+markdown viewer. Some renderers eat literal angle-bracket placeholders such
+as the older "angle-name-angle" form because the brackets look like HTML
+tags, so the guide avoids that style for placeholder names.
+
+Example snippets are valid DSL unless explicitly marked otherwise. Snippets
+that demonstrate an error are flagged with a comment such as `# ERROR`.
+
+---
+
+## 2. Overview
+
+### 2.1 Tutorial: quick start
+
+Create a file `hello.dsl` containing:
+
+```
+rect 6 4 "hello"
+direction 180
+line 6
+direction 270
+line 4
+```
+
+Render it:
+
+```
+bin/380-010.sh hello.dsl
+```
+
+(or `python -m svgdsl.cli hello.dsl` if you prefer the Python entry point).
+You should see:
+
+```
+Wrote output.svg
+```
+
+Open `assets/380-030.html` in a browser. The viewer reloads every two seconds
+and will display your drawing — a labelled 6×4-foot rectangle with two short
+lines that close it on the bottom and left.
+
+That's the entire loop. The rest of this guide expands on what each part of
+that snippet means and what else you can do.
+
+### 2.2 Running the program
+
+The renderer is invoked in three equivalent ways:
+
+#### 2.2.1 Shell driver (recommended)
+
+```
+bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
+```
+
+This is a thin wrapper around the Python entry point. The first positional
+argument is your DSL source; the second (optional) is the SVG output path.
+
+#### 2.2.2 Python module
+
+```
+python -m svgdsl.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+```
+
+Or with `uv`:
+
+```
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+```
+
+#### 2.2.3 Stdin
+
+Omit the input file argument and the renderer reads DSL from standard input:
+
+```
+cat myfile.dsl | python -m svgdsl.cli -o out.svg
+echo 'rect 4 3 "test"' | python -m svgdsl.cli
+```
+
+Include directives in stdin mode resolve relative to the current working
+directory.
+
+### 2.3 CLI options
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `-o`, `--output` | `output.svg` | Path to the SVG file the renderer writes. |
+| `-p`, `--paper`  | `letter` | Paper size: `letter` (11×8.5 in, 1056×816 px) or `tabloid` (17×11 in, 1632×1056 px). Always landscape. |
+
+The drawing is auto-scaled to fit the chosen page with 0.5-inch margins on all
+sides (see §[2.5](#25-output-files)).
+
+### 2.4 The browser viewer
+
+`assets/380-030.html` is a minimal SVG viewer that:
+
+- displays `../output.svg` by default,
+- reloads it automatically every **2 seconds**,
+- has a path field in the toolbar — type a different relative or absolute path
+  to view a different SVG file.
+
+The viewer is plain HTML/JS, with no dependencies. Open it once and leave it
+in a side window; each new render appears within a second or two of being
+written.
+
+If your browser is on Windows and the file lives in WSL, open the viewer
+through the Windows browser (e.g.
+`file://wsl.localhost/Ubuntu/srv/380-svg/30-source/assets/380-030.html`).
+Linux browsers running inside WSL can also display it but use the X server
+chain, which is often slower.
+
+### 2.5 Output files
+
+The renderer writes a single self-contained SVG file. Its top-level structure
+is:
+
+```xml
+<svg width="11in" height="8.5in" viewBox="0 0 1056 816">
+  <defs> ... arrowhead and pattern markers ... </defs>
+  <g id="drawing" transform="translate(tx,ty) scale(k)">
+    ... all geometry, in feet, scaled and centred ...
+  </g>
+</svg>
+```
+
+Notable properties:
+
+- **Internal units are feet.** Every length, position, and dimension you write
+  in DSL is interpreted in feet (with optional inch/px suffixes — see
+  §[4.3](#43-measurements)). The renderer applies a single `scale()` transform at
+  the end, so the SVG itself is unitless inside the `<g>`.
+- **Auto-scale.** The renderer computes a uniform scale factor so the
+  drawing's bounding box fits within an 8×10-inch (or 16×10-inch for tabloid)
+  print rectangle. The drawing is centred on the page.
+- **Canvas origin.** The point `(0, 0)` in DSL coordinates is the top-left
+  corner of the bounding box of the first element. All `A=` coordinates and
+  `$__cursorx`/`$__cursory` are relative to this origin.
+- **Annotations.** Element ID numbers (red) and dimension labels (grey) are
+  emitted alongside each element when their respective directives are on.
+  Both default to **off** — turn them on with `elementid on` / `dimensions on`
+  (or the aliases `eid on` / `dim on`) at the top of the file while you are
+  developing a drawing. See §[5.6](#56-dimensions) and
+  §[5.9](#59-elementid).
+
+---
+
+## 3. Language overview
+
+This section is a survey: each subsection introduces a category of statements
+and points to the alphabetical reference
+(§[5](#5-alphabetical-reference-statements--directives)) for full detail.
+
+### 3.1 Drawing statements
+
+These statements emit visible geometry on the canvas. Most advance the cursor
+along the current drawing direction by their length.
+
+| Statement | Alias | Purpose |
+|---|---|---|
+| `line` | `l` | Straight line in the current direction. |
+| `rect` | `r` | Open rectangle, `length × width`. |
+| `wall` | `w` | Filled rectangle for structural walls. |
+| `door` | `d` | Door slab plus swing arc. |
+| `window` | `wi` | Pair of parallel lines across an opening. |
+| `arc` | `a` | Arc on a circle of given radius and sweep. |
+| `arrow` | `aw` | Line with an arrowhead at the end. |
+| `circle` | `ci` | Open circle. Does **not** advance the cursor. |
+| `point` | `p` | Small dot. Does **not** advance the cursor. |
+| `label` | `lb` | Text annotation. Does **not** advance the cursor. |
+| `moveto` | `mto` | Jump the cursor without drawing. |
+| `lineto` | `lto` | Draw a line from the cursor to an absolute destination. |
+
+Full reference: §[5](#5-alphabetical-reference-statements--directives).
+
+### 3.2 Text statements
+
+Text statements layer formatted text on or around named geometry.
+
+| Statement | Alias | Purpose |
+|---|---|---|
+| `textline` | `txl` | Text alongside a named element, rotated to match. |
+| `textbreak` | `txbr` | Text with a white-mask box that visually breaks a line. |
+| `textbox` | `tbox` | Stroked rectangle with text inside; advances cursor like `rect`. |
+| `textappend` | `tapp` | Append a text row to a named rect or textbox. |
+
+See §[4.5](#45-strings) for inline markup (`*italic*`, `**bold**`, `\n`).
+Full reference starts at §[5.21](#521-textappend).
+
+### 3.3 Directives
+
+Directives change interpreter or renderer state. They do not themselves emit
+geometry.
+
+| Directive | Alias | Effect |
+|---|---|---|
+| `direction` | `dir` | Set the drawing direction in degrees (0 = up, 90 = right, …). |
+| `color` | `col` | Set the stroke color for subsequent elements. |
+| `elementid` | `eid` | Show / hide element ID numbers. |
+| `dimensions` | `dim` | Show / hide dimension labels. |
+| `showcornerxy` | `sxy` | Show / hide cursor-position markers at direction changes. |
+| `include` | `inc` | Insert the contents of another DSL file. |
+| `textstyle` | `tstyle` | Set default font size and family for text elements. |
+
+Full reference: §[5](#5-alphabetical-reference-statements--directives).
+
+### 3.4 Numeric variables and math
+
+Numeric variables hold floating-point values. Assign with `=`, reference with
+`$name` or `${name}`, and use `(expr)` for inline arithmetic.
+
+```
+roomw = 14
+roomh = 11
+half  = $roomw * 0.5
+rect (roomw - 2) $roomh "Living"
+```
+
+The supported operators are `+ - * /` with standard precedence. Compound
+assignment uses `+=` and `-=`. Full grammar: §[4.8](#48-variable-substitution-and-inline-expressions).
+
+### 3.5 String variables and string functions
+
+Strings hold arbitrary text. They are declared with `string` or auto-typed
+from a quoted RHS:
+
+```
+string title = "Living Room"
+greeting = "Hello, world"
+```
+
+Concatenation uses `+` or `+=`. Built-in functions `len`, `substr`, `match`,
+`replace` operate on strings, with regex semantics for `match` and `replace`.
+Full reference: §[4.10](#410-built-in-functions).
+
+### 3.6 Tuples
+
+A tuple is an ordered sequence of numeric and/or string members. Tuples are
+written `(a, b)`, indexed `t[i]`, and support element-wise math:
+
+```
+tuple p = (3, 4)
+tuple q = p + (1, 1)            # (4, 5)
+numeric x = p[0]
+```
+
+Tuples interoperate with coordinate-bearing statements: any 2-tuple can be
+passed where a coordinate is expected. Full reference: §[4.6](#46-tuples).
+
+### 3.7 Control flow
+
+`if`/`elif`/`else` and `for ... to ... step` are supported, with brace-delimited
+bodies:
+
+```
+if (n == 3) {
+    color red
+} elif (n == 2) {
+    color blue
+} else {
+    color green
+}
+
+for i = 0 to 5 {
+    line 1
+}
+```
+
+Bare blocks (`{ ... }` with no header) group statements visually. They do
+**not** introduce a new variable scope. Full reference: §[4.16](#416-control-flow-syntax).
+
+### 3.8 Named functions
+
+User-defined functions encapsulate reusable drawing logic. Define with `def`,
+return with `return`:
+
+```
+def room(w, h, name) {
+    rect w h $name
+}
+
+room(12, 10, "Living")
+room(8, 8, "Bedroom")
+```
+
+Parameters and `=`-assignments inside the body are **local** — they do not
+overwrite globals of the same name. Drawing statements have their normal
+side effects (they update the cursor and place geometry).
+
+Full reference: §[4.17](#417-function-definition-syntax) and §[5.5](#55-def).
+
+### 3.9 Debugging statements
+
+These directives are aids for development and don't affect the final SVG by
+themselves:
+
+| Directive | Purpose |
+|---|---|
+| `stop` / `breakpoint` / `bp` | Pause execution; open the interactive REPL on a terminal. |
+| `start` | Resume execution after a `stop`. |
+| `trace on \| off` | Echo each DSL line to stderr as it executes. Alias `tr`. |
+| `vardump [path]` | Print a table of all variable values to stderr or a file. Alias `vd`. |
+| `vartrace [(...)] [path]` | Record variable writes; print summary at end. |
+
+Full reference: §[6](#6-debugging-overview). The interactive REPL, step modes,
+and command set are documented in `docs/debugging-guide.md`.
+
+---
+
+## 4. Language reference
+
+This section defines the **generic** structure of the DSL: tokens, expressions,
+variables, and control flow. The per-statement reference is in
+§[5](#5-alphabetical-reference-statements--directives).
+
+### 4.1 Statement structure
+
+Every DSL statement has the form:
+
+> ***keyword*** [***required parameters***] [***optional parameters***]
+
+- ***keyword*** is a directive name, statement name, or an alias
+  (case-insensitive).
+- Required parameters come in a fixed order documented per-statement in
+  §[5](#5-alphabetical-reference-statements--directives).
+- Optional parameters can appear in any order after the required ones.
+
+The optional parameters fall into a small, shared vocabulary:
+
+| Token | Meaning | Applies to |
+|---|---|---|
+| ***n***`px` | Line weight in SVG pixels | All geometry |
+| `dashed`, `shortdash`, `dotted`, `center`, `hidden` | Dash pattern | All geometry |
+| `C=`***color*** | Per-element stroke color override | All geometry |
+| `A=`***h***`,`***v*** | Absolute placement, in feet from canvas origin | Most elements |
+| `@@`***name*** | Register element under a name for later text overlays | Most elements |
+| `dim=on` / `dim=off` | Per-element dimension-label override | All annotated elements |
+| `"text"` | Inline label (passed to renderers that accept one) | `rect`, `textbox`, `label`, text statements |
+| `font=`***family*** | Font family override | Text elements, `label` |
+
+Numeric parameters are written either as a literal measurement
+(§[4.3](#43-measurements)), a variable reference
+(§[4.8](#48-variable-substitution-and-inline-expressions)), or an inline
+expression `(...)`.
+
+### 4.2 Comments and statement separators
+
+- A `#` outside a quoted string starts a line comment.
+- A blank line is ignored.
+- A `;` outside a quoted string separates statements on the same line.
+
+```
+# whole-line comment
+rect 12 10 "Living Room"        # trailing comment
+direction 90; line 10; direction 0; line 8
+label "hello; world"            # ';' inside quotes is literal
+```
+
+### 4.3 Measurements
+
+Lengths and coordinates are in **feet** unless a suffix is given. Inches,
+mixed feet/inches, and SVG pixels are supported.
+
+| Written | Meaning |
+|---|---|
+| `12` | 12 feet |
+| `12.5` | 12.5 feet |
+| `12'` | 12 feet (explicit suffix) |
+| `6"` | 6 inches = 0.5 feet |
+| `12'6"` | 12 feet 6 inches = 12.5 feet |
+| `2px` | 2 SVG pixels — **line-weight only**, never lengths |
+| `0px` | Invisible. No geometry is drawn and no annotations are emitted; the cursor still advances on length-bearing elements. |
+
+Internal storage is always feet (float). The renderer applies one scale
+transform at the end to map feet to SVG user units (96 dpi).
+
+### 4.4 Numbers
+
+Numeric literals are decimal floats: `12`, `12.5`, `-3`, `0.25`.
+
+**Leading zero required for fractions less than one.** The tokenizer matches
+numbers as `digits[.digits]`, so a bare `.5` is not a number — write `0.5`
+instead. The same rule applies inside inline `(...)` expressions and inside
+string-formatted dimension arguments.
+
+```
+line 0.5          # OK
+line .5           # ERROR — tokenized as something other than a number
+x = 0.25          # OK
+y = (.25 * 2)     # ERROR — same reason
+```
+
+Scientific notation is supported in expression contexts (`1e3`, `2.5e-2`) but
+should not appear in inline `(...)` expressions that are spliced into other
+statements — the variable substitution layer would interpret the `e` as a
+bare identifier. Use `($var)` to wrap any value that may need
+re-substitution.
+
+### 4.5 Strings
+
+A string literal is delimited by double quotes (`"..."`) or single quotes
+(`'...'`). Single quotes are only treated as string delimiters when they
+cannot be a feet-or-inches measurement, so `wall 12'6"` is unaffected.
+
+Inside any quoted string, the following inline markup is recognised by the
+renderer:
+
+| Markup | Renders as |
+|---|---|
+| `*text*` | *italic* |
+| `**text**` | **bold** |
+| `***text***` | ***bold italic*** |
+| `\*` | literal asterisk |
+| `\n` | line break |
+
+Unclosed markup is treated as literal text. Inline markup works in `label`,
+`rect`-with-label, `textline`, `textbreak`, `textbox`, and `textappend`.
+
+### 4.6 Tuples
+
+A tuple is an ordered sequence of numeric and/or string members, written
+with parentheses or a bare-comma form:
+
+```
+tuple p = (3, 4)
+tuple q = 1, 2, 3
+tuple m = ("label", 5)
+tuple empty
+```
+
+#### Indexing
+
+`t[i]` reads member `i` (0-based). Works in `(expr)` arithmetic and on the RHS
+of numeric or string assignments. `${name[i]}` interpolation is **not**
+supported; copy the member to a scalar first.
+
+```
+numeric x = p[0]
+numeric sum = (p[0] + p[1])
+label "x=${x}"
+```
+
+#### Element assignment
+
+`t[i] = expr` changes member `i`. The expression must match the member's
+existing type (numeric or string).
+
+```
+p[0] = 10
+p[1] = (p[0] * 2)               # p is now (10, 20)
+```
+
+#### Element-wise math
+
+`+ - * /` on tuples operate member-by-member. The result length is
+`min(len(a), len(b))`. A scalar on one side is applied to every member of the
+tuple.
+
+```
+tuple a = (1, 2, 3)
+tuple b = (10, 20)
+tuple c = a + b                 # (11, 22) — result length 2
+tuple d = a * 3                 # (3, 6, 9) — same multiplication applied to each member
+```
+
+#### Unpacking
+
+```
+tuple p = (3, 4)
+x, y = p                         # x=3, y=4
+(a, b) = (5, 6)                  # parentheses on LHS also accepted
+```
+
+The number of names on the LHS must equal `len(tuple)`.
+
+#### Spread (tuple-from-tuple)
+
+```
+tuple p = (1, 2)
+tuple q = (p, 3)                 # (1, 2, 3) — spread of p
+```
+
+#### As coordinate
+
+Any place that accepts a 2-element coordinate accepts a 2-tuple in three
+forms:
+
+```
+tuple origin = 1, 1
+r 10 8 $origin
+r 10 8 (2, 2)
+r 10 8 2,2
+```
+
+#### Tuple system variables
+
+`$__cursor` is a 2-element tuple updated after every placed element to reflect
+the current cursor position. See §[4.9](#49-system-variables).
+
+### 4.7 Variable assignment and auto-typing
+
+A variable is assigned with `name = expr`. The type is **inferred** from the
+right-hand side:
+
+| RHS form | Inferred type | Example |
+|---|---|---|
+| Numeric literal or expression | numeric | `x = 12`, `y = (a + 1)` |
+| Quoted string or string expression | string | `s = "hello"`, `s2 = s + " world"` |
+| Tuple literal `(a, b)` or bare-comma `1, 2` | tuple | `p = (3, 4)`, `q = 1, 2, 3` |
+| Existing variable (bare name) | same type as that variable | `t = s` (string), `n = x` (numeric) |
+
+An explicit type declaration is also accepted, and gives a sensible default
+when no initializer is provided:
+
+```
+numeric x = 5                    # explicit numeric
+numeric y, z                     # default 0 each
+string title = "Plan A"          # explicit string
+string a, b, c                   # default "" each
+tuple coords = (3, 4)            # explicit tuple
+tuple empty                      # default ()
+```
+
+Once a variable has a type, assignments of a different type are rejected as a
+parse error. The right-hand side may use any of `+ - * /`, `(expr)`, variable
+references, and built-in calls — see §[4.8](#48-variable-substitution-and-inline-expressions) and §[4.10](#410-built-in-functions).
+
+Compound assignment:
+
+| Operator | Numeric | String | Tuple |
+|---|---|---|---|
+| `+=` | add | concatenate | element-wise add (with broadcast) |
+| `-=` | subtract | — *(error)* | element-wise subtract |
+| `*=` | — *(error on bare variables; see note)* | — | element-wise multiply |
+| `/=` | — | — | element-wise divide |
+
+`*=` and `/=` are only defined on tuple variables.
+
+Names starting with `__` (double underscore) are **reserved** for system
+variables and cannot be assigned to. Reserved keywords (`line`, `rect`, `if`,
+`def`, etc.) also cannot be assigned to.
+
+### 4.8 Variable substitution and inline expressions
+
+The DSL has **two** mechanisms for getting a variable's value into a
+statement:
+
+#### Substitution: `$name` and `${name}`
+
+`$name` (or `${name}` for embedded use) is a textual macro: the variable's
+formatted value is spliced into the source before parsing. This is the form
+used wherever a number, string, or tuple appears as a token in a statement.
+
+```
+rect $roomw $roomh
+line ${lw}px dashed
+label "${roomw}x${roomh} ft" center
+mto $cursor                      # tuple variable
+```
+
+#### Inline expressions: `(expr)`
+
+Wherever a number is allowed, `(expr)` is evaluated immediately. Bare
+identifiers **inside** the parentheses are variable references — no `$` is
+needed. `$name` and `${name}` *are* also accepted inside `(...)` (the
+variable-substitution layer runs first, then the expression is evaluated), so
+either form works:
+
+```
+n = 8
+line (n/2)                       # length 4 — bare name
+line ($n / 2)                    # length 4 — $-form also works
+rect (roomw - 2) $roomh
+door 3 A=2,(roomh - 0.5)
+x = (a * (b + c))                # nested parens
+```
+
+Within numeric expressions the bare-name form is conventional and slightly
+preferred — it makes the expression read like ordinary arithmetic.
+
+Inline expressions support `+ - * /`, parentheses, comparisons `< > <= >= == !=`
+when used inside `if (...)` conditions, and the four built-in functions
+(§[4.10](#410-built-in-functions)). Tuple members `t[i]` are also recognised inside `(...)`.
+
+Parentheses inside double-quoted label strings are **literal text** — they
+are not evaluated.
+
+#### Which form to use
+
+| Context | Use | Example |
+|---|---|---|
+| Standalone numeric token | `$name` or `${name}` | `rect $w $h`, `line ${lw}px` |
+| Embedded into a longer token | `${name}` | `${lw}px`, `"${w}x${h} ft"` |
+| Inside `(expr)` arithmetic | bare name | `(n + 1)`, `(roomw * 0.5)` |
+| As a function argument | bare name | `len(s)`, `replace(s, "x", "y")` |
+| Inside an `if (...)` condition | bare name | `if (n == 3)`, `if (flag and not done)` |
+
+`$s` on a string variable splices the *raw* characters of the string into the
+source. That works when the splice forms a valid label, but it is **not** a
+substitute for a value reference: `len($s)` becomes `len(hello)`, which is a
+parse error. Use `len(s)` instead.
+
+### 4.9 System variables
+
+Names starting with `__` are managed by the interpreter and are **read-only**.
+Attempting to write to one is a parse error.
+
+| Variable | Alias | Type | Value |
+|---|---|---|---|
+| `$__cursorx` | `$__cx` | numeric | Cursor x in feet from canvas origin. |
+| `$__cursory` | `$__cy` | numeric | Cursor y in feet from canvas origin. |
+| `$__cursor` | — | tuple | 2-element `(cx, cy)`. Pass to coord-bearing statements as a whole; read members as `__cursor[0]` / `__cursor[1]` inside `(...)`. |
+| `$__dir` | — | numeric | Current drawing direction in degrees (0 = up, 90 = right, …). |
+| `$__mltodir` | — | numeric | Compass bearing of the most recent `moveto` or `lineto`, in degrees. |
+| `$__dsl_filename` | — | string | Filename of the DSL file currently being processed (just the filename, not the full path). |
+| `$__dsl_file_lineno` | — | numeric | Line number of the current statement. |
+| `$__date` | — | string | Today's date in `YYYY-MM-DD` form, captured at interpreter start. |
+
+Cursor, direction, and `__mltodir` update after every placed element or
+directive. Filename and line number update before each statement runs.
+
+```
+direction 90
+rect 12 10 "Living"
+point C=red A=$__cx,$__cy        # mark the cursor with a red dot
+label "dir=${__dir}" A=0,12
+```
+
+### 4.10 Built-in functions
+
+Four built-in functions operate on strings (and `len` also on tuples). They
+appear in expression contexts, not as statements. They are case-sensitive
+and reserved.
+
+| Function | Returns | Description |
+|---|---|---|
+| `len(s)` | numeric | Length of string `s`, or number of members in tuple `s`. |
+| `substr(s, start)` | string | Characters from index `start` (inclusive) to end. 0-based; negative `start` counts from the end. |
+| `substr(s, start, end)` | string | Characters from `start` (inclusive) to `end` (exclusive). |
+| `match(s, pattern)` | numeric | `1` if regex `pattern` matches *anywhere* in `s`, else `0`. Implemented with Python `re.search`. |
+| `replace(s, pattern, repl)` | string | Replace **all** non-overlapping regex `pattern` matches in `s` with `repl`. `repl` is a literal string but may contain backreferences `\1`, `\g<name>`. |
+
+```
+string title = "Master Bedroom"
+n = len(title)                           # 14
+if (match(title, "^Master")) {
+    label "starts with Master"
+}
+string clean = replace(title, "[^A-Za-z ]", "_")
+string first6 = substr(title, 0, 6)      # "Master"
+string last3  = substr(title, -3)        # "oom"
+```
+
+### 4.11 Coordinates and absolute placement
+
+Coordinates are 2-element values `h,v` in feet. They appear as:
+
+| Form | Where |
+|---|---|
+| `<h>,<v>` | Bare coordinate (e.g. `rect 10 8 2,2`) |
+| `(h,v)` | Parenthesised coordinate |
+| `A=<h>,<v>` | Absolute-position option on most elements |
+| `<h>,<v>,<h2>,<v2>` | 4-element rectangle corners (`rect` only) |
+
+The `A=<h>,<v>` option places an element at an **absolute** position measured
+in feet from the canvas origin (top-left of the bounding box of the very first
+element). After placement, the cursor advances to the element's end point just
+as it would for a non-absolute placement.
+
+```
+rect 12 10 "Living Room"
+door 3 right A=2,10                      # at (2 ft, 10 ft)
+window 4 A=22,3
+```
+
+If the **first** element uses `A=`, the canvas origin is set to `(0, 0)` and
+the `A=` coordinate is relative to that — so absolute coordinates remain
+predictable regardless of which element is placed first.
+
+### 4.12 Per-element color override (`C=`)
+
+`C=<value>` on a geometry element overrides the current `color` directive for
+that one element. The value is a named color or a quoted CSS color string:
+
+```
+line 12 C=red dashed
+rect 10 8 C="#ff8800" "Warm zone"
+door 3 right C="rgb(0,128,0)" A=2,10
+```
+
+Subsequent elements continue to use the directive color. To change the
+directive itself, use `color <value>` — see §[5.4](#54-color).
+
+### 4.13 Element naming (`@@name`)
+
+Any geometry element can be tagged with `@@<name>` at the end of its statement.
+The name is used to anchor text overlays (`textline`, `textbreak`, `textappend`)
+or to refer back to the element later.
+
+```
+line 14 @@corridor
+rect 10 8 @@kitchen "Kitchen"
+wall 8 0.5 @@north_wall
+```
+
+Names are case-sensitive identifiers (`[A-Za-z_][A-Za-z0-9_]*`). Re-using a
+name on a later element replaces the earlier registration. Names live for the
+entire interpreter run, including across `include` files.
+
+### 4.14 Line weight and dash patterns
+
+***n***`px` sets the stroke width of an element. The default is `1px`. `0px`
+is a special value: no geometry is drawn and no annotations are emitted, but
+the cursor still advances on length-bearing elements.
+
+Dash patterns are keyword tokens that any geometry element accepts:
+
+| Keyword | SVG `stroke-dasharray` | Typical use |
+|---|---|---|
+| `dashed` | `8,4` | General dashes |
+| `shortdash` | `4,4` | Short dashes |
+| `dotted` | `2,2` | Dots |
+| `center` | `12,3,2,3` | Center line |
+| `hidden` | `4,2` | Hidden / behind-wall |
+
+```
+line 12 dashed
+wall 6 0.5 dotted
+rect 10 8 hidden "Future Addition"
+```
+
+### 4.15 Drawing cursor and direction
+
+The interpreter maintains an implicit **cursor** at a feet-coordinate, and a
+**direction** in compass degrees. The default direction is `90` (rightward).
+
+| Direction value | Meaning | Unit vector in SVG (Y-down) |
+|---|---|---|
+| `0` | Up | `(0, -1)` |
+| `90` | Right (default) | `(1, 0)` |
+| `180` | Down | `(0, 1)` |
+| `270` | Left | `(-1, 0)` |
+
+Any float degree is accepted (arbitrary diagonal directions are valid). The
+`direction` directive sets the value; the cursor's position is updated by
+every length-bearing element.
+
+Statements that do **not** advance the cursor: `label`, `point`, `circle`,
+`textline`, `textbreak`, `textappend`, and the directives. `moveto` jumps the
+cursor without drawing; `lineto` draws a line to an absolute point and
+advances the cursor there.
+
+### 4.16 Control-flow syntax
+
+#### Brace placement rule
+
+An opening `{` must be the **last non-whitespace character** of its header
+line. A closing `}` must be the **first non-whitespace character** of its own
+line, optionally followed on the same line by `elif` or `else`. Braces inside
+quoted strings and `${name}` references are **not** block delimiters.
+
+#### Bare blocks
+
+```
+{
+    stmt1
+    stmt2
+}
+```
+
+Groups statements visually. **No new scope** — variables assigned inside are
+visible outside.
+
+#### `if` / `elif` / `else`
+
+```
+if (<condition>) {
+    ...
+} elif (<condition>) {
+    ...
+} else {
+    ...
+}
+```
+
+Any number of `elif` branches (including zero) and an optional `else`. Only
+the first matching branch runs. Conditions support `== != < > <= >=` and the
+logical operators `and or not`. The constants `True` and `False` evaluate to
+`1.0` and `0.0`.
+
+```
+flag = True
+if (flag and not (n > 5)) {
+    line 3
+}
+```
+
+#### `for` loops
+
+```
+for <var> = <start> to <end> [step <step>] {
+    ...
+}
+```
+
+- Both endpoints are **inclusive**.
+- Default `step` is `1`. Negative `step` counts down.
+- The loop variable persists after the loop, with its last value.
+- A loop with a direction mismatch (e.g. `for i = 5 to 0 step 1`) runs zero
+  times.
+- Maximum iteration count is 100 000.
+
+Expressions are allowed in `start`, `end`, and `step`:
+
+```
+n = 5
+for i = 0 to (n - 1) {
+    line 1
+}
+for x = 10 to 0 step -2 {
+    line $x
+}
+```
+
+### 4.17 Function definition syntax
+
+```
+def <name>(<param1>, <param2>, ...) {
+    ...
+    return <expr>
+}
+```
+
+- `def` must be at the top level or inside a bare block — not inside another
+  function.
+- The parameter list may be empty: `def draw_border() { ... }`.
+- The closing `}` follows the same brace rules as `if` and `for`.
+- A function with no `return` (or a bare `return`) yields `0.0` when called
+  as an expression.
+
+**Call as a statement** (return value discarded):
+
+```
+draw_border()
+draw_room(12, 10, "Living")
+```
+
+**Call as an expression** (return value used):
+
+```
+numeric area = compute_area(12, 10)
+numeric total = (compute_area(12, 10) + compute_area(8, 8))
+```
+
+**Return values:**
+
+```
+def add(a, b) {
+    return (a + b)                       # numeric
+}
+
+def greet(name) {
+    return "Hello, " + name              # string
+}
+
+def make_pt(x, y) {
+    return (x, y)                        # tuple — parens required
+}
+```
+
+**Scope rules:**
+
+- Parameters and `=`-assignments inside a function are **local**. They do not
+  overwrite globals of the same name.
+- Reads fall through to globals if the name is not local.
+- System variables are always global. Writes to drawing state (cursor,
+  direction) via `mto`, `dir`, etc. take effect on the real canvas.
+- `vardump` shows globals only; `vartrace` does not fire on local writes.
+
+**Recursion** is allowed; the maximum call depth is **256**.
+
+```
+def factorial(n) {
+    if (n <= 1) {
+        return 1
+    }
+    return (n * factorial((n - 1)))
+}
+numeric result = factorial(6)            # 720
+```
+
+### 4.18 Multiple statements per line
+
+A `;` outside quoted strings separates statements:
+
+```
+direction 90; line 10; direction 0; line 8
+elementid off; dimensions off
+point C=red A=2,3; point C=blue A=5,6
+```
+
+A `;` inside a `"..."` is literal. A `;` inside a `(expr)` is a parse error —
+inline expressions don't span statement boundaries.
+
+### 4.19 Tutorial: building up a drawing
+
+This tutorial walks through a small, complete drawing and then evolves it.
+Type each version into `build.dsl` and render with `bin/380-010.sh build.dsl`;
+keep the browser viewer open and watch the SVG change.
+
+**Step 1 — one rectangle, with annotations turned on.**
+
+```
+eid on; dim on                             # eid and dim both default to off
+rect 12 10 "Living"
+```
+
+![Build-up tutorial step 1](images/build-step1.svg)
+
+You should see a 12×10 rectangle, labelled, with a red element ID near its
+top-left corner and two grey dimension labels (`12'` and `10'`). The renderer
+auto-scales so the shape fills most of the page.
+
+If you omit the `eid on; dim on` line, the rectangle still draws but without
+the ID and dimension annotations — both directives default to off so that
+finished drawings are clean. Most of the tutorials and examples in this guide
+assume you've turned them on during development.
+
+**Step 2 — add a second room next to it.**
+
+```
+eid on; dim on
+rect 12 10 "Living"
+rect 8  10 "Bedroom"
+```
+
+![Build-up tutorial step 2](images/build-step2.svg)
+
+The cursor advanced rightward (default direction) after the first `rect`, so
+the second one is placed flush against it. The page rescales so both fit.
+
+**Step 3 — add a wall and a door.**
+
+```
+eid on; dim on
+wall 12                                    # exterior wall along the top
+rect 12 10 "Living"
+rect 8  10 "Bedroom"
+door 3 right A=2,10                        # door at (2 ft, 10 ft) into living
+```
+
+![Build-up tutorial step 3](images/build-step3.svg)
+
+Two notes here:
+
+- `wall` defaults to 6-inch thickness when only ***length*** is given.
+- The `A=2,10` places the door at an absolute position; the cursor that
+  resulted from the two `rect`s is ignored for that one element, then the
+  cursor lands at the door's end point.
+
+**Step 4 — add a window using `showcornerxy` to verify position.**
+
+```
+eid on; dim on
+sxy on
+wall 20 0.5                                # one combined exterior wall
+rect 12 10 "Living"
+rect 8  10 "Bedroom"
+door 3 right A=2,10
+window 4 A=15,10                           # in the bedroom's bottom wall
+sxy off
+```
+
+![Build-up tutorial step 4](images/build-step4.svg)
+
+Render with `sxy on` to see grey leader lines and `(x, y)` labels at every
+explicit direction change and at every `point`. Drop in a couple of `point`
+elements at suspected corners if you want to verify them — the implicit
+corners of `rect`, `wall`, and `window` are not marked. Toggle `sxy off`
+before delivering the file — the markers are a development aid.
+
+**Step 5 — parameterise.**
+
+```
+eid on; dim on
+livingw = 12
+bedw    = 8
+roomh   = 10
+wallt   = 0.5
+
+wall (livingw + bedw) $wallt
+rect $livingw $roomh "Living"
+rect $bedw    $roomh "Bedroom"
+door 3 right A=2,$roomh
+window 4 A=(livingw + 3),$roomh
+```
+
+![Build-up tutorial step 5](images/build-step5.svg)
+
+Now you can change `livingw` or `roomh` in one place and the whole drawing
+adjusts. This is the foundation for the parametric-reuse tutorial in
+§[5.28](#528-tutorial-parametric-reuse).
+
+---
+
+## 5. Alphabetical reference: statements & directives
+
+Each entry covers:
+
+- **Synopsis** — required parameters first, optional parameters in `[…]`.
+- **Aliases** — short forms accepted in place of the full name.
+- **Parameters** — what each one means, defaults, and accepted ranges.
+- **Effect** — what is drawn, and any cursor / system-state changes.
+- **Examples** — minimal and realistic.
+
+Entries are alphabetised by canonical (full) name. Debugging directives
+(`stop`, `start`, `breakpoint`, `bp`, `trace`, `vardump`, `vartrace`) are
+documented separately in §[6](#6-debugging-overview).
+
+### 5.1 arc
+
+**Category:** Drawing statement (element)  
+**Aliases:** `a`  
+**Synopsis:** `arc` ***radius*** ***sweep*** [`ccw`] [`arcstart=`***deg***] [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A circular arc of given ***radius*** and ***sweep*** (degrees), drawn
+clockwise from its start angle by default. The arc lies on a circle whose
+**centre** is the current cursor position (or the `A=` point if given).
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***radius*** | yes | Distance from the centre of the circle to the arc, in feet. |
+| ***sweep*** | yes | Length of the arc, in degrees of the circle. `90` is a quarter, `180` a semicircle, `360` a full loop. |
+| `ccw` | no | Sweep counter-clockwise instead of the default clockwise. |
+| `arcstart=`***deg*** | no | Angular position on the circle where the arc *begins*, in compass degrees (`0` = top / 12 o'clock, increasing clockwise). Default `0`. |
+
+**Effect.** Places an arc element. The cursor moves to the arc's actual end
+point on the circle, computed from ***arcstart*** plus the sweep direction
+and amount — it does **not** advance by `2r` in the drawing direction. The
+bounding box used for auto-scale and dimension placement reflects the true
+arc geometry.
+
+#### Concepts
+
+The four arc parameters work together like this:
+
+![Arc anatomy: center, radius, arcstart, sweep](images/arc-anatomy.svg)
+
+- **Centre** — the centre of the circle the arc lies on. Always the current
+  cursor position, or the `A=` override.
+- **Radius** — the distance from the centre to every point on the arc.
+- **arcstart** — the compass angle on the circle where the arc begins. `0` is
+  straight up (12 o'clock), `90` is east (3 o'clock), `180` is south
+  (6 o'clock), `270` is west (9 o'clock). Default `0`.
+- **Sweep** — how far the arc travels around the circle, in degrees. Clockwise
+  by default; add `ccw` to reverse.
+
+Four arcs at different arcstart values (each `sweep=90`, clockwise):
+
+![Four arcstart positions](images/arc-arcstart.svg)
+
+The `ccw` keyword reverses the sweep direction:
+
+![Clockwise vs counter-clockwise](images/arc-ccw.svg)
+
+```
+arc 3 90                         # quarter circle, 3 ft radius, clockwise from 12 o'clock
+arc 5 180                        # semicircle, 5 ft radius, clockwise from 12 o'clock
+arc 3 90 ccw                     # quarter circle, counter-clockwise from 12 o'clock
+arc 4 90 arcstart=90             # quarter circle starting at 3 o'clock (right)
+arc 3 180 ccw arcstart=180       # semicircle ccw starting at 6 o'clock
+```
+
+### 5.2 arrow
+
+**Category:** Drawing statement (element)  
+**Aliases:** `aw`  
+**Synopsis:** `arrow` ***length*** [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A straight line in the current direction with an SVG arrowhead at the end.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***length*** | yes | Length in feet (or feet/inches/px). |
+
+**Effect.** Same cursor behaviour as `line`: advances by `length`.
+
+```
+arrow 6
+aw 4 A=0,15                      # absolute placement
+arrow 8 2px C=red                # 2-pixel red arrow
+```
+
+### 5.3 circle
+
+**Category:** Drawing statement (element)  
+**Aliases:** `ci`  
+**Synopsis:** `circle` ***radius*** [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+An open (unfilled) circle. The circle is centred on the current cursor (or on
+the `A=<h>,<v>` point if given). **The cursor does not advance** — `circle`
+marks a position without disturbing the drawing flow.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***radius*** | yes | Radius in feet. |
+
+```
+circle 2                         # 2 ft circle at cursor
+circle 1.5 2px C=blue
+circle 3 dashed A=10,5
+```
+
+### 5.4 color
+
+**Category:** Directive  
+**Aliases:** `col`  
+**Synopsis:** `color` ***value***
+
+Sets the stroke color for all subsequent geometry. Default is `black`. Wall
+fill remains dark grey regardless of `color`.
+
+| Value form | Example |
+|---|---|
+| Named color | `color red` |
+| Quoted hex | `color "#ff0000"` |
+| Quoted RGB | `color "rgb(0,128,0)"` |
+| Reset | `color black` |
+
+To override the directive for a single element only, use `C=<value>` on that
+element — see §[4.12](#412-per-element-color-override-c).
+
+```
+color red
+rect 10 8 "Hot zone"
+color blue
+line 12
+color black
+```
+
+### 5.5 def
+
+**Category:** Function definition (control flow)  
+**Synopsis:**
+
+```
+def name(p1, p2, ...) {
+    ...
+    return expr
+}
+```
+
+(In the synopsis above, `name`, `p1`, `p2`, and `expr` are placeholders; the
+opening `{` must be the last non-whitespace character of its line.)
+
+Defines a reusable function. See §[4.17](#417-function-definition-syntax) for
+the full rules.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***name*** | yes | Identifier. Cannot start with `__` or shadow a keyword/built-in. |
+| `<p1>, ...` | no | Zero or more parameter names. |
+
+**Effect.** Registers the function. Function bodies do not execute at definition time.
+Each call creates a fresh local-variable scope.
+
+```
+def room(w, h, name) {
+    rect w h $name
+    direction 180; line w; direction 270; line h; direction 90
+}
+
+room(12, 10, "Living")
+room(8,  10, "Bedroom")
+```
+
+A function that returns a value is callable in an expression:
+
+```
+def area(w, h) {
+    return (w * h)
+}
+numeric a = area(12, 10)         # 120
+```
+
+### 5.6 dimensions
+
+**Category:** Directive  
+**Aliases:** `dim`  
+**Synopsis:** `dimensions on|off`
+
+Toggles automatic dimension labels on subsequent elements. **Default is
+`off`** — call `dimensions on` (or `dim on`) explicitly when you want
+labels to appear.
+
+Per-element override: append `dim=on` or `dim=off` to any element that
+supports dimension labels.
+
+```
+dim on                           # show dimensions from here on
+rect 12 10 "Living"
+dim off
+rect 8 10 "Bedroom"              # this one has no dim labels
+
+wall 12 dim=on                   # one-off override even though dim is off
+```
+
+### 5.7 direction
+
+**Category:** Directive  
+**Aliases:** `dir`  
+**Synopsis:** `direction` ***degrees***
+
+Sets the compass direction for subsequent length-bearing elements.
+
+| Value | Meaning |
+|---|---|
+| `0` | Up |
+| `90` | Right (default at interpreter start) |
+| `180` | Down |
+| `270` | Left |
+| any float | Diagonal direction (e.g. `45` = up-right) |
+
+Direction is a piece of cursor state, not an element property — once set, it
+applies to every subsequent length-bearing statement until changed. With
+`showcornerxy on`, a coordinate marker is emitted at every explicit
+`direction` change (and at each `point` element) — see
+§[5.20](#520-showcornerxy). The implicit corners of a `rect`, `wall`,
+`window`, `textbox` and similar enclosed shapes are **not** marked, because
+the renderer draws those as single primitives without changing the cursor's
+direction.
+
+```
+direction 90; line 10
+direction 0;  line 8
+direction 270; line 10
+```
+
+### 5.8 door
+
+**Category:** Drawing statement (element)  
+**Aliases:** `d`  
+**Synopsis:** `door` ***width*** [`left|right|in|out`] [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A door symbol: a solid slab line and a dashed quarter-circle arc showing the
+swing path. The hinge is at the element's start point; the slab extends in
+the current drawing direction; the arc sweeps from the slab back to the wall
+on the **swing side**.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***width*** | yes | Clear opening width in feet. |
+| `left` \| `right` \| `in` \| `out` | no | Swing direction relative to the current drawing direction. Default `right`. |
+
+**Effect.** Cursor advances by ***width***.
+
+#### Swing direction
+
+The swing keyword chooses which **side of the drawing direction** the arc
+appears on:
+
+| Keyword | Side of arc (relative to direction of travel) |
+|---|---|
+| `right` (default) | right-hand side — the perpendicular at `direction + 90°` |
+| `left` | left-hand side — the perpendicular at `direction − 90°` |
+| `in` | same as `left` (synonym retained for door-in-wall conventions) |
+| `out` | same as `left` (synonym retained for door-out-of-wall conventions) |
+
+Internally the renderer distinguishes only `right` from "anything else", so
+`left`, `in`, and `out` produce the same visual swing. Use whichever keyword
+reads most naturally in your file.
+
+The resulting compass direction of the swing depends on the current
+`direction`:
+
+| Drawing direction | `right` swing arc | `left` / `in` / `out` swing arc |
+|---|---|---|
+| `0` (up)    | east  (3 o'clock) | west  (9 o'clock) |
+| `90` (right)| south (6 o'clock) | north (12 o'clock) |
+| `180` (down)| west  (9 o'clock) | east  (3 o'clock) |
+| `270` (left)| north (12 o'clock)| south (6 o'clock) |
+
+#### Four scenarios
+
+Each illustration below shows two doors drawn in the same direction — one
+with `right`, one with `left` — between short framing lines that stand in
+for a wall.
+
+**Drawing direction 90 (rightward):**
+
+```
+direction 90
+line 1; door 3 right; line 1
+mto 0, 4
+line 1; door 3 left;  line 1
+```
+
+![Door swings, direction 90](images/door-dir90.svg)
+
+**Drawing direction 180 (downward):**
+
+```
+direction 180
+line 1; door 3 right; line 1
+mto 4, 0
+direction 180
+line 1; door 3 left;  line 1
+```
+
+![Door swings, direction 180](images/door-dir180.svg)
+
+**Drawing direction 270 (leftward):**
+
+```
+direction 270; mto 6, 0
+line 1; door 3 right; line 1
+direction 270; mto 6, 4
+line 1; door 3 left;  line 1
+```
+
+![Door swings, direction 270](images/door-dir270.svg)
+
+**Drawing direction 0 (upward):**
+
+```
+direction 0; mto 0, 6
+line 1; door 3 right; line 1
+direction 0; mto 4, 6
+line 1; door 3 left;  line 1
+```
+
+![Door swings, direction 0](images/door-dir0.svg)
+
+#### Other examples
+
+```
+door 3                            # default: 3-foot door, right swing
+door 2'8" left                    # 2'-8" door, left swing
+door 3 in A=2,10                  # absolute placement, "in" = same as left
+```
+
+### 5.9 elementid
+
+**Category:** Directive  
+**Aliases:** `eid`  
+**Synopsis:** `elementid on|off`
+
+Toggles the small red ID number rendered near each element's start point.
+**Default is `off`** — call `elementid on` (or `eid on`) explicitly when you
+want ID numbers to appear.
+
+```
+eid on                           # IDs from here on
+rect 12 10 "Living"
+eid off                          # clean view, no ID numbers
+rect 8 10 "Bedroom"
+```
+
+### 5.10 for
+
+**Category:** Control-flow header  
+**Synopsis:**
+
+```
+for var = start to end [step step] {
+    ...
+}
+```
+
+(`var`, `start`, `end`, and `step` are placeholders. The opening `{` must be
+the last non-whitespace character of its line.)
+
+Iterates ***var*** from ***start*** to ***end*** (both inclusive) by
+***step*** (default `1`). See §[4.16](#416-control-flow-syntax) for grammar
+rules.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***var*** | yes | Loop variable name. Persists after the loop. |
+| ***start*** | yes | Initial value; may be an expression. |
+| ***end*** | yes | Last value; may be an expression. Both endpoints are inclusive. |
+| ***step*** | no | Increment between iterations (default `1`). May be negative. |
+
+```
+direction 90
+for i = 0 to 5 {
+    line 1
+}
+# draws 6 line segments
+
+for x = 10 to 0 step -2 {
+    line $x
+}
+# draws lengths 10, 8, 6, 4, 2, 0
+
+for row = 0 to 2 {
+    for col = 0 to 3 {
+        point A=$col,$row
+    }
+}
+```
+
+### 5.11 if / elif / else
+
+**Category:** Control-flow header  
+**Synopsis:**
+
+```
+if (condition) {
+    ...
+} elif (condition) {
+    ...
+} else {
+    ...
+}
+```
+
+(`condition` is a placeholder. Each opening `{` must be the last
+non-whitespace character of its line; each `}` the first non-whitespace
+character of its line, optionally followed by `elif (...)` or `else`.)
+
+Selects the first branch whose condition is true. Zero or more `elif`
+branches; optional `else`.
+
+| Operator | Meaning |
+|---|---|
+| `==` `!=` | Equality / inequality |
+| `<` `>` `<=` `>=` | Numeric ordering |
+| `and` `or` `not` | Logical combinators |
+| `True` `False` | Literal `1.0` / `0.0` |
+
+String equality works directly: `if (title == "Plan A") { ... }`.
+
+```
+if (n == 3) {
+    color red
+} elif (n == 2) {
+    color blue
+} else {
+    color green
+}
+line 5
+```
+
+### 5.12 include
+
+**Category:** Directive  
+**Aliases:** `inc`  
+**Synopsis:** `include` ***filename***
+
+Inserts the contents of another DSL file at the current line. All drawing
+state — cursor, direction, color, display flags, variables, named elements —
+carries through. The filename may be:
+
+- a bare path (`include border.dsl`),
+- a quoted string (`include "with spaces.dsl"`),
+- a string variable or expression (`include $page` or `include (base + ".dsl")`).
+
+Paths are resolved relative to the **including** file's directory; absolute
+paths are used as-is. Circular includes (A includes B includes A) raise a
+parse error. Includes inside a `for` body run once per iteration.
+
+```
+include border.dsl
+include "common/legend.dsl"
+include $page_template
+```
+
+### 5.13 label
+
+**Category:** Drawing statement (text)  
+**Aliases:** `lb`  
+**Synopsis:** `label` `"`***text***`"` [`left|center|right`] [***size***] [`font=`***family***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***]
+
+A free-floating text annotation. Always renders horizontally regardless of
+the current drawing direction. **Does not advance the cursor.**
+
+| Parameter | Required | Description |
+|---|---|---|
+| `"`***text***`"` | yes | The text to render. Supports inline markup (§[4.5](#45-strings)). |
+| `left` \| `center` \| `right` | no | Horizontal alignment around the anchor point. Default `left`. |
+| ***size*** | no | Font size in SVG pixels. Default is the current `textstyle` size (10 if unset). |
+| `font=<family>` | no | Per-label font family override. |
+| `C=<color>` | no | Per-label color override. |
+| `A=<h>,<v>` | no | Anchor position in feet from canvas origin. Default = cursor. |
+| `@@<name>` | no | Register for later reference. |
+
+```
+label "North" center A=10,0
+label "SCALE 1:48" center 14 A=5,25
+lb "**Title**\nSubtitle" center 12 A=0,0
+lb "see detail A" left A=5,20 C=red
+```
+
+### 5.14 line
+
+**Category:** Drawing statement (element)  
+**Aliases:** `l`  
+**Synopsis:** `line` ***length*** [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A straight line segment in the current drawing direction.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***length*** | yes | Length in feet (or feet/inches/px). |
+
+**Effect.** Cursor advances by `length`.
+
+```
+line 12
+line 8'6" 2px
+line 10 dashed C=blue
+line 4 A=0,5                     # absolute placement
+```
+
+### 5.15 lineto
+
+**Category:** Drawing statement (element)  
+**Aliases:** `lto`  
+**Synopsis** (either form):
+
+- `lineto` ***x*** ***y*** [***n***`px`] [***dash***] [`C=`***color***] [`A=`***sx***`,`***sy***] [`@@`***name***] [`dim=on|off`]
+- `lineto` `(`***x***`,`***y***`)` [***n***`px`] [***dash***] [`C=`***color***] [`A=`***sx***`,`***sy***] [`@@`***name***] [`dim=on|off`]
+
+Draws a line from the current cursor (or from the `A=<sx>,<sy>` override) to
+the absolute point `(x, y)` measured in feet from the canvas origin. The
+cursor advances to the destination.
+
+The bearing of the drawn line is stored in `$__mltodir`. The
+direction (`$__dir`) is **not** changed.
+
+| Parameter | Required | Description |
+|---|---|---|
+| `<x> <y>` or `(<x>,<y>)` | yes | Destination, in feet from canvas origin. |
+| `A=<sx>,<sy>` | no | Override start point (otherwise the cursor is used). |
+
+```
+lineto 10 5
+lto 14 8 2px dashed C=blue A=10,0
+lto (14, 8)                      # tuple form
+label "bearing ${__mltodir}"
+```
+
+### 5.16 moveto
+
+**Category:** Drawing statement (cursor jump)  
+**Aliases:** `mto`  
+**Synopsis** (either form):
+
+- `moveto` ***x*** ***y*** [`A=`***sx***`,`***sy***]
+- `moveto` `(`***x***`,`***y***`)` [`A=`***sx***`,`***sy***]
+
+Jumps the cursor to the absolute point `(`***x***`,`***y***`)` without
+drawing anything. No element ID or dimension annotation is produced.
+
+The bearing of the implicit movement is stored in `$__mltodir`. The
+direction (`$__dir`) is **not** changed.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***x*** ***y*** *or* `(`***x***`,`***y***`)` | yes | Destination, in feet from the canvas origin. The cursor moves here regardless of `A=`. |
+| `A=`***sx***`,`***sy*** | no | Start-point override used only when computing `$__mltodir`. The cursor itself does not start from this point; it continues from its current position. |
+
+**Effect of two grid points (`moveto` ***x*** ***y*** `A=`***sx***`,`***sy***).**
+The positional `(`***x***`,`***y***`)` is the **destination** — that's where
+the cursor lands. The `A=` option is a **bearing-computation override**: when
+both are present, `$__mltodir` is set to the compass bearing from
+`(`***sx***`,`***sy***`)` to `(`***x***`,`***y***`)` instead of from the
+previous cursor to the destination. This is useful when you want to record
+"the bearing between two known points" without first moving the cursor to
+the start point. The actual position the cursor ends up at is always
+`(`***x***`,`***y***`)`.
+
+```
+moveto 5 0                       # cursor jumps to (5,0); __mltodir = bearing from old cursor
+mto 0 0 A=5,0                    # cursor jumps to (0,0); __mltodir = 270° (bearing from (5,0) to (0,0))
+mto $home                        # tuple variable home = (cx, cy)
+```
+
+### 5.17 point
+
+**Category:** Drawing statement (element)  
+**Aliases:** `p`  
+**Synopsis:** `point` [***n***`px`] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***]
+
+A small filled dot. **Does not advance the cursor.** Useful for marking
+reference points or measurement targets.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***n***`px` | no | Stroke width (default 1). `0px` suppresses rendering. |
+| `C=<color>` | no | Fill and stroke color. |
+| `A=<h>,<v>` | no | Absolute position. |
+
+**Annotations.** Dimension labels are never produced for points. ID numbers
+appear when `elementid on`. With `showcornerxy on`, a coordinate label is
+emitted in the corner-marker style at the point.
+
+```
+point
+point C=red
+point A=10,5
+point 0px                        # invisible — no output
+```
+
+### 5.18 rect
+
+**Category:** Drawing statement (element)  
+**Aliases:** `r`  
+**Synopsis** (any of three forms):
+
+- `rect` ***length*** ***width*** [***n***`px`] [***dash***] [`C=`***color***] [`"`***label***`"`] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+- `rect` `(`***length***`,`***width***`)` [*…same options…*]
+- `rect` `(`***origx***`,`***origy***`,`***brx***`,`***bry***`)` [*…same options…*]
+
+where ***origx***, ***origy*** are the top-left corner and ***brx***, ***bry***
+are the bottom-right corner — all in feet from the canvas origin.
+
+An open (unfilled) rectangle. `length` runs along the drawing direction;
+`width` is perpendicular.
+
+Three input forms are accepted:
+
+| Form | Example | Meaning |
+|---|---|---|
+| Two measurements | `rect 12 10` | Length 12, width 10, at cursor |
+| 2-tuple of measurements | `rect (12,10)` | Same as above |
+| 4-tuple of corners | `rect (2,2,14,12)` | Top-left `(2,2)`, bottom-right `(14,12)` — sets `A=2,2` and dimensions implicitly |
+
+In the 4-tuple form, `brx > origx` and `bry > origy` are required.
+
+**Effect.** Cursor advances by `length` in the drawing direction. The optional
+`"label"` text is centred inside the rectangle and supports inline markup.
+
+```
+rect 12 10
+rect 10'6" 8' "Bedroom"
+rect 14 11 2px "Master Bedroom" A=12,0
+rect (4, 0.8) @@panel "**Schedule**" C="lightgray"
+rect (2, 2, 14, 12) "Footprint"      # corner-to-corner form
+```
+
+### 5.19 return
+
+**Category:** Function statement  
+**Synopsis:** `return` [***expr***]
+
+Inside a function body, ends the call and yields ***expr*** to the caller. A
+bare `return` (or fall-off the end) yields `0.0`. Outside a function,
+`return` is a parse error.
+
+Tuple returns require parentheses: `return (x, y)`. Bare `return x, y` is a
+parse error.
+
+```
+def add(a, b) {
+    return (a + b)
+}
+def greet(n) {
+    return "Hello, " + n
+}
+def make_pt(x, y) {
+    return (x, y)
+}
+def maybe(flag) {
+    if (flag) {
+        return 1
+    }
+    return 0
+}
+```
+
+### 5.20 showcornerxy
+
+**Category:** Directive  
+**Aliases:** `sxy`  
+**Synopsis:** `showcornerxy on|off`
+
+When `on`, a coordinate marker is emitted at every explicit `direction`
+change and at every `point` element. Each marker is a short grey leader line
+at 45° plus the coordinate text (e.g. `"10.5, -8"`). Off by default.
+
+**Scope.** `sxy` marks only the two events above. It does **not** label the
+implicit corners of `rect`, `wall`, `window`, `textbox`, or any other shape
+the renderer draws as a single primitive — those shapes never go through the
+`direction` directive, so they produce no marker. To label a rectangle's
+corner, drop a `point` at the position (with `sxy on` it gets a coordinate
+marker automatically), or build the outline from four `line` segments
+separated by `direction` changes.
+
+The leader direction (NE, NW, SE, or SW) is chosen automatically to avoid
+overlapping other annotations. While `showcornerxy` is active, the auto-scale
+computation reserves extra margin so the markers stay inside the printable
+area.
+
+```
+sxy on
+direction 90; line 10
+direction 0;  line 8
+direction 270; line 10
+sxy off
+```
+
+Use `sxy` during drawing development to verify that walls meet at the right
+coordinates. Turn it off before final rendering.
+
+### 5.21 textappend
+
+**Category:** Text statement  
+**Aliases:** `tapp`  
+**Synopsis:** `textappend` `"`***text***`"` ***element_name*** [`left|center|right`] [***size***] [`font=`***family***] [`C=`***color***]
+
+Appends a text row below the current content of a named `rect` or `textbox`,
+expanding the element's border downward. **Does not advance the cursor.**
+
+Each call adds one row (or more, if `\n` appears in the text). An empty
+string inserts a blank spacer row.
+
+| Parameter | Required | Description |
+|---|---|---|
+| `"`***text***`"` | yes | The text to append. Inline markup and `\n` supported. |
+| ***element_name*** | yes | A `@@`-name registered on a previous `rect` or `textbox`. |
+| `left` \| `center` \| `right` | no | Horizontal alignment of the appended row within the box. Default `left`. |
+| ***size*** | no | Font size in SVG pixels. Default = current `textstyle` size. |
+| `font=`***family*** | no | Per-row font family override. |
+| `C=`***color*** | no | Per-row color override. |
+
+```
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel
+textappend "" panel                          # blank spacer
+textappend "Updated: 2026-05" panel right 8
+
+tbox 4 0.6 @@notes "**Notes**"
+tapp "Item 1\nItem 2" notes                  # two rows from one call
+tapp "Item 3" notes
+```
+
+### 5.22 textbox
+
+**Category:** Drawing statement (text)  
+**Aliases:** `tbox`  
+**Synopsis:** `textbox` ***length*** ***width*** [`"`***text***`"`] [`left|center|right`] [`wrap`] [***size***] [`font=`***family***] [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***]
+
+A stroked rectangle with text inside. Behaves like `rect` for cursor
+advancement (cursor moves by `length` in the drawing direction).
+
+| Parameter | Required | Description |
+|---|---|---|
+| `<length> <width>` | yes | Box dimensions in feet. |
+| `"text"` | no | Initial body text. Inline markup and `\n` supported. |
+| `wrap` | no | Word-wrap the text to the box width. Honours explicit `\n` first, then wraps. |
+| ***size*** | no | Font size (must appear after the two dimensions). |
+| `font=<family>` | no | Font family override. |
+
+```
+tbox 6 2 "Long note that wraps inside the box" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0.8 @@panel "**Schedule**" C="lightgray"
+```
+
+A `textbox` with `width=0` starts at zero height and grows downward via
+`textappend`.
+
+### 5.23 textbreak
+
+**Category:** Text statement  
+**Aliases:** `txbr`  
+**Synopsis:** `textbreak` `"`***text***`"` ***element_name*** [`left|center|right`] [***size***] [`font=`***family***] [***n***`px`] [`C=`***color***]
+
+Places a labelled border box on a named line. A white-filled rectangle masks
+the line behind the text; a thin stroked border box outlines the text. The
+referenced line's geometry is unchanged — SVG layer order makes the box
+appear in front. **Does not advance the cursor.**
+
+| Parameter | Required | Description |
+|---|---|---|
+| `"`***text***`"` | yes | The text to render. |
+| ***element_name*** | yes | A name previously registered via `@@name`. |
+| ***n***`px` | no | Border box stroke width (default 1). `0px` hides the border while keeping the white mask and text. |
+
+```
+line 14 @@front_wall
+textbreak "Front Wall" front_wall center 10
+txbr "**Section A-A**" section_line center 12
+txbr "No box" section_line center 10 0px
+```
+
+### 5.24 textline
+
+**Category:** Text statement  
+**Aliases:** `txl`  
+**Synopsis:** `textline` `"`***text***`"` ***element_name*** [`left|center|right`] [***size***] [`font=`***family***] [`C=`***color***]
+
+Places text alongside a named line or element, rotated to match the element's
+direction. Offset slightly outward so it does not overlap the geometry.
+**Does not advance the cursor.**
+
+| Parameter | Required | Description |
+|---|---|---|
+| `"`***text***`"` | yes | The text to render. |
+| ***element_name*** | yes | A name registered via `@@name` on a previous element. |
+| `left` \| `center` \| `right` | no | Anchor along the element: `left` = start, `center` = midpoint (default), `right` = end. |
+
+```
+dir 90; l 14 @@corridor
+textline "Corridor" corridor center 10
+txl "**North Wall**" north_wall left 12 C=blue
+```
+
+### 5.25 textstyle
+
+**Category:** Directive  
+**Aliases:** `tstyle`  
+**Synopsis:** `textstyle` [***size***] [`font=`***family***] [`normal`]
+
+Sets the default font size and family used by all subsequent text elements
+(`label`, `textline`, `textbreak`, `textbox`, `textappend`). Per-element
+overrides still apply.
+
+| Token | Effect |
+|---|---|
+| ***size*** | Default font size in SVG pixels. |
+| `font=`***family*** | Default font family (CSS family name). |
+| `normal` | Reset to defaults: `10` and `sans-serif`. |
+
+```
+textstyle 12 font=serif
+textstyle font=monospace
+textstyle normal
+lb "Title" 18
+lb "Body" font=sans-serif
+```
+
+### 5.26 wall
+
+**Category:** Drawing statement (element)  
+**Aliases:** `w`  
+**Synopsis:** `wall` ***length*** [***thickness***] [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A filled rectangle for structural walls. Fill is dark grey. The `length`
+runs in the drawing direction.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***length*** | yes | Length in feet. |
+| ***thickness*** | no | Perpendicular thickness in feet. Default `0.5` (6 inches). |
+
+**Effect.** Cursor advances by `length`.
+
+```
+wall 12                          # 12 ft × 6"
+wall 12 8"                       # 12 ft × 8"
+wall 10 0.5 hidden               # dashed (hidden) 6" wall
+```
+
+### 5.27 window
+
+**Category:** Drawing statement (element)  
+**Aliases:** `wi`  
+**Synopsis:** `window` ***width*** [***depth***] [***n***`px`] [***dash***] [`C=`***color***] [`A=`***h***`,`***v***] [`@@`***name***] [`dim=on|off`]
+
+A window symbol: two parallel lines across an opening.
+
+| Parameter | Required | Description |
+|---|---|---|
+| ***width*** | yes | Opening width in feet. |
+| ***depth*** | no | Wall thickness for the window (default `0.5`). |
+
+The dimension annotation shows the opening width only; `depth` is not labelled.
+
+```
+window 4
+window 3 8"
+window 4 A=22,3
+```
+
+### 5.28 Tutorial: parametric reuse
+
+This tutorial brings together variables, control flow, and named functions to
+build a small parametric drawing.
+
+**Goal.** A row of `n` identically sized rooms, where `n`, the per-room width,
+and the depth can all be changed by editing variables at the top of the file.
+
+```
+# parametric.dsl — a row of n identical rooms
+
+n     = 4         # number of rooms
+width = 8         # each room's width, feet
+depth = 10        # depth, feet
+
+def room(name) {
+    rect $width $depth "${name}"
+}
+
+for i = 1 to $n {
+    room("Room ${i}")
+}
+```
+
+Render it (`bin/380-010.sh parametric.dsl`) and you should see four 8×10
+rooms in a row, labelled `Room 1` through `Room 4`. Each rectangle's cursor
+advancement (length in the current direction) places the next one flush
+against it.
+
+Change `n = 6` or `width = 6` and re-render — the drawing rescales
+automatically to fit the new bounding box on the page.
+
+**Patterns demonstrated.**
+
+- **Parameters at the top of the file.** Plain variable assignments collect
+  the knobs in one place. Changing them is the only edit needed.
+- **Function with a local parameter.** `room(name)` takes one argument; inside
+  the function `$width` and `$depth` are **globals**, while `${name}` resolves
+  to the call-time argument (a local). Locals shadow globals only on writes,
+  so reads fall through normally.
+- **`for` loop drives the geometry.** The loop variable `i` is interpolated
+  via `${i}` into the label string passed to `room()`. Because `room()` is
+  called as a statement, its drawing side-effects (the `rect` placement and
+  cursor advance) take effect on the real canvas.
+
+For more substantial worked examples — including layered floor layouts,
+reusable border templates, and includes across files — see
+`drawings/380-118-master-bedroom.dsl` and `drawings/380-116-examples.dsl`.
+The ruler example at `drawings/380-119-ruler.dsl` shows how to extend the
+above pattern with nested loops and tick-mark sub-procedures.
+
+---
+
+## 6. Debugging overview
+
+This section summarises the debugging directives. The companion
+`docs/debugging-guide.md` contains the full reference, including the
+interactive REPL command set, step modes, and example workflows.
+
+### 6.1 Visual debugging directives
+
+Three directives produce visible aids in the SVG without changing what is
+drawn:
+
+| Directive | Aliases | Purpose | Default |
+|---|---|---|---|
+| `elementid on\|off` | `eid` | Show/hide red ID numbers near each element. | off |
+| `dimensions on\|off` | `dim` | Show/hide grey dimension labels. | off |
+| `showcornerxy on\|off` | `sxy` | Show/hide cursor-position markers at each direction change and at each `point`. | off |
+
+Full entries: §[5.9](#59-elementid), §[5.6](#56-dimensions), §[5.20](#520-showcornerxy).
+
+### 6.2 Execution control
+
+| Directive | Aliases | Effect |
+|---|---|---|
+| `stop` | `breakpoint`, `bp` | Pause execution at the next line. On a terminal, opens the interactive REPL (commands: `continue`, `next`, `vardump`, `trace on\|off`, `quit`). When stdin is not a terminal, the directive prints `[debug] breakpoint at <file>:<line> ignored` and execution continues. |
+| `start` | — | Clears any pending `__stopped` flag. Paired with `stop` for symmetry; not commonly needed. |
+
+To skip a block unconditionally (without entering the debugger), comment out
+the lines or wrap them in `if (False) { ... }`. The `stop` directive is not a
+section-skip in non-interactive mode.
+
+Full REPL reference: see `docs/debugging-guide.md`.
+
+### 6.3 Variable inspection
+
+| Directive | Aliases | Effect |
+|---|---|---|
+| `vardump` [***path***] | `vd` | Print a table of all global variables (system vars first, then user vars) to stderr, or to ***path*** if given. Columns: NAME, TYPE (N/S/T), FILE, LINE, VALUE. |
+| `vartrace` | — | Watch all globals. |
+| `vartrace ("a", "b", ...)` | — | Watch the listed globals only (names quoted). |
+| `vartrace ()` | — | Stop watching. |
+| `vartrace [...]` ***path*** | — | Append the trace summary to ***path*** instead of stderr. |
+
+Both directives report **global** variables only — writes to function-local
+variables are not captured. The `vartrace` summary is printed at the end of
+the run; identical consecutive values for the same variable are suppressed.
+
+### 6.4 Trace mode
+
+| Directive | Aliases | Effect |
+|---|---|---|
+| `trace on` | `tr on` | Echo each subsequent DSL line to stderr before it runs, prefixed with `[trace]`. |
+| `trace off` | `tr off` | Stop echoing. |
+
+`trace` can be toggled from the interactive REPL with the same syntax.
+
+### 6.5 Where to find full detail
+
+For the full set of interactive REPL commands (`continue [N]`, `next [N]`,
+`vardump`, `trace on|off`, `quit`), worked debugging workflows, and the
+`vardump` / `vartrace` output formats, see:
+
+```
+docs/debugging-guide.md
+```
+
+That document is the authoritative reference for debugging behaviour and is
+kept in sync with the interpreter.
+@
+
+
+1.38
+log
+@Reformat TOC: remove HTML table, convert markdown links to plain text, wrap each Part in column-count:2 div from 2-column-div-snippet; standalone <br /> between parts replaced by </div>/<div> pairs.
+@
+text
+@d13 1
+d16 10
+a25 10
+1. Introduction<br />
+1.1 What SVG DSL is<br />
+1.2 Workflow<br />
+1.3 Conventions used in this guide<br />
+2. Overview<br />
+2.1 Tutorial: quick start<br />
+2.2 Running the program<br />
+2.3 CLI options<br />
+2.4 The browser viewer<br />
+2.5 Output files<br />
+d28 1
+d30 1
+d33 10
+a42 10
+3. Language overview<br />
+3.1 Drawing statements<br />
+3.2 Text statements<br />
+3.3 Directives<br />
+3.4 Numeric variables and math<br />
+3.5 String variables and string functions<br />
+3.6 Tuples<br />
+3.7 Control flow<br />
+3.8 Named functions<br />
+3.9 Debugging statements<br />
+d45 1
+d47 1
+d50 20
+a69 20
+4. Language reference<br />
+4.1 Statement structure<br />
+4.2 Comments and statement separators<br />
+4.3 Measurements<br />
+4.4 Numbers<br />
+4.5 Strings<br />
+4.6 Tuples<br />
+4.7 Variable assignment and auto-typing<br />
+4.8 Variable substitution and inline expressions<br />
+4.9 System variables<br />
+4.10 Built-in functions<br />
+4.11 Coordinates and absolute placement<br />
+4.12 Per-element color override (C=)<br />
+4.13 Element naming (@@name)<br />
+4.14 Line weight and dash patterns<br />
+4.15 Drawing cursor and direction<br />
+4.16 Control-flow syntax<br />
+4.17 Function definition syntax<br />
+4.18 Multiple statements per line<br />
+4.19 Tutorial: building up a drawing<br />
+d72 1
+d74 1
+d77 29
+a105 29
+5. Alphabetical reference: statements & directives<br />
+5.1 arc<br />
+5.2 arrow<br />
+5.3 circle<br />
+5.4 color<br />
+5.5 def<br />
+5.6 dimensions<br />
+5.7 direction<br />
+5.8 door<br />
+5.9 elementid<br />
+5.10 for<br />
+5.11 if / elif / else<br />
+5.12 include<br />
+5.13 label<br />
+5.14 line<br />
+5.15 lineto<br />
+5.16 moveto<br />
+5.17 point<br />
+5.18 rect<br />
+5.19 return<br />
+5.20 showcornerxy<br />
+5.21 textappend<br />
+5.22 textbox<br />
+5.23 textbreak<br />
+5.24 textline<br />
+5.25 textstyle<br />
+5.26 wall<br />
+5.27 window<br />
+5.28 Tutorial: parametric reuse<br />
+d108 1
+d110 1
+d113 6
+a118 6
+6. Debugging overview<br />
+6.1 Visual debugging directives<br />
+6.2 Execution control<br />
+6.3 Variable inspection<br />
+6.4 Trace mode<br />
+6.5 Where to find full detail<br />
+@
+
+
+1.37
+log
+@Reformat TOC to Obsidian markdown variant: replace bullet-point lists with <br />-separated lines; keep two-column <table> layout, flat entries (no indentation), Part group labels as bold separators.
+@
+text
+@d12 2
+a13 2
+<table>
+<tr><td valign="top">
+d15 10
+a24 86
+**Part I — Getting started**<br />
+[1. Introduction](#1-introduction)<br />
+[1.1 What SVG DSL is](#11-what-svg-dsl-is)<br />
+[1.2 Workflow](#12-workflow)<br />
+[1.3 Conventions used in this guide](#13-conventions-used-in-this-guide)<br />
+[2. Overview](#2-overview)<br />
+[2.1 Tutorial: quick start](#21-tutorial-quick-start)<br />
+[2.2 Running the program](#22-running-the-program)<br />
+[2.3 CLI options](#23-cli-options)<br />
+[2.4 The browser viewer](#24-the-browser-viewer)<br />
+[2.5 Output files](#25-output-files)<br />
+<br />
+**Part II — Language overview**<br />
+[3. Language overview](#3-language-overview)<br />
+[3.1 Drawing statements](#31-drawing-statements)<br />
+[3.2 Text statements](#32-text-statements)<br />
+[3.3 Directives](#33-directives)<br />
+[3.4 Numeric variables and math](#34-numeric-variables-and-math)<br />
+[3.5 String variables and string functions](#35-string-variables-and-string-functions)<br />
+[3.6 Tuples](#36-tuples)<br />
+[3.7 Control flow](#37-control-flow)<br />
+[3.8 Named functions](#38-named-functions)<br />
+[3.9 Debugging statements](#39-debugging-statements)<br />
+<br />
+**Part III — Language reference**<br />
+[4. Language reference](#4-language-reference)<br />
+[4.1 Statement structure](#41-statement-structure)<br />
+[4.2 Comments and statement separators](#42-comments-and-statement-separators)<br />
+[4.3 Measurements](#43-measurements)<br />
+[4.4 Numbers](#44-numbers)<br />
+[4.5 Strings](#45-strings)<br />
+[4.6 Tuples](#46-tuples)<br />
+[4.7 Variable assignment and auto-typing](#47-variable-assignment-and-auto-typing)<br />
+[4.8 Variable substitution and inline expressions](#48-variable-substitution-and-inline-expressions)<br />
+[4.9 System variables](#49-system-variables)<br />
+[4.10 Built-in functions](#410-built-in-functions)<br />
+[4.11 Coordinates and absolute placement](#411-coordinates-and-absolute-placement)<br />
+[4.12 Per-element color override (`C=`)](#412-per-element-color-override-c)<br />
+[4.13 Element naming (`@@name`)](#413-element-naming-name)<br />
+[4.14 Line weight and dash patterns](#414-line-weight-and-dash-patterns)<br />
+[4.15 Drawing cursor and direction](#415-drawing-cursor-and-direction)<br />
+[4.16 Control-flow syntax](#416-control-flow-syntax)<br />
+[4.17 Function definition syntax](#417-function-definition-syntax)<br />
+[4.18 Multiple statements per line](#418-multiple-statements-per-line)<br />
+[4.19 Tutorial: building up a drawing](#419-tutorial-building-up-a-drawing)<br />
+
+</td><td valign="top">
+
+**Part IV — Alphabetical reference**<br />
+[5. Alphabetical reference: statements & directives](#5-alphabetical-reference-statements--directives)<br />
+[5.1 arc](#51-arc)<br />
+[5.2 arrow](#52-arrow)<br />
+[5.3 circle](#53-circle)<br />
+[5.4 color](#54-color)<br />
+[5.5 def](#55-def)<br />
+[5.6 dimensions](#56-dimensions)<br />
+[5.7 direction](#57-direction)<br />
+[5.8 door](#58-door)<br />
+[5.9 elementid](#59-elementid)<br />
+[5.10 for](#510-for)<br />
+[5.11 if / elif / else](#511-if--elif--else)<br />
+[5.12 include](#512-include)<br />
+[5.13 label](#513-label)<br />
+[5.14 line](#514-line)<br />
+[5.15 lineto](#515-lineto)<br />
+[5.16 moveto](#516-moveto)<br />
+[5.17 point](#517-point)<br />
+[5.18 rect](#518-rect)<br />
+[5.19 return](#519-return)<br />
+[5.20 showcornerxy](#520-showcornerxy)<br />
+[5.21 textappend](#521-textappend)<br />
+[5.22 textbox](#522-textbox)<br />
+[5.23 textbreak](#523-textbreak)<br />
+[5.24 textline](#524-textline)<br />
+[5.25 textstyle](#525-textstyle)<br />
+[5.26 wall](#526-wall)<br />
+[5.27 window](#527-window)<br />
+[5.28 Tutorial: parametric reuse](#528-tutorial-parametric-reuse)<br />
+<br />
+**Part V — Debugging**<br />
+[6. Debugging overview](#6-debugging-overview)<br />
+[6.1 Visual debugging directives](#61-visual-debugging-directives)<br />
+[6.2 Execution control](#62-execution-control)<br />
+[6.3 Variable inspection](#63-variable-inspection)<br />
+[6.4 Trace mode](#64-trace-mode)<br />
+[6.5 Where to find full detail](#65-where-to-find-full-detail)<br />
+d26 86
+a111 2
+</td></tr>
+</table>
+@
+
+
+1.36
+log
+@Address errata 1–23 from ug-errata-1.md.
+
+Placeholder convention: switched from <angle-bracket> to ***bold italic*** notation
+across 4.1, the §1.3 convention key, all 27 §5 synopses, and parameter tables,
+to render reliably in markdown viewers that strip HTML-like tokens.
+
+Content fixes: §4 and §4.1 now link to §5; §4.4 documents the leading-zero
+requirement; §4.6 uses 'member' throughout (was 'slot') and rephrases broadcast
+wording; §4.8 clarifies that $name is also accepted inside (expr); §5.5 says
+'Function bodies'; §5.18 defines origx/origy/brx/bry; §5.21 (textappend) gets
+a parameter table; §5.16 (moveto) explains the two-grid-point + A= override.
+
+Defaults corrected: eid and dim default OFF (was wrongly shown ON in §2.5, §4.19
+Step 1, §5.6, §5.9, and §6.1).  §5.7 and §5.20 now state that sxy marks only
+explicit direction changes and point elements — not implicit rect corners.
+
+§5.8 door: expanded with the right vs left semantics (in/out are synonyms for
+left in the renderer), a compass table for each drawing direction, and four
+scenario images (images/door-dir*.svg).
+
+§4.19 tutorial: each of the 5 steps now embeds its rendered SVG
+(images/build-step*.svg).
+
+§5.1 arc: added a Concepts subsection with three illustrations
+(images/arc-anatomy.svg, arc-arcstart.svg, arc-ccw.svg).
+
+Source DSL for every illustration is checked in alongside the SVG so the images
+can be regenerated if the renderer changes.
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ -->
+d15 45
+a59 48
+**Part I — Getting started**
+
+- [1. Introduction](#1-introduction)
+  - [1.1 What SVG DSL is](#11-what-svg-dsl-is)
+  - [1.2 Workflow](#12-workflow)
+  - [1.3 Conventions used in this guide](#13-conventions-used-in-this-guide)
+- [2. Overview](#2-overview)
+  - [2.1 Tutorial: quick start](#21-tutorial-quick-start)
+  - [2.2 Running the program](#22-running-the-program)
+  - [2.3 CLI options](#23-cli-options)
+  - [2.4 The browser viewer](#24-the-browser-viewer)
+  - [2.5 Output files](#25-output-files)
+
+**Part II — Language overview**
+
+- [3. Language overview](#3-language-overview)
+  - [3.1 Drawing statements](#31-drawing-statements)
+  - [3.2 Text statements](#32-text-statements)
+  - [3.3 Directives](#33-directives)
+  - [3.4 Numeric variables and math](#34-numeric-variables-and-math)
+  - [3.5 String variables and string functions](#35-string-variables-and-string-functions)
+  - [3.6 Tuples](#36-tuples)
+  - [3.7 Control flow](#37-control-flow)
+  - [3.8 Named functions](#38-named-functions)
+  - [3.9 Debugging statements](#39-debugging-statements)
+
+**Part III — Language reference**
+
+- [4. Language reference](#4-language-reference)
+  - [4.1 Statement structure](#41-statement-structure)
+  - [4.2 Comments and statement separators](#42-comments-and-statement-separators)
+  - [4.3 Measurements](#43-measurements)
+  - [4.4 Numbers](#44-numbers)
+  - [4.5 Strings](#45-strings)
+  - [4.6 Tuples](#46-tuples)
+  - [4.7 Variable assignment and auto-typing](#47-variable-assignment-and-auto-typing)
+  - [4.8 Variable substitution and inline expressions](#48-variable-substitution-and-inline-expressions)
+  - [4.9 System variables](#49-system-variables)
+  - [4.10 Built-in functions](#410-built-in-functions)
+  - [4.11 Coordinates and absolute placement](#411-coordinates-and-absolute-placement)
+  - [4.12 Per-element color override (`C=`)](#412-per-element-color-override-c)
+  - [4.13 Element naming (`@@name`)](#413-element-naming-name)
+  - [4.14 Line weight and dash patterns](#414-line-weight-and-dash-patterns)
+  - [4.15 Drawing cursor and direction](#415-drawing-cursor-and-direction)
+  - [4.16 Control-flow syntax](#416-control-flow-syntax)
+  - [4.17 Function definition syntax](#417-function-definition-syntax)
+  - [4.18 Multiple statements per line](#418-multiple-statements-per-line)
+  - [4.19 Tutorial: building up a drawing](#419-tutorial-building-up-a-drawing)
+d63 38
+a100 40
+**Part IV — Alphabetical reference**
+
+- [5. Alphabetical reference: statements & directives](#5-alphabetical-reference-statements--directives)
+  - [5.1 arc](#51-arc)
+  - [5.2 arrow](#52-arrow)
+  - [5.3 circle](#53-circle)
+  - [5.4 color](#54-color)
+  - [5.5 def](#55-def)
+  - [5.6 dimensions](#56-dimensions)
+  - [5.7 direction](#57-direction)
+  - [5.8 door](#58-door)
+  - [5.9 elementid](#59-elementid)
+  - [5.10 for](#510-for)
+  - [5.11 if / elif / else](#511-if--elif--else)
+  - [5.12 include](#512-include)
+  - [5.13 label](#513-label)
+  - [5.14 line](#514-line)
+  - [5.15 lineto](#515-lineto)
+  - [5.16 moveto](#516-moveto)
+  - [5.17 point](#517-point)
+  - [5.18 rect](#518-rect)
+  - [5.19 return](#519-return)
+  - [5.20 showcornerxy](#520-showcornerxy)
+  - [5.21 textappend](#521-textappend)
+  - [5.22 textbox](#522-textbox)
+  - [5.23 textbreak](#523-textbreak)
+  - [5.24 textline](#524-textline)
+  - [5.25 textstyle](#525-textstyle)
+  - [5.26 wall](#526-wall)
+  - [5.27 window](#527-window)
+  - [5.28 Tutorial: parametric reuse](#528-tutorial-parametric-reuse)
+
+**Part V — Debugging**
+
+- [6. Debugging overview](#6-debugging-overview)
+  - [6.1 Visual debugging directives](#61-visual-debugging-directives)
+  - [6.2 Execution control](#62-execution-control)
+  - [6.3 Variable inspection](#63-variable-inspection)
+  - [6.4 Trace mode](#64-trace-mode)
+  - [6.5 Where to find full detail](#65-where-to-find-full-detail)
+@
+
+
+1.35
+log
+@Rewrite from scratch per issue #59: new SVG DSL User Guide replacing the deleted floor-plan-era guide; numbered structure (TOC, Overview, Language Overview, Language Reference, alphabetical reference for 27 statements/directives, debugging overview pointing to debugging-guide.md); three verified tutorials (quick-start, building-up, parametric-reuse); aliases, system vars, builtins, and cross-refs cross-checked against parser.py and interpreter.py.
+@
+text
+@d153 2
+a154 2
+| `<param>` | A required parameter (replace with your value) |
+| `[optional]` | An optional parameter |
+d156 1
+a156 1
+| `§N.N` | Cross-reference to a section of this guide |
+d159 5
+d295 6
+a300 3
+- **Annotations.** Element ID numbers (red) and dimension labels (grey)
+  are emitted alongside each element when their respective directives are on
+  (which is the default). See §[5.6](#56-dimensions) and §[5.9](#59-elementid).
+d307 2
+a308 1
+and points to the alphabetical reference (§5) for full detail.
+d394 1
+a394 1
+A tuple is an ordered sequence of numeric and/or string slots. Tuples are
+d469 2
+a470 1
+variables, and control flow. The per-statement reference is in §5.
+d476 1
+a476 3
+```
+<keyword> [<required parameters>] [<optional parameters>]
+```
+d478 4
+a481 2
+- `<keyword>` is a directive name, statement name, or an alias (case-insensitive).
+- Required parameters come in a fixed order documented per-statement in §5.
+d488 1
+a488 1
+| `<n>px` | Line weight in SVG pixels | All geometry |
+d490 3
+a492 3
+| `C=<color>` | Per-element stroke color override | All geometry |
+| `A=<h>,<v>` | Absolute placement, in feet from canvas origin | Most elements |
+| `@@<name>` | Register element under a name for later text overlays | Most elements |
+d495 1
+a495 1
+| `font=<family>` | Font family override | Text elements, `label` |
+d497 4
+a500 2
+Numeric parameters are written either as a literal measurement (§[4.3](#43-measurements)), a
+variable reference (§[4.8](#48-variable-substitution-and-inline-expressions)), or an inline expression `(...)`.
+d535 19
+a553 5
+Numeric literals are decimal floats: `12`, `12.5`, `-3`, `0.25`. Scientific
+notation is supported in expression contexts (`1e3`, `2.5e-2`) but should not
+appear in inline `(...)` expressions that are spliced into other statements —
+the variable substitution layer would interpret the `e` as a bare identifier.
+Use `($var)` to wrap any value that may need re-substitution.
+d577 2
+a578 2
+A tuple is an ordered sequence of numeric and/or string slots, written with
+parentheses or a bare-comma form:
+d589 1
+a589 1
+`t[i]` reads slot `i` (0-based). Works in `(expr)` arithmetic and on the RHS
+d591 1
+a591 1
+supported; copy the slot to a scalar first.
+d601 2
+a602 2
+`t[i] = expr` mutates slot `i`. The expression must match the slot's existing
+type (numeric or string).
+d611 3
+a613 2
+`+ - * /` on tuples operate slot-by-slot. The result length is
+`min(len(a), len(b))`. A scalar on one side is broadcast across every slot.
+d619 1
+a619 1
+tuple d = a * 3                 # (3, 6, 9) — scalar broadcast
+d721 3
+a723 1
+needed:
+d727 2
+a728 1
+line (n/2)                       # length 4
+d734 3
+d739 1
+a739 1
+(§[4.10](#410-built-in-functions)). Tuple slots `t[i]` are also recognised inside `(...)`.
+d768 1
+a768 1
+| `$__cursor` | — | tuple | 2-element `(cx, cy)`. Pass to coord-bearing statements as a whole; read slots as `__cursor[0]` / `__cursor[1]` inside `(...)`. |
+d793 1
+a793 1
+| `len(s)` | numeric | Length of string `s`, or number of slots in tuple `s`. |
+d868 3
+a870 3
+`<n>px` sets the stroke width of an element. The default is `1px`. `0px` is a
+special value: no geometry is drawn and no annotations are emitted, but the
+cursor still advances on length-bearing elements.
+d1067 1
+a1067 1
+**Step 1 — one rectangle.**
+d1070 1
+d1074 10
+a1083 3
+You should see a 12×10 rectangle, labelled, with element ID `①` and
+two dimension labels (`12'` and `10'`). The renderer auto-scales so the
+shape fills most of the page.
+d1088 1
+d1093 2
+d1101 1
+d1108 2
+d1112 1
+a1112 1
+- `wall` defaults to 6-inch thickness when only `length` is given.
+d1120 1
+d1130 2
+d1133 4
+a1136 3
+turn or marked point. Use them to confirm the window's left edge is at
+`(15, 10)`. Toggle `sxy off` before delivering the file — the markers are a
+development aid.
+d1141 1
+d1154 2
+d1178 7
+a1184 11
+> **Category:** Drawing statement (element)
+>
+> ```
+> arc <radius> <sweep> [ccw] [arcstart=<deg>] [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `a`
+
+A circular arc of given `radius` and `sweep` in degrees, drawn clockwise from
+its start angle. The arc lies on a circle whose centre is computed from the
+cursor and the `arcstart=` angle.
+d1188 4
+a1191 4
+| `<radius>` | yes | Arc radius in feet. |
+| `<sweep>` | yes | Sweep angle in degrees. |
+| `ccw` | no | Draw counter-clockwise. Default is clockwise. |
+| `arcstart=<deg>` | no | Position on the circle where the arc begins, in compass degrees (0 = top/12-o'clock, increasing clockwise). Default `0`. |
+d1194 27
+a1220 3
+point on the circle, computed from the start angle and sweep (it does **not**
+advance by `2r` in the drawing direction). The bounding box used for
+auto-scale and dimension placement reflects the true arc geometry.
+d1232 3
+a1234 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> arrow <length> [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `aw`
+d1240 1
+a1240 1
+| `<length>` | yes | Length in feet (or feet/inches/px). |
+d1252 3
+a1254 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> circle <radius> [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `ci`
+d1262 1
+a1262 1
+| `<radius>` | yes | Radius in feet. |
+d1272 3
+a1274 7
+> **Category:** Directive
+>
+> ```
+> color <value>
+> ```
+>
+> **Aliases:** `col`
+d1299 12
+a1310 8
+> **Category:** Function definition (control flow)
+>
+> ```
+> def <name>(<p1>, <p2>, ...) {
+>     ...
+>     return <expr>
+> }
+> ```
+d1317 1
+a1317 1
+| `<name>` | yes | Identifier. Cannot start with `__` or shadow a keyword/built-in. |
+d1320 1
+a1320 1
+**Effect.** Registers the function. Bodies do not execute at definition time.
+d1344 7
+a1350 9
+> **Category:** Directive
+>
+> ```
+> dimensions on|off
+> ```
+>
+> **Aliases:** `dim`
+
+Toggles automatic dimension labels on subsequent elements. Default is `on`.
+d1356 1
+a1356 1
+dim off                          # silence dimensions
+d1358 2
+a1359 2
+dim on
+rect 8 10 "Bedroom"              # this one shows dimensions
+d1361 1
+a1361 1
+wall 12 dim=off                  # this single wall has no dim label
+d1366 3
+a1368 7
+> **Category:** Directive
+>
+> ```
+> direction <degrees>
+> ```
+>
+> **Aliases:** `dir`
+d1382 6
+a1387 2
+`showcornerxy on`, a coordinate marker is emitted at every direction change
+(see §[5.20](#520-showcornerxy)).
+d1397 3
+a1399 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> door <width> [left|right|in|out] [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `d`
+d1402 3
+a1404 1
+swing path. The hinge is at the element's start point.
+d1408 1
+a1408 1
+| `<width>` | yes | Clear opening width in feet. |
+d1411 80
+a1490 1
+**Effect.** Cursor advances by `width`.
+d1493 3
+a1495 3
+door 3
+door 2'8" left
+door 3 right A=2,10
+d1500 3
+a1502 7
+> **Category:** Directive
+>
+> ```
+> elementid on|off
+> ```
+>
+> **Aliases:** `eid`
+d1505 2
+a1506 1
+Default is `on`.
+d1509 2
+d1512 1
+a1512 2
+rect 12 10 "Living"
+eid on                           # IDs from here on
+d1517 2
+a1518 7
+> **Category:** Control-flow header
+>
+> ```
+> for <var> = <start> to <end> [step <step>] {
+>     ...
+> }
+> ```
+d1520 12
+a1531 2
+Iterates `<var>` from `<start>` to `<end>` (both inclusive) by `<step>`
+(default `1`). See §[4.16](#416-control-flow-syntax) for grammar rules.
+d1535 4
+a1538 4
+| `<var>` | yes | Loop variable name. Persists after the loop. |
+| `<start>` | yes | Initial value; may be an expression. |
+| `<end>` | yes | Last value; may be an expression. Both endpoints are inclusive. |
+| `<step>` | no | Increment between iterations (default `1`). May be negative. |
+d1561 16
+a1576 11
+> **Category:** Control-flow header
+>
+> ```
+> if (<condition>) {
+>     ...
+> } elif (<condition>) {
+>     ...
+> } else {
+>     ...
+> }
+> ```
+d1603 3
+a1605 7
+> **Category:** Directive
+>
+> ```
+> include <filename>
+> ```
+>
+> **Aliases:** `inc`
+d1627 3
+a1629 7
+> **Category:** Drawing statement (text)
+>
+> ```
+> label "<text>" [left|center|right] [<size>] [font=<family>] [C=<color>] [A=<h>,<v>] [@@<name>]
+> ```
+>
+> **Aliases:** `lb`
+d1636 1
+a1636 1
+| `"<text>"` | yes | The text to render. Supports inline markup (§[4.5](#45-strings)). |
+d1638 1
+a1638 1
+| `<size>` | no | Font size in SVG pixels. Default is the current `textstyle` size (10 if unset). |
+d1653 3
+a1655 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> line <length> [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `l`
+d1661 1
+a1661 1
+| `<length>` | yes | Length in feet (or feet/inches/px). |
+d1674 6
+a1679 8
+> **Category:** Drawing statement (element)
+>
+> ```
+> lineto <x> <y> [<n>px] [<dash>] [C=<color>] [A=<sx>,<sy>] [@@<name>] [dim=on|off]
+> lineto (<x>,<y>) [...]
+> ```
+>
+> **Aliases:** `lto`
+d1702 6
+a1707 8
+> **Category:** Drawing statement (cursor jump)
+>
+> ```
+> moveto <x> <y> [A=<sx>,<sy>]
+> moveto (<x>,<y>) [A=<sx>,<sy>]
+> ```
+>
+> **Aliases:** `mto`
+d1709 2
+a1710 2
+Jumps the cursor to the absolute point `(x, y)` without drawing anything. No
+element ID or dimension annotation is produced.
+d1715 15
+d1731 2
+a1732 2
+moveto 5 0
+mto 0 0 A=5,0                    # __mltodir = 270° (leftward); cursor moves to (0,0)
+d1738 3
+a1740 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> point [<n>px] [C=<color>] [A=<h>,<v>] [@@<name>]
+> ```
+>
+> **Aliases:** `p`
+d1747 1
+a1747 1
+| `<n>px` | no | Stroke width (default 1). `0px` suppresses rendering. |
+d1764 10
+a1773 9
+> **Category:** Drawing statement (element)
+>
+> ```
+> rect <length> <width> [<n>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> rect (<length>,<width>) [...]
+> rect (<origx>,<origy>,<brx>,<bry>) [...]
+> ```
+>
+> **Aliases:** `r`
+d1801 6
+a1806 9
+> **Category:** Function statement
+>
+> ```
+> return [<expr>]
+> ```
+
+Inside a function body, ends the call and yields `<expr>` to the caller. A
+bare `return` (or fall-off the end) yields `0.0`. Outside a function, `return`
+is a parse error.
+d1831 15
+a1845 11
+> **Category:** Directive
+>
+> ```
+> showcornerxy on|off
+> ```
+>
+> **Aliases:** `sxy`
+
+When `on`, a coordinate marker is emitted at every direction change and at
+each `point`. Each marker is a short grey leader line at 45° plus the
+coordinate text (e.g. `"10.5, -8"`). Off by default.
+d1865 3
+a1867 7
+> **Category:** Text statement
+>
+> ```
+> textappend "<text>" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+> ```
+>
+> **Aliases:** `tapp`
+d1875 9
+d1898 3
+a1900 8
+> **Category:** Drawing statement (text)
+>
+> ```
+> textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+>         [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>]
+> ```
+>
+> **Aliases:** `tbox`
+d1910 1
+a1910 1
+| `<size>` | no | Font size (must appear after the two dimensions). |
+d1924 3
+a1926 7
+> **Category:** Text statement
+>
+> ```
+> textbreak "<text>" <element_name> [left|center|right] [<size>] [font=<family>] [<n>px] [C=<color>]
+> ```
+>
+> **Aliases:** `txbr`
+d1935 3
+a1937 3
+| `"<text>"` | yes | The text to render. |
+| `<element_name>` | yes | A name previously registered via `@@name`. |
+| `<n>px` | no | Border box stroke width (default 1). `0px` hides the border while keeping the white mask and text. |
+d1948 3
+a1950 7
+> **Category:** Text statement
+>
+> ```
+> textline "<text>" <element_name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+> ```
+>
+> **Aliases:** `txl`
+d1958 2
+a1959 2
+| `"<text>"` | yes | The text to render. |
+| `<element_name>` | yes | A name registered via `@@name` on a previous element. |
+d1970 3
+a1972 7
+> **Category:** Directive
+>
+> ```
+> textstyle [<size>] [font=<family>] [normal]
+> ```
+>
+> **Aliases:** `tstyle`
+d1980 2
+a1981 2
+| `<size>` | Default font size in SVG pixels. |
+| `font=<family>` | Default font family (CSS family name). |
+d1994 3
+a1996 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> wall <length> [<thickness>] [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `w`
+d2003 2
+a2004 2
+| `<length>` | yes | Length in feet. |
+| `<thickness>` | no | Perpendicular thickness in feet. Default `0.5` (6 inches). |
+d2016 3
+a2018 7
+> **Category:** Drawing statement (element)
+>
+> ```
+> window <width> [<depth>] [<n>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@<name>] [dim=on|off]
+> ```
+>
+> **Aliases:** `wi`
+d2024 2
+a2025 2
+| `<width>` | yes | Opening width in feet. |
+| `<depth>` | no | Wall thickness for the window (default `0.5`). |
+d2101 3
+a2103 3
+| `elementid on\|off` | `eid` | Show/hide red ID numbers near each element. | on |
+| `dimensions on\|off` | `dim` | Show/hide grey dimension labels. | on |
+| `showcornerxy on\|off` | `sxy` | Show/hide cursor-position markers at direction changes and at each `point`. | off |
+d2124 1
+a2124 1
+| `vardump [<path>]` | `vd` | Print a table of all global variables (system vars first, then user vars) to stderr, or to `<path>` if given. Columns: NAME, TYPE (N/S/T), FILE, LINE, VALUE. |
+d2128 1
+a2128 1
+| `vartrace [...] <path>` | — | Append the trace summary to `<path>` instead of stderr. |
+@
+
+
+1.34
+log
+@issue #8: document def/return/call, scope, recursion cap
+@
+text
+@d1 2
+a2 2
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.33 $ $Date: 2026/05/14 13:05:27 $ -->
+# Floor Plan Generator — User's Guide
+d4 140
+a143 1
+### Running the program
+d145 24
+a168 1
+#### Shell driver (recommended)
+d171 5
+a175 1
+bin/380-010.sh <input.dsl> [output.svg]
+d178 5
+a182 2
+- `input.dsl` — required; path to your drawing description file
+- `output.svg` — optional; defaults to `output.svg` in the current directory
+d184 2
+a185 1
+#### Python directly
+d188 1
+a188 1
+uv run python -m svgdsl.cli <input.dsl> [-o output.svg]
+d191 12
+a202 1
+Or read from stdin:
+d205 1
+a205 1
+cat myplan.dsl | uv run python -m svgdsl.cli -o output.svg
+d208 8
+a215 1
+#### Paper size (`--paper`)
+d217 1
+a217 1
+Both the shell driver and the Python CLI accept a paper-size option:
+a219 1
+bin/380-010.sh <input.dsl> [output.svg] [--paper letter|tabloid]
+d223 15
+a237 1
+| Value | Size | Orientation |
+d239 5
+a243 2
+| `letter` | 11 × 8.5 in | landscape (default) |
+| `tabloid` | 17 × 11 in | landscape |
+d245 31
+a275 3
+```
+bin/380-010.sh myplan.dsl myplan.svg --paper tabloid
+uv run python -m svgdsl.cli myplan.dsl -o myplan.svg --paper tabloid
+d278 1
+a278 1
+#### Viewing the output
+d280 13
+a292 3
+Open `assets/380-030.html` in a browser. It displays the SVG and refreshes
+automatically every 6 seconds. Use the path field in the toolbar to point it
+at your output file if it is not at the default `../output.svg`.
+d296 28
+a323 1
+### Input file format
+d325 33
+a357 3
+One element or directive per line. Multiple statements can be placed on the
+same line by separating them with semicolons (`;`). Everything after `#` on a
+line is a comment and is ignored. Blank lines are ignored.
+d360 13
+a372 3
+# This is a comment
+direction 90
+rect 12 10 "Living Room"
+d374 3
+a376 4
+# Semicolons allow compact notation
+direction 90; line 10; direction 0; line 8
+elementid off; dimensions off
+point C=red A=2,3; point C=blue A=5,6
+d379 8
+a386 2
+Semicolons inside double-quoted strings are treated as literal characters, not
+separators:
+d389 3
+a391 1
+label "hello; world"   # label text is  hello; world
+d394 7
+a400 1
+#### Measurements
+d402 8
+a409 1
+Dimensions are in **feet** unless a unit suffix is given.
+d411 4
+a414 9
+| Written | Meaning |
+|---|---|
+| `12` | 12 feet |
+| `12.5` | 12.5 feet |
+| `12'` | 12 feet |
+| `6"` | 6 inches (0.5 ft) |
+| `12'6"` | 12 feet 6 inches |
+| `2px` | 2 SVG pixels — **line weight only** |
+| `0px` | Invisible — nothing is drawn and no annotations are shown. For most elements, the cursor still advances. `point 0px` produces no output and does not advance the cursor (since `point` never advances the cursor). |
+d416 2
+a417 1
+#### Drawing cursor
+d419 1
+a419 4
+Elements are placed one after another starting from the **canvas origin** (the
+top-left of the first element). Each element advances the cursor by its length
+in the current drawing direction. The cursor position becomes the start point
+of the next element.
+d421 2
+a422 1
+#### Drawing direction (`dir`)
+d425 6
+a430 1
+direction <degrees>
+d433 3
+a435 1
+Sets the compass direction for subsequent elements.
+d437 8
+a444 1
+| Value | Meaning |
+d446 15
+a460 4
+| `0` | Up |
+| `90` | Right (default) |
+| `180` | Down |
+| `270` | Left |
+d462 1
+a462 1
+`direction` can appear anywhere in the file and takes effect immediately.
+d464 1
+a464 1
+#### Include (`inc`)
+d467 1
+a467 2
+include <filename>
+include "filename with spaces.dsl"
+d470 3
+a472 3
+Inserts the contents of another DSL file at the current position. All drawing
+state (cursor position, direction, elementid/dimensions flags) carries through
+as if the included lines were written inline.
+d474 21
+a494 3
+- Relative paths resolve from the directory of the including file
+- Absolute paths are used as-is
+- Circular includes (file A includes file B which includes file A) are an error
+d497 4
+a500 3
+# plan.dsl
+include walls.dsl
+include fixtures.dsl
+d503 45
+a547 1
+#### Variables
+d549 1
+a549 1
+Numeric variables let you name dimensions and positions for reuse and calculation.
+d551 2
+a552 1
+**Assign** with a bare `name = expression`:
+d555 4
+a558 5
+roomw = 14
+roomh = 11
+lw    = 2
+half  = $roomw * 0.5
+inner = $roomw - 2
+d561 1
+a561 1
+Arithmetic operators `+ - * /` with standard precedence are supported. References to other variables use `$name`.
+d563 3
+a565 1
+**Inline expressions**: anywhere a number appears, `(expr)` is evaluated immediately. Bare variable names inside `(...)` are variable references — no `$` prefix needed inside the parens. Nested parentheses work.
+d568 3
+a570 5
+n = 8
+line (n/2)                    # length 4
+rect (roomw - 2) $roomh       # subtract from a variable
+door 3 A=2,(roomh - 0.5)      # expression in A= coordinate
+x = (a * (b + c))             # nested parens in assignment
+d573 9
+a581 1
+Parentheses inside double-quoted label strings are **not** evaluated — they are literal text.
+d583 1
+a583 1
+---
+d585 2
+a586 1
+Compound assignment adjusts an already-defined variable:
+d589 4
+a592 4
+margin = 1
+roomw = 14
+roomw -= 1    # trim: roomw is now 13
+roomw += 0.5  # roomw is now 13.5
+d595 1
+a595 1
+**Reference** a variable anywhere a number appears:
+d598 3
+a600 4
+rect $roomw $roomh "Main Room"
+wall $roomh 2px A=$roomw,0
+line 10 ${lw}px dashed
+label "${roomw}x${roomh} room" center A=0,0
+d603 1
+a603 1
+Two reference forms, identical behavior:
+d605 1
+a605 4
+| Form | Use | Example |
+|---|---|---|
+| `$name` | Standalone (whitespace-separated) | `rect $roomw $roomh` |
+| `${name}` | Embedded into a token | `${lw}px`, `"${w}x${h} ft"` |
+d607 4
+a610 1
+**System variables** — names starting with `__` (double underscore) are reserved and read-only. Attempting to assign to any `__`-prefixed name is an error.
+d612 1
+a612 10
+| Variable | Alias | Value |
+|---|---|---|
+| `$__cursorx` | `$__cx` | Cursor x in feet from canvas origin (same coordinate space as `A=`) |
+| `$__cursory` | `$__cy` | Cursor y in feet from canvas origin |
+| `$__cursor` | — | Cursor position as a 2-element tuple `(cx, cy)`. Pass whole as a coordinate (`mto $__cursor`) or read slots inside `(expr)` as bare `__cursor[0]` / `__cursor[1]` — `$__cursor[0]` does not work |
+| `$__dir` | — | Current drawing direction in degrees (0=up, 90=right, 180=down, 270=left) |
+| `$__mltodir` | — | Compass bearing of the most recent `moveto` or `lineto`, in degrees |
+| `$__dsl_filename` | — | Filename of the current DSL file being processed (just the filename, not full path) |
+| `$__dsl_file_lineno` | — | Line number of the current statement in the DSL file |
+| `$__date` | — | Current date in `YYYY-MM-DD` format |
+d614 2
+a615 1
+Cursor, direction, and mltodir update after every placed element or directive. Filename and line number update before processing each statement.
+d618 4
+a621 6
+dir 90
+rect 12 10 "Living Room"
+point C=red A=$__cx,$__cy       # red dot at cursor after rect
+dir 0
+line (__dir / 90)               # length = 0/90 = 0 (placeholder; __dir=0 after dir 0)
+lb "__dir=${__dir}" A=0,1       # label showing current direction
+d624 1
+a624 1
+Variables are shared across `include` files.
+d626 7
+a632 1
+---
+d634 6
+a639 1
+#### Strings
+d641 2
+a642 1
+Variables are numeric by default. To create a string variable, declare it with the `string` keyword:
+d645 6
+a650 4
+string title = "Master Bedroom"
+string note  = 'A single-quoted literal'
+string empty                              # default ""
+string a, b, c                            # multi-decl, each default ""
+d653 3
+a655 1
+Both `"..."` and `'...'` are accepted as string literals. (`'` is only treated as a string opener where it cannot match a feet/inches measurement, so `wall 12'6"` is unaffected.) Multi-declarations cannot have an initializer — write one declaration per line if you need to give variables different initial values.
+d657 1
+a657 1
+**Concatenation** with `+` or `+=`:
+d659 6
+a664 6
+```
+string title = "Master Bedroom"
+string rev   = " (rev 2)"
+title += rev                              # title is now "Master Bedroom (rev 2)"
+label "${title}"
+```
+d666 1
+a666 1
+**Built-in functions:**
+d668 3
+a670 14
+| Builtin | Returns | `pattern` a regex? | What it does |
+|---|---|---|---|
+| `len(s)` | number | — | Length of string `s` |
+| `substr(s, start)` | string | — | Characters from `start` to end; integer index |
+| `substr(s, start, end)` | string | — | Characters from `start` up to (not including) `end`; integer indices |
+| `match(s, pattern)` | 1 or 0 | **yes** | Search `s` for regex `pattern`; 1 if found anywhere, 0 if not |
+| `replace(s, pattern, repl)` | string | **pattern only** | Replace all matches of regex `pattern` in `s` with literal `repl` |
+
+**Regex details:**
+
+- `match` and `replace` use Python's `re` module; `pattern` is a full regex in both.
+- `match(s, p)` calls `re.search` — succeeds if `p` matches *anywhere* in `s`. To require a match at the start, anchor with `^`; for a full-string match use `^...$`.
+- `replace(s, p, r)` calls `re.sub` — replaces *all* non-overlapping occurrences. `repl` is a **literal** replacement string (not a regex), but Python backreference syntax works: `\1`, `\2` for numbered groups; `\g<name>` for named groups.
+- `substr` has no regex involvement. Indices are 0-based; `end` is exclusive. Negative indices count from the end: `substr(s, -3)` returns the last 3 characters.
+d672 1
+a672 4
+```
+string title = "Master Bedroom"
+n = len(title)                            # no parens needed
+label "title is ${n} chars"
+d674 2
+a675 6
+if (match(title, "Bedroom")) {            # re.search — matches anywhere
+    label "matched"
+}
+if (match(title, "^Master")) {            # anchored to start
+    label "starts with Master"
+}
+d677 1
+a677 2
+string clean = replace(title, "[^A-Za-z ]", "_")   # char class regex
+label "${clean}"
+d679 3
+a681 2
+string lower = replace(title, "([A-Z])", "_\1")    # backreference \1
+label "${lower}"
+a682 3
+string first6 = substr(title, 0, 6)      # → "Master"
+string last3  = substr(title, -3)         # → "oom"
+label "${first6} ... ${last3}"
+d684 7
+d692 3
+a694 1
+**No implicit coercion.** A number cannot be concatenated into a string with `+`, and a string cannot appear in a numeric expression. To put a number into a label, use the `${name}` substitution form, which formats it for display:
+d697 5
+a701 3
+numeric n = (len(title))
+label "len = ${n}"                        # ok — ${n} formats the number
+string lbl = "len = " + n                 # ERROR: cannot concatenate string and numeric
+d704 6
+a709 1
+`-=` is not defined on string variables.
+d711 1
+a711 1
+**Reference forms inside expressions.** A bare name in an expression is a *value reference* — looked up at evaluation time and passed to the operator or builtin as a typed value. The `$name` / `${name}` forms are *textual substitution* — the variable's raw content is spliced into the source before parsing, like a macro. For numeric variables both work in expressions because the spliced text is a valid number; for string variables the spliced text is unquoted characters, which breaks the syntax. Use each form where it fits:
+d715 10
+a724 3
+| Builtin call arg, or inside `(...)` | bare name | `len(s)`, `(len(s) + 1)`, `replace(s, "x", "y")` |
+| Inside a label or quoted text | `${name}` | `label "name is ${s}"`, `"len = ${n}"` |
+| Standalone numeric token | `$name` / `${name}` | `rect $w $h`, `line ${lw}px`, `door 3 A=$offset,0` |
+d726 1
+a726 1
+So for `string s = "hello"`: `len(s)` returns 5; `len($s)` and `len(${s})` both rewrite to `len(hello)` — an unquoted bare identifier — and error.
+d728 2
+a729 1
+---
+d731 10
+a740 1
+#### Tuples
+d742 2
+a743 1
+A `tuple` holds an ordered sequence of numeric or string values. Declare it with the `tuple` keyword:
+d746 4
+a749 4
+tuple p = (3, 4)                # 2-element tuple
+tuple q = 1, 2, 3               # bare comma form
+tuple m = ("label", 5)          # mixed string + numeric
+tuple empty                     # empty tuple ()
+d752 13
+a764 1
+**Indexing** reads a single slot. `t[i]` is recognized in `(expr)` arithmetic and on the RHS of `numeric`/`string` assignments. To embed a slot in a label, copy it to a scalar first:
+d767 8
+a774 4
+numeric n = (p[0] + p[1])       # → 7.0
+numeric px = p[0]
+numeric py = p[1]
+label "x=${px}, y=${py}"
+d777 1
+a777 1
+`${name[i]}` inline interpolation is not supported — `${...}` resolves only bare variable names.
+d779 13
+a791 1
+**Element assignment** mutates one slot (type must match):
+d794 3
+a796 2
+p[0] = 10
+p[1] = (p[0] * 2)               # → p is now (10, 20)
+d799 8
+a806 1
+**Element-wise math** applies operators slot-by-slot. Result length = `min(len(a), len(b))`. A scalar on one side is broadcast across all slots:
+d809 3
+a811 3
+tuple q = 1, 2, 3
+tuple sum2 = p + q              # → (11, 22) — min length 2
+tuple scaled = p * 3            # → (30, 60) — scalar broadcast
+d814 2
+a815 1
+**Cursor snapshot** — `$__cursor` is a 2-element tuple updated after every placed element:
+d817 1
+a817 6
+```
+mto 5 5
+tuple here = $__cursor          # snapshot (5, 5)
+mto 10 10
+mto $here                       # return to (5, 5)
+```
+d819 3
+a821 1
+**Tuple as coordinate argument** — any coord-bearing command (`r`, `mto`, `lto`, etc.) accepts a 2-tuple in three forms:
+d824 3
+a826 4
+tuple origin = 1, 1
+r 10 8 $origin                  # tuple variable
+r 10 8 (2, 2)                   # parenthesized literal
+r 10 8 2,2                      # existing bare COORD form
+d829 3
+a831 1
+Non-2-tuple in a coordinate position is a ParseError.
+d833 1
+a833 1
+**`len(t)`** returns the number of elements in a tuple as a numeric.
+d835 3
+a837 1
+---
+d839 1
+a839 1
+#### stop / start
+d841 7
+a847 1
+`stop` and `start` are development-time directives that toggle evaluation on and off:
+d850 3
+a852 9
+label "this renders"
+stop
+label "skipped"          # not evaluated
+rect 12 10 "skipped"     # not evaluated
+for i = 1 to 5 {
+    line i               # entire block skipped
+}
+start
+label "this renders again"
+d855 1
+a855 5
+- `stop` suspends evaluation immediately. All subsequent statements, block headers (`if`, `for`), and element placements are skipped until a `start` is encountered.
+- `start` resumes evaluation. Multiple `stop`/`start` pairs in the same file are allowed.
+- `stop`/`start` take effect at the line level — a `start` on its own line resumes from the *next* line onwards.
+- `include` directives inside a stopped section are skipped (the included file is not read).
+- `stop`/`start` are ignored by the parser/AST pipeline; they only affect the interpreter.
+d857 2
+a858 1
+#### Control flow
+d860 24
+a883 5
+##### Brace placement rule
+
+An opening `{` must be the **last non-whitespace character** of its header line.
+A closing `}` must be the **first non-whitespace character** of its own line, optionally followed by `elif` or `else`.
+Braces inside quoted strings (`"hello {world}"`) and `${varname}` references are never treated as block delimiters.
+d885 1
+a885 1
+##### Bare blocks
+d894 2
+a895 1
+Groups statements visually. No new scope — variables assigned inside are visible outside.
+d897 1
+a897 1
+##### `if / elif / else`
+d909 4
+a912 15
+Any number of `elif` branches (including zero) and an optional `else`. Only the first matching branch executes.
+
+Conditions support comparison operators `== != < > <= >=` and logical operators `and or not`.
+
+```
+n = 3
+if (n == 3) {
+    color red
+} elif (n == 2) {
+    color blue
+} else {
+    color green
+}
+line 5
+```
+d921 1
+a921 5
+##### `True` and `False`
+
+`True` evaluates to `1.0`; `False` evaluates to `0.0`. Both are reserved keywords and cannot be reassigned.
+
+##### `for` loops
+d930 5
+a934 24
+- Default step is `1`. A negative step counts down.
+- The loop variable persists after the loop with its last value.
+- A loop with a direction mismatch (e.g. `for i = 5 to 0 step 1`) executes zero times.
+- Maximum 100 000 iterations; exceeding this is a parse error.
+
+```
+direction 90
+for i = 0 to 5 {
+    line 1
+}
+# draws 6 line segments (i = 0, 1, 2, 3, 4, 5)
+
+for x = 10 to 0 step -2 {
+    line $x
+}
+# draws 6 segments with lengths 10, 8, 6, 4, 2, 0
+
+for row = 0 to 2 {
+    for col = 0 to 3 {
+        point A=$col,$row
+    }
+}
+# nested loops: 4×3 = 12 points
+```
+d943 3
+d948 1
+a948 9
+`include` works inside a loop body; the included file executes once per iteration with the loop variable in scope.
+
+---
+
+#### Named functions (`def` / `return`)
+
+Functions encapsulate reusable drawing logic or calculations.
+
+**Definition:**
+d951 1
+a951 1
+def name(param1, param2, ...) {
+d953 1
+a953 1
+    return expr
+d957 2
+a958 1
+- `def` must appear at the top level or inside a bare block — not inside another function.
+d960 3
+a962 2
+- The closing `}` follows the same brace rules as `if`/`for` blocks.
+- A function with no `return` (or a bare `return`) yields `0.0` when used as an expression.
+d968 1
+a968 1
+draw_room(12, 10, "Living Room")
+d982 1
+a982 1
+    return (a + b)       # numeric
+d986 1
+a986 1
+    return "Hello, " + name   # string
+d990 1
+a990 1
+    return (x, y)        # tuple — parens required
+a993 4
+- `return` with no expression returns `0.0`.
+- Fall-off (reaching the end of the body without a `return`) also returns `0.0`.
+- Tuple returns require parentheses: `return (x, y)`. Bare `return x, y` is a parse error.
+
+d996 6
+a1001 22
+- Parameters and variables assigned inside a function are **local** — they do not overwrite global variables of the same name.
+- Reading a variable that is not a local falls through to the global scope.
+- System variables (`__cursorx`, `__dir`, etc.) are always global — writes inside a function affect the drawing state.
+- `vardump` shows only global variables. `vartrace` does not fire on local writes.
+
+```
+numeric x = 10
+
+def modify() {
+    numeric x = 99      # local x — does not change global x
+    mto 3,3             # moves the real cursor (side effect)
+}
+
+modify()
+# x is still 10; cursor moved to 3,3
+```
+
+**Side effects in functions:**
+
+Drawing statements (`rect`, `line`, `mto`, etc.) inside a function body execute against the real drawing canvas, even when the function is called in expression context. However, when a function is called as part of a larger expression (e.g. nested inside another call's arguments), drawing side effects go to an internal throwaway — only the return value is used.
+
+**Recursion:**
+d1003 1
+a1003 1
+Functions may call themselves. The maximum call depth is **256**; exceeding it raises a parse error.
+d1007 1
+a1007 1
+    if ($n <= 1) {
+d1012 4
+d1017 6
+a1022 1
+numeric result = factorial(6)    # → 720
+d1025 2
+a1026 1
+**Constraints:**
+d1028 1
+a1028 5
+- A function name that matches a built-in (`len`, `substr`, `match`, `replace`) is rejected at definition time.
+- Names starting with `__` are not allowed as function names or parameter names.
+- Duplicate parameter names in the same definition are an error.
+- A `return` statement outside any function is a parse error.
+- Functions are defined once and never redefined; redefining is allowed (last wins) but not recommended.
+d1030 3
+a1032 1
+---
+d1034 1
+a1034 1
+#### Display directives (`eid`, `dim`, `sxy`)
+d1037 1
+a1037 3
+elementid on|off
+dimensions on|off
+showcornerxy on|off
+d1040 3
+a1042 5
+Toggle element reference numbers, dimension labels, and corner coordinate
+markers independently. `elementid` and `dimensions` are `on` by default;
+`showcornerxy` is `off` by default. Each directive takes effect immediately
+and applies to elements that follow it; elements placed before the directive
+are unaffected.
+d1044 1
+a1044 1
+##### `showcornerxy`
+d1046 4
+a1049 3
+When `on`, a coordinate marker is added at each point where the drawing
+direction changes. The marker shows the cursor position in decimal feet at
+the moment of the turn.
+d1051 2
+a1052 3
+Each marker consists of a short grey leader line drawn at 45° from the corner
+point (with a small gap at each end so it does not touch the point or the
+text), followed by the coordinates — for example `10.5, -8`.
+d1054 1
+a1054 3
+The leader direction is automatically chosen from NE, NW, SE, or SW to avoid
+overlapping other drawn elements and labels. When `showcornerxy` is active,
+the drawing is scaled down as needed so all markers fit within the page margins.
+d1057 4
+a1060 8
+showcornerxy on
+direction 90
+line 10             # cursor moves to (10, 0)
+direction 0         # corner marker appears at (10, 0) labelled "10, 0"
+line 8              # cursor moves to (10, -8)
+direction 270       # corner marker appears at (10, -8) labelled "10, -8"
+showcornerxy off
+direction 180       # no marker — showcornerxy is off
+d1063 6
+a1068 2
+`showcornerxy` is useful during drawing development to verify that walls meet
+at the correct coordinates.
+d1070 1
+a1070 1
+#### Color (`col`)
+d1073 7
+a1079 1
+color <value>
+d1082 4
+a1085 1
+Sets the stroke color for all subsequent elements. Default is `black`.
+d1087 1
+a1087 4
+- Named colors: `color red`, `color blue`, `color green`, …
+- Hex colors (must be quoted): `color "#ff0000"`
+- RGB (must be quoted): `color "rgb(0,128,0)"`
+- Reset to default: `color black`
+d1089 5
+a1093 1
+Color applies to strokes only. Wall fill is always dark grey regardless of color.
+d1095 5
+a1099 6
+```
+color red
+rect 10 8 "Bedroom"
+color blue
+door 3 right A=2,8
+color black
+d1102 45
+a1146 1
+To change the color of a single element without affecting subsequent elements, use `C=<value>` on that element:
+d1149 5
+a1153 3
+rect 10 8 C=red "Bedroom"
+door 3 right C="#aa00aa" A=2,8
+line 12 C=blue dashed
+d1156 1
+a1156 1
+`C=` uses the same color values as the `color` directive. It overrides the current directive color for that one element only.
+d1158 7
+a1164 1
+#### Absolute placement
+d1166 7
+a1172 4
+Any element can be placed at a fixed position by appending `A=<h>,<v>`, where
+`h` and `v` are feet from the canvas origin to the element's top-left corner.
+The cursor advances to the element's end point after placement, so the next
+element continues from there (same as non-absolute placement).
+d1175 3
+a1177 1
+door 3 right A=2,10      # place door at (2ft, 10ft) from origin
+d1180 1
+a1180 1
+---
+d1182 7
+a1188 1
+### Element types
+d1190 3
+a1192 1
+#### `line` / `l`
+d1194 3
+a1196 1
+A straight line segment in the current direction.
+d1199 3
+a1201 1
+line <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d1204 23
+d1228 3
+d1232 1
+a1232 1
+line 8'6" 2px
+d1235 13
+a1247 1
+---
+d1249 4
+a1252 1
+#### `rect` / `r`
+d1254 2
+a1255 2
+An open (unfilled) rectangle. `length` is in the drawing direction; `width` is
+perpendicular to it.
+d1258 7
+a1264 1
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>] [@@name]
+d1267 2
+d1270 4
+a1273 4
+rect 12 10
+rect 10'6" 8' "Bedroom"
+rect 14 11 2px "Master Bedroom" A=12,0
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+d1276 1
+a1276 1
+The label is centered inside the rectangle. Inline markup (`*italic*`, `**bold**`) is supported in the label. A named rect can receive `textappend` rows that expand it downward.
+d1278 7
+a1284 1
+---
+d1286 1
+a1286 1
+#### `wall` / `w`
+d1288 2
+a1289 2
+A filled (solid) rectangle representing a structural wall. Default thickness
+is 6 inches.
+d1292 6
+a1297 1
+wall <length> [<thickness>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d1300 25
+d1326 3
+a1328 2
+wall 12                  # 12ft long, 6" thick
+wall 12 8"               # 12ft long, 8" thick
+d1331 1
+a1331 1
+---
+d1333 7
+a1339 1
+#### `door` / `d`
+d1341 2
+a1342 2
+A door symbol: a solid line for the door slab and a dashed quarter-circle arc
+showing the swing path. The hinge is at the element's start point.
+d1344 4
+a1347 3
+```
+door <width> [left|right|in|out] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+```
+d1349 1
+a1349 3
+- `width` — clear opening width
+- swing direction — `right` (default), `left`, `in`, or `out` relative to the
+  current drawing direction
+d1357 1
+a1357 1
+---
+d1359 7
+a1365 1
+#### `window` / `wi`
+d1367 2
+a1368 1
+Two parallel lines across a wall opening.
+d1371 3
+a1373 1
+window <width> [<depth>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d1376 1
+a1376 2
+- `width` — opening width
+- `depth` — wall thickness (default 6 inches)
+d1378 7
+a1384 2
+The dimension annotation shows the opening width only; wall depth is not
+included in the label.
+d1386 2
+a1387 5
+```
+window 4
+window 3 8"
+window 4 A=22,3
+```
+d1389 6
+a1394 1
+---
+d1396 6
+a1401 1
+#### `arc` / `a`
+d1403 4
+a1406 1
+A general-purpose arc, drawn clockwise from the element's start point.
+d1408 5
+a1412 2
+```
+arc <radius> <sweep-degrees> [ccw] [arcstart=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d1415 13
+a1427 1
+The optional keyword `ccw` draws the arc counter-clockwise instead of clockwise.
+d1429 2
+a1430 1
+The optional `arcstart=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
+d1432 1
+a1432 1
+| `arcstart=` value | Position on circle |
+d1434 4
+a1437 6
+| `0` | 12 o'clock (top) — **default** |
+| `90` | 3 o'clock (right) |
+| `180` | 6 o'clock (bottom) |
+| `270` | 9 o'clock (left) |
+
+**Cursor after arc**: the cursor moves to the arc's actual endpoint on the circle, computed from `start` angle plus the sweep direction and amount. It does **not** advance by diameter in the drawing direction.
+d1439 1
+a1439 1
+The arc's bounding box for annotation placement is computed from the actual arc geometry (start angle, sweep, and cardinal crossings), so dimension labels for nearby elements are not displaced when an arc is present.
+d1442 8
+a1449 5
+arc 3 90                    # quarter circle, 3ft radius, clockwise from 12 o'clock
+arc 5 180                   # semicircle, 5ft radius, clockwise from 12 o'clock
+arc 3 90 ccw                # quarter circle, counter-clockwise from 12 o'clock
+arc 4 90 arcstart=0            # quarter circle starting at 12 o'clock (top)
+arc 3 180 ccw arcstart=180     # semicircle counter-clockwise starting at 6 o'clock
+d1452 1
+a1452 1
+---
+d1454 7
+a1460 1
+#### `circle` / `ci`
+d1462 3
+a1464 2
+An open (unfilled) circle, centered at the current cursor position or at an
+absolute position. The cursor does **not** advance after a circle.
+d1466 3
+a1468 3
+```
+circle <radius> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
+```
+d1470 3
+a1472 1
+Supports all standard dash styles and color options.
+d1475 3
+a1477 3
+circle 2                   # 2ft-radius circle centered at cursor
+circle 1.5 2px C=blue      # blue, 2px stroke
+circle 3 dashed A=10,5     # dashed circle at (10ft, 5ft); cursor unchanged
+d1480 9
+a1488 1
+---
+d1490 2
+a1491 1
+#### `arrow` / `aw`
+d1493 9
+a1501 1
+A line with an arrowhead at the end.
+d1504 4
+a1507 1
+arrow <length> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d1510 1
+a1510 4
+```
+arrow 6
+arrow 4 A=0,15
+```
+d1512 7
+a1518 1
+---
+d1520 1
+a1520 1
+#### `moveto` / `mto`
+d1522 5
+a1526 1
+Moves the cursor to an absolute canvas position without drawing anything. No element ID or dimension annotation is produced.
+d1529 4
+a1532 1
+moveto <x> <y> [A=<sx>,<sy>]
+d1535 10
+a1544 2
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — start point override for `__mltodir` calculation only; the cursor still moves to `(x, y)`
+d1546 11
+a1556 1
+Updates `$__mltodir` to the compass bearing from start to destination. Does not change `$__dir`.
+d1559 4
+a1562 2
+moveto 5 0          # jump cursor to (5, 0)
+mto 0 0 A=5,0       # __mltodir = 270° (leftward); cursor moves to (0, 0)
+d1565 10
+a1574 1
+---
+d1576 2
+a1577 1
+#### `lineto` / `lto`
+d1579 2
+a1580 1
+Draws a straight line from the current cursor (or from `A=sx,sy`) to the specified destination, then advances the cursor there. The element is numbered and dimensioned like any other geometry element.
+d1583 3
+a1585 1
+lineto <x> <y> [<lw>px] [<dash>] [C=<color>] [A=<sx>,<sy>]
+d1588 1
+a1588 3
+- `x`, `y` — destination in feet from the canvas origin
+- `A=<sx>,<sy>` — overrides the start point (same semantics as on other elements)
+- All standard line options apply: line weight, dash style, per-element color
+d1590 7
+a1596 1
+Updates `$__mltodir` to the compass bearing of the drawn line. Does not change `$__dir`.
+d1598 2
+a1599 5
+```
+lineto 10 5                     # diagonal from cursor to (10, 5)
+lto 14 8 2px dashed C=blue A=10,0  # blue dashed line from (10, 0) to (14, 8)
+lb "bearing: ${__mltodir}"      # show the last lineto direction
+```
+d1601 5
+a1605 3
+---
+
+#### `point` / `p`
+d1607 3
+a1609 3
+A filled circle 3 px in diameter, drawn at the current cursor position or at
+an absolute position. Useful for marking reference points, corners, or
+measurement targets.
+d1612 4
+a1615 1
+point [<lw>px] [C=<color>] [A=<h>,<v>]
+d1618 1
+a1618 3
+- `<lw>px` — stroke width (default 1 px); use `0px` to suppress rendering
+- `C=<color>` — fill and stroke color (default: current `color` directive)
+- `A=<h>,<v>` — place at an absolute position instead of the cursor
+d1620 9
+a1628 3
+**Cursor**: `point` does **not** advance the cursor. The drawing position after
+a `point` is the same as before it, so subsequent elements continue from the
+same location.
+d1630 2
+a1631 3
+**Annotations**: dimension labels are never shown for points. Element ID
+numbers are shown when `elementid` is on. When `showcornerxy` is on, a
+coordinate annotation in the corner-marker style is placed at the point.
+d1633 1
+a1633 6
+```
+point                      # mark the current cursor position
+point C=red                # red dot at the current position
+point A=10,5               # dot at (10ft, 5ft) from canvas origin; cursor unchanged
+point 0px                  # invisible — occupies no space, produces no output
+```
+d1635 5
+a1639 1
+---
+d1641 1
+a1641 1
+#### `label` / `lb`
+d1643 2
+a1644 2
+A text annotation. Does not advance the cursor. Labels always render
+horizontally regardless of the current drawing direction.
+d1647 5
+a1651 1
+label "text" [left|center|right] [<size>] [font=<family>] [A=<h>,<v>] [@@name]
+d1654 11
+a1664 4
+- alignment — `left` (default), `center`, or `right`
+- `<size>` — font size in SVG pixels (default 10, or the current `textstyle` size)
+- `font=<family>` — font family for this label only (e.g. `font=serif`)
+- `@@name` — register this label under a name for later reference
+d1666 2
+a1667 1
+Quoted text supports **inline markup** and **line breaks** — see [Text styling](#text-styling) below.
+d1670 15
+a1684 4
+label "North" center A=10,0
+label "see detail A" left A=5,20
+label "SCALE 1:48" center 14 A=5,25
+lb "**Bold title**\nSubtitle" center 12 A=0,0
+d1687 1
+a1687 1
+---
+d1689 37
+a1725 1
+### Text styling
+d1727 2
+a1728 1
+#### Element naming
+d1730 2
+a1731 1
+Any element can be tagged with `@@name` at the end of its statement. The name is used to anchor text elements to that element later.
+d1734 9
+a1742 3
+line 12 @@corridor
+rect 14 10 @@living_room "Bedroom"
+wall 8 0.5 @@north_wall
+d1745 1
+a1745 1
+Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration.
+d1747 8
+a1754 1
+---
+d1756 2
+a1757 1
+#### Inline bold, italic, and line breaks
+d1759 7
+a1765 9
+Inside any double-quoted string you can use **Markdown-style** span markers:
+
+| What you write | What renders |
+|---|---|
+| `*text*` | *italic* |
+| `**text**` | **bold** |
+| `***text***` | ***bold italic*** |
+| `\*` | literal asterisk `*` |
+| `\n` | line break |
+d1768 3
+a1770 4
+lb "Normal *italic* and **bold** text"
+lb "***Critical notice***" center 12
+lb "Price: $4.50/sq\*ft"
+lb "Room: Bedroom\nArea: 168 sq ft\nFinish: Hardwood"
+d1773 2
+a1774 3
+`\n` creates a new line. A double `\n\n` leaves a blank line gap. These work in `label`, `textbox`, `textappend`, `textline`, and `textbreak`.
+
+Unclosed markup (e.g. `*only one asterisk`) is treated as literal text.
+d1776 1
+a1776 1
+---
+d1778 12
+a1789 1
+#### `textstyle` / `tstyle` — default font
+d1791 5
+a1795 1
+Sets the default font size and family for all subsequent text elements. Works like `color` does for strokes.
+d1798 4
+a1801 1
+textstyle [<size>] [font=<family>] [normal]
+d1804 9
+a1812 3
+- `<size>` — default font size in SVG pixels
+- `font=<family>` — CSS font family: `sans-serif`, `serif`, `monospace`, or any CSS font name
+- `normal` — resets both to defaults (10px, sans-serif)
+d1814 9
+a1822 1
+Any text element can override locally with its own `<size>` or `font=<family>`.
+d1825 3
+a1827 5
+textstyle 12 font=serif        # 12px serif for everything that follows
+textstyle font=monospace       # change family only
+textstyle normal               # back to 10px sans-serif
+lb "Title" 18                  # local override: 18px, current family
+lb "Body" font=sans-serif      # local font override only
+d1830 1
+a1830 1
+---
+d1832 11
+a1842 1
+#### `textline` / `txl` — text alongside a named element
+d1844 5
+a1848 1
+Places text alongside a named line or other element, rotated to match its direction. Does not advance the cursor.
+d1851 5
+a1855 1
+textline "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+d1858 1
+a1858 3
+- `<name>` — a previously registered element name (via `@@name`)
+- alignment — where on the element to anchor the text: `left` = at the start, `center` = centred (default), `right` = at the end
+- Text is offset slightly away from the element and rotated to stay readable
+d1860 7
+a1866 6
+```
+dir 90
+l 14 @@corridor
+textline "Corridor" corridor center 10
+txl "**North Wall**" north_wall left 12 C=blue
+```
+d1868 2
+a1869 1
+---
+d1871 4
+a1874 1
+#### `textbreak` / `txbr` — text that visually breaks a line
+d1876 1
+a1876 1
+Places a labelled border box on a named line. A white-filled rectangle masks the line behind the text; a thin stroked border box is drawn around the text. The line's geometry is unchanged — SVG layer order makes the box appear in front. Does not advance the cursor.
+d1879 3
+a1881 1
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [<lw>px] [C=<color>]
+d1884 1
+a1884 1
+- `<lw>px` — border box stroke width (default 1px); use `0px` to hide the border box while keeping the white mask and text
+d1886 7
+a1892 6
+```
+l 14 @@front_wall
+textbreak "Front Wall" front_wall center 10
+txbr "**Section A-A**" section_line center 12
+txbr "No box" section_line center 10 0px    # invisible border, but white mask and text visible
+```
+d1894 1
+a1894 1
+---
+d1896 4
+a1899 1
+#### `textbox` / `tbox` — text inside a drawn rectangle
+d1901 1
+a1901 1
+A stroked rectangle with text inside. Behaves like `rect` for cursor advancement — the cursor moves forward by `length` in the current direction.
+d1904 3
+a1906 2
+textbox <length> <width> ["text"] [left|center|right] [wrap] [<size>] [font=<family>]
+        [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>] [@@name]
+d1909 1
+a1909 2
+- `wrap` — word-wraps the text to fit within the box width using `<tspan>` elements
+- `@@name` — name the box so `textappend` can add rows to it later
+d1911 5
+a1915 1
+Text supports inline markup and `\n` line breaks. With `wrap`, explicit `\n` paragraph breaks are honoured before word-wrapping is applied.
+d1918 1
+a1918 4
+tbox 6 2 "Long note that wraps inside the box" left wrap 9
+tbox 8 1.5 "**Title**" center 14 2px A=0,12
+tbox 4 0.8 @@panel "**Schedule**" C="lightgray"
+```
+d1920 3
+a1922 1
+A `textbox` with `width=0` starts at zero height and grows downward via `textappend`.
+d1924 3
+a1926 1
+---
+d1928 4
+a1931 1
+#### `textappend` / `tapp` — add rows to a named rect or textbox
+d1933 4
+a1936 1
+Appends a text row below the current content of a named `rect` or `textbox`, expanding the element's border downward. Does not advance the cursor.
+d1938 2
+a1939 3
+```
+textappend "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+```
+d1941 1
+a1941 2
+- Each call adds one row (or more, if `\n` appears in the text)
+- An empty string `""` inserts a blank spacer row
+d1943 10
+a1952 6
+```
+rect 4 0.8 @@panel "**Schedule**" C="lightgray"
+textappend "Area: 168 sq ft" panel
+textappend "*Finish:* Hardwood" panel
+textappend "" panel             # blank spacer
+textappend "Updated: 2026-05" panel right 8
+d1954 5
+a1958 5
+tbox 4 0.6 @@notes "**Notes**"
+tapp "Item 1\nItem 2" notes    # two rows from one call
+tapp "" notes                  # blank line
+tapp "Item 3" notes
+```
+d1962 1
+a1962 1
+### Common options (all elements)
+d1964 5
+a1968 12
+| Option | Description |
+|---|---|
+| `<n>px` | Line weight in SVG pixels. Default is 1px. |
+| `dashed` | Long dashes (8,4) |
+| `shortdash` | Short dashes (4,4) |
+| `dotted` | Dots (2,2) |
+| `center` | Center line — long dash, short dash (12,3,2,3) |
+| `hidden` | Hidden line — short dashes (4,2) |
+| `C=<color>` | Per-element stroke color override. Named (`C=red`) or quoted CSS (`C="#ff0000"`). Does not affect subsequent elements. |
+| `A=<h>,<v>` | Place at absolute position (h,v) in feet from canvas origin. The cursor advances to the element's end point, so the next element continues from there. |
+| `@@name` | Register this element under a name for later reference by `textline`, `textbreak`, or `textappend`. |
+| `font=<family>` | *(text elements and `label` only)* Per-element font family override. |
+d1970 2
+a1971 1
+Dash styles apply to all geometry elements (line, rect, wall, door, window, arc, arrow).
+d1973 5
+a1977 5
+```
+line 12 dashed
+rect 10 8 hidden "Future Addition"
+wall 6 dotted
+```
+d1979 1
+a1979 1
+---
+d1981 1
+a1981 1
+### Output
+d1983 4
+a1986 2
+The SVG is letter-size landscape (11 × 8.5 in). The drawing is automatically
+scaled to fill an 8 × 10 inch print rectangle and centered on the page.
+d1988 3
+a1990 5
+Each geometry element (line, rect, wall, door, window, arc, arrow) is assigned
+a reference number rendered in **red** near its start point. Dimension labels
+showing actual measurements appear alongside each element in a slightly larger
+font. The renderer automatically nudges annotations to avoid overlapping each
+other. Both can be toggled with the `elementid` and `dimensions` directives.
+d1992 1
+a1992 1
+---
+d1994 1
+a1994 1
+### Example
+d1996 11
+a2006 2
+```
+# Two-room layout with a shared wall, door, and window
+d2008 1
+a2008 1
+direction 90
+d2010 4
+a2013 2
+rect 12 10 "Living Room"
+rect 10 10 "Bedroom"
+d2015 1
+a2015 2
+# Door in the bottom wall of the living room
+door 3 right A=2,10
+d2017 1
+a2017 3
+# Window on the right wall of the bedroom
+window 4 A=22,3
+```
+d2019 3
+a2021 1
+Run:
+d2024 1
+a2024 1
+bin/380-010.sh myplan.dsl myplan.svg
+d2026 3
+@
+
+
+1.33
+log
+@Document tuple data type with worked examples (issue #22)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.32 $ $Date: 2026/05/14 03:32:57 $ -->
+d489 100
+@
+
+
+1.32
+log
+@Rename arc start= to arcstart= in docs (issue #44)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.31 $ $Date: 2026/05/14 02:55:17 $ -->
+d198 1
+d301 61
+@
+
+
+1.31
+log
+@Document stop/start directives (issue #14)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.30 $ $Date: 2026/05/13 21:14:42 $ -->
+d619 1
+a619 1
+arc <radius> <sweep-degrees> [ccw] [start=<degrees>] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d624 1
+a624 1
+The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins, using the same compass convention as the `direction` directive (0 = up/north, increasing clockwise):
+d626 1
+a626 1
+| `start=` value | Position on circle |
+d641 2
+a642 2
+arc 4 90 start=0            # quarter circle starting at 12 o'clock (top)
+arc 3 180 ccw start=180     # semicircle counter-clockwise starting at 6 o'clock
+@
+
+
+1.30
+log
+@Precise regex docs for match/replace/substr builtins (issue #43)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.29 $ $Date: 2026/05/13 20:10:26 $ -->
+d302 22
+@
+
+
+1.29
+log
+@Add reference-forms table to Strings section: bare name vs $name/${name} (issue #38)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.28 $ $Date: 2026/05/13 19:11:29 $ -->
+d243 14
+a256 9
+| Builtin | Returns | What it does |
+|---|---|---|
+| `len(s)` | number | Length of string `s` |
+| `substr(s, start)` | string | Slice from `start` to end |
+| `substr(s, start, end)` | string | Slice from `start` up to `end` |
+| `match(s, pattern)` | 1 or 0 | Truthy if regex `pattern` matches `s` |
+| `replace(s, pattern, repl)` | string | Regex replace |
+
+Use them in either context where the return type fits:
+d260 1
+a260 1
+n = (len(title))                          # numeric context
+d263 1
+a263 1
+if (match(title, "Bedroom")) {            # condition
+d266 3
+d270 1
+a270 1
+string clean = replace(title, "[^A-Za-z]", "_")  # string context
+d273 6
+a278 2
+string first6 = substr(title, 0, 6)
+label "${first6}"                         # → "Master"
+@
+
+
+1.28
+log
+@Add Strings section: declaration, concat, builtins, no-coercion rule (issue #38)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.27 $ $Date: 2026/05/13 02:53:21 $ -->
+d278 10
+@
+
+
+1.27
+log
+@Replace all references to floorplan with svgdsl
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.26 $ $Date: 2026/05/12 18:53:20 $ -->
+d216 62
+@
+
+
+1.26
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.25 $ $Date: 2026/05/12 16:25:07 $ -->
+d18 1
+a18 1
+uv run python -m floorplan.cli <input.dsl> [-o output.svg]
+d24 1
+a24 1
+cat myplan.dsl | uv run python -m floorplan.cli -o output.svg
+d33 1
+a33 1
+uv run python -m floorplan.cli <input.dsl> [-o output.svg] [-p letter|tabloid]
+d43 1
+a43 1
+uv run python -m floorplan.cli myplan.dsl -o myplan.svg --paper tabloid
+@
+
+
+1.25
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.24 $ $Date: 2026/05/12 15:40:30 $ -->
+d518 1
+a518 1
+The optional `start=<degrees>` keyword sets the angle on the circle at which the arc begins (SVG coordinates, where y increases downward):
+d522 4
+a525 4
+| `0` | 3 o'clock (rightward) — **default** |
+| `90` | 6 o'clock (bottom) |
+| `180` | 9 o'clock (left) |
+| `270` | 12 o'clock (top) |
+d529 2
+d532 5
+a536 5
+arc 3 90                    # quarter circle, 3ft radius, clockwise from 3 o'clock
+arc 5 180                   # semicircle, 5ft radius, clockwise from 3 o'clock
+arc 3 90 ccw                # quarter circle, counter-clockwise from 3 o'clock
+arc 4 90 start=270          # quarter circle starting at 12 o'clock (top)
+arc 3 180 ccw start=90      # semicircle counter-clockwise starting at 6 o'clock
+@
+
+
+1.24
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.23 $ $Date: 2026/05/11 19:13:39 $ -->
+d513 1
+a513 1
+arc <radius> <sweep-degrees> [ccw] [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d518 11
+d530 5
+a534 3
+arc 3 90           # quarter circle, 3ft radius, clockwise
+arc 5 180          # semicircle, 5ft radius, clockwise
+arc 3 90 ccw       # quarter circle, counter-clockwise
+@
+
+
+1.23
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.22 $ $Date: 2026/05/11 19:06:10 $ -->
+d27 19
+d513 9
+a521 1
+arc <radius> <sweep-degrees> [<lw>px] [<dash>] [C=<color>] [A=<h>,<v>]
+d524 13
+d538 3
+a540 2
+arc 3 90           # quarter circle, 3ft radius
+arc 5 180          # semicircle, 5ft radius
+@
+
+
+1.22
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.21 $ $Date: 2026/05/10 22:46:09 $ -->
+d629 1
+a629 1
+Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration. The double-at form `@@@@name` is also accepted and behaves identically to `@@name`.
+@
+
+
+1.21
+log
+@Document control-flow features: if/for/blocks/True/False
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.20 $ $Date: 2026/05/07 02:53:09 $ -->
+d71 1
+a71 1
+| `0px` | Invisible — element occupies space and advances the cursor, but nothing is drawn and no annotations are shown |
+d80 1
+a80 1
+#### Drawing direction
+d97 1
+a97 1
+#### Include
+d183 1
+d305 1
+a305 1
+#### Display directives
+d347 1
+a347 1
+#### Color
+d629 1
+a629 1
+Names are case-sensitive identifiers. A later `@@name` on a different element replaces the earlier registration.
+@
+
+
+1.20
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.19 $ $Date: 2026/05/03 01:57:48 $ -->
+d196 105
+@
+
+
+1.19
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.18 $ $Date: 2026/05/02 17:29:56 $ -->
+d181 2
+d184 1
+a184 1
+All system variables update after every statement.
+@
+
+
+1.18
+log
+@Fix issue #24: canvas origin for first A= element; textbox always wraps; textappend follows content; user guide aliases
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.17 $ $Date: 2026/05/02 11:15:05 $ -->
+a58 25
+#### Aliases
+
+Every keyword has a short alias so common sequences stay compact. Aliases are
+case-insensitive and can be mixed freely with full names.
+
+| Full name | Alias | Full name | Alias |
+|---|---|---|---|
+| `line` | `l` | `direction` | `dir` |
+| `rect` | `r` | `elementid` | `eid` |
+| `wall` | `w` | `dimensions` | `dim` |
+| `door` | `d` | `color` | `col` |
+| `window` | `wi` | `include` | `inc` |
+| `arc` | `a` | `showcornerxy` | `sxy` |
+| `arrow` | `aw` | `moveto` | `mto` |
+| `point` | `p` | `lineto` | `lto` |
+| `label` | `lb` | `textstyle` | `tstyle` |
+| `textline` | `txl` | `textbreak` | `txbr` |
+| `textbox` | `tbox` | `textappend` | `tapp` |
+
+```
+dir 90; l 10; dir 0; l 8; dir 270; l 10; dir 180; l 8
+eid off; dim off
+p C=red A=3,3; p C=blue A=5,5
+```
+
+d600 1
+a600 1
+textbreak "text" <name> [left|center|right] [<size>] [font=<family>] [C=<color>]
+d603 2
+d609 1
+@
+
+
+1.17
+log
+@Add text features: element naming, inline markup, textline, textbreak, textbox, textappend, textstyle, \n in strings
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.16 $ $Date: 2026/04/30 02:03:02 $ -->
+d4 1
+a4 1
+## Running the program
+d6 1
+a6 1
+### Shell driver (recommended)
+d15 1
+a15 1
+### Python directly
+d27 1
+a27 1
+### Viewing the output
+d35 1
+a35 1
+## Input file format
+d59 1
+a59 1
+### Aliases
+d84 1
+a84 1
+### Measurements
+d98 1
+a98 1
+### Drawing cursor
+d105 1
+a105 1
+### Drawing direction
+d122 1
+a122 1
+### Include
+d143 1
+a143 1
+### Variables
+d222 1
+a222 1
+### Display directives
+d236 1
+a236 1
+#### `showcornerxy`
+d264 1
+a264 1
+### Color
+d297 1
+a297 1
+### Absolute placement
+d310 1
+a310 1
+## Element types
+d312 1
+a312 1
+### `line`
+d327 1
+a327 1
+### `rect`
+d347 1
+a347 1
+### `wall`
+d363 1
+a363 1
+### `door`
+d384 1
+a384 1
+### `window`
+d406 1
+a406 1
+### `arc`
+d421 1
+a421 1
+### `arrow`
+d436 1
+a436 1
+### `moveto`
+d456 1
+a456 1
+### `lineto`
+d478 1
+a478 1
+### `point`
+d509 1
+a509 1
+### `label`
+d534 1
+a534 1
+## Text styling
+d536 1
+a536 1
+### Element naming
+d550 1
+a550 1
+### Inline bold, italic, and line breaks
+d575 1
+a575 1
+### `textstyle` — default font
+d599 1
+a599 1
+### `textline` — text alongside a named element
+d620 1
+a620 1
+### `textbreak` — text that visually breaks a line
+d636 1
+a636 1
+### `textbox` — text inside a drawn rectangle
+d660 1
+a660 1
+### `textappend` — add rows to a named rect or textbox
+d686 1
+a686 1
+## Common options (all elements)
+d711 1
+a711 1
+## Output
+d724 1
+a724 1
+## Example
+@
+
+
+1.16
+log
+@*** empty log message ***
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.15 $ $Date: 2026/04/29 23:42:31 $ -->
+d74 3
+a76 1
+| `label` | `lb` | | |
+d333 1
+a333 1
+rect <length> <width> [<lw>px] [<dash>] [C=<color>] ["label"] [A=<h>,<v>]
+d340 1
+d343 1
+a343 1
+The label is centered inside the rectangle.
+d515 1
+a515 1
+label "text" [left|center|right] [<size>] [A=<h>,<v>]
+d519 5
+a523 1
+- `<size>` — font size in SVG pixels (default 10)
+d529 153
+d698 2
+@
+
+
+1.15
+log
+@Document __ system variables: __cursorx, __cursory, __cx, __cy, __dir
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.14 $ $Date: 2026/04/29 22:24:20 $ -->
+d72 2
+a73 2
+| `arrow` | `aw` | | |
+| `point` | `p` | | |
+d203 1
+d429 42
+@
+
+
+1.14
+log
+@Document (expr) inline arithmetic syntax
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.13 $ $Date: 2026/04/29 21:53:19 $ -->
+d196 1
+a196 1
+**Built-in cursor variables** — read-only, updated after every placed element:
+d198 7
+a204 4
+| Variable | Meaning |
+|---|---|
+| `$cursorx` | Current cursor x in feet from canvas origin (same as `A=` x) |
+| `$cursory` | Current cursor y in feet from canvas origin (same as `A=` y) |
+d209 4
+a212 1
+point C=red A=$cursorx,$cursory   # red dot at cursor after rect
+d215 1
+a215 1
+Variables are shared across `include` files. Assigning to `cursorx` or `cursory` is an error.
+@
+
+
+1.13
+log
+@Document += and -= compound assignment operators
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.12 $ $Date: 2026/04/29 21:21:49 $ -->
+d156 14
+@
+
+
+1.12
+log
+@Document numeric variables, cursorx/cursory, and arithmetic (issue #20)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.11 $ $Date: 2026/04/26 17:20:04 $ -->
+d156 9
+@
+
+
+1.11
+log
+@Document element and directive aliases (issue #19)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.10 $ $Date: 2026/04/26 15:03:31 $ -->
+d140 49
+@
+
+
+1.10
+log
+@Document semicolon-separated statements (issue #9)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.9 $ $Date: 2026/04/26 03:29:53 $ -->
+d57 23
+@
+
+
+1.9
+log
+@Document point element
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.8 $ $Date: 2026/04/24 14:27:32 $ -->
+d37 3
+a39 2
+One element or directive per line. Everything after `#` on a line is a comment
+and is ignored. Blank lines are ignored.
+d45 12
+@
+
+
+1.8
+log
+@Document showcornerxy directive (issue #15)
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.7 $ $Date: 2026/04/21 15:40:29 $ -->
+d314 31
+@
+
+
+1.7
+log
+@add C= to element syntax listings and common options table; remove orphaned example block
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.6 $ $Date: 2026/04/21 15:38:38 $ -->
+d110 1
+d113 33
+a145 3
+Toggle element reference numbers and dimension labels independently. Both are
+`on` by default. The directive takes effect for all elements that follow it;
+elements placed before the directive are unaffected.
+@
+
+
+1.6
+log
+@C= per-element color override; quote-aware comment strip for hex colors
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.5 $ $Date: 2026/04/21 15:27:45 $ -->
+a148 10
+```
+# show rooms without cluttering annotations on narrow walls
+rect 12 10 "Living Room"
+elementid off
+dimensions off
+wall 12
+elementid on
+dimensions on
+```
+
+d169 1
+a169 1
+line <length> [<lw>px] [A=<h>,<v>]
+d185 1
+a185 1
+rect <length> <width> [<lw>px] ["label"] [A=<h>,<v>]
+d204 1
+a204 1
+wall <length> [<thickness>] [<lw>px] [A=<h>,<v>]
+d220 1
+a220 1
+door <width> [left|right|in|out] [<lw>px] [A=<h>,<v>]
+d240 1
+a240 1
+window <width> [<depth>] [<lw>px] [A=<h>,<v>]
+d262 1
+a262 1
+arc <radius> <sweep-degrees> [<lw>px] [A=<h>,<v>]
+d277 1
+a277 1
+arrow <length> [<lw>px] [A=<h>,<v>]
+d317 1
+@
+
+
+1.5
+log
+@color directive: set stroke color for subsequent elements
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.4 $ $Date: 2026/04/20 19:28:49 $ -->
+d138 10
+@
+
+
+1.4
+log
+@add dashed/shortdash/dotted/center/hidden line styles to all geometry elements
+@
+text
+@d1 1
+a1 1
+<!-- $Source: /srv/380-svg/30-source/docs/RCS/users-guide.md,v $ $Revision: 1.3 $ $Date: 2026/04/20 18:34:22 $ -->
+d115 23
+@
+
+
+1.3
+log
+@refresh 6s; label font size; window dim length only; A= cursor behavior corrected; RCS headers
+@
+text
+@d1 1
+a1 1
+<!-- $Source$ $Revision$ $Date$ -->
+d289 5
+d295 8
+@
+
+
+1.2
+log
+@Add include directive with relative path resolution and circular include detection
+@
+text
+@d1 1
+d30 1
+a30 1
+automatically every 15 seconds. Use the path field in the toolbar to point it
+d130 2
+a131 1
+An absolutely placed element does **not** move the cursor.
+d223 3
+d270 1
+a270 1
+label "text" [left|center|right] [A=<h>,<v>]
+d274 1
+d279 1
+@
+
+
+1.1
+log
+@Add display directives, red IDs, bigger fonts, overlap avoidance, 0px invisible
+@
+text
+@d83 21
+@
