@@ -1,10 +1,15 @@
-head	1.21;
+head	1.22;
 access;
 symbols;
 locks
-	scarol:1.21; strict;
+	scarol:1.22; strict;
 comment	@# @;
 
+
+1.22
+date	2026.05.21.20.57.10;	author scarol;	state Exp;
+branches;
+next	1.21;
 
 1.21
 date	2026.05.12.18.52.12;	author scarol;	state Exp;
@@ -117,9 +122,9 @@ desc
 @
 
 
-1.21
+1.22
 log
-@*** empty log message ***
+@Add background directive (issue #61): BackgroundDirective AST node, parser, placer storage, execute_dsl return, cli wiring, render_svg bg rect
 @
 text
 @"""SVG renderer.
@@ -413,6 +418,7 @@ def render_svg(
     elements: list[PlacedElement],
     scale: float, tx: float, ty: float,
     page_w: int = PAGE_W, page_h: int = PAGE_H,
+    bg_color: str | None = None,
 ) -> str:
     lines: list[str] = []
     lines.append(
@@ -421,6 +427,8 @@ def render_svg(
         f'viewBox="0 0 {page_w} {page_h}">'
     )
     lines.append(defs_svg())
+    if bg_color is not None:
+        lines.append(f'  <rect width="{page_w}" height="{page_h}" fill="{bg_color}"/>')
     lines.append('  <g id="drawing">')
 
     # Pass 1: geometry
@@ -617,7 +625,7 @@ def _wall_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> str:
 
     return (
         f'<rect x="{rx:.1f}" y="{ry:.1f}" width="{rw:.1f}" height="{rh:.1f}" '
-        f'fill="#333" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
+        f'fill="#BEBEBE" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
     )
 
 
@@ -926,6 +934,19 @@ def _textbreak_svg(elem: PlacedElement, scale: float, tx: float, ty: float) -> s
     parts.append(_spans_to_svg(spans, ax, ty_pos, font_size, font_family,
                                "middle", color=elem.color, transform=trans))
     return "\n    ".join(parts)
+@
+
+
+1.21
+log
+@*** empty log message ***
+@
+text
+@d292 1
+d301 2
+d499 1
+a499 1
+        f'fill="#333" stroke="{elem.color}" stroke-width="{elem.lw}"{_dash_attr(elem.dash)}/>'
 @
 
 

@@ -48,7 +48,7 @@ def main() -> None:
         text = sys.stdin.read()
 
     try:
-        elements = execute_dsl(text, source_path=source_path)
+        elements, canvas_size, bg_color = execute_dsl(text, source_path=source_path)
     except ParseError as e:
         _err(f"Error: {e}")
         sys.exit(1)
@@ -56,9 +56,14 @@ def main() -> None:
     if not elements:
         print("Warning: no elements found in input.", file=sys.stderr)
 
-    page_w, page_h = _PAPER_SIZES[args.paper]
-    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h)
-    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h)
+    if canvas_size is not None:
+        page_w, page_h = canvas_size
+        margin_px = 0.0
+    else:
+        page_w, page_h = _PAPER_SIZES[args.paper]
+        margin_px = 48.0  # 0.5-inch margin
+    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h, margin_px=margin_px)
+    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h, bg_color=bg_color)
 
     Path(args.output).write_text(svg)
     print(f"Wrote {args.output}")

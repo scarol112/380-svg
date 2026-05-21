@@ -189,6 +189,21 @@ class TextStyleDirective:
 
 
 @dataclass
+class CanvasDirective:
+    """Override the SVG output dimensions in pixels. First occurrence wins; extras ignored."""
+    width_px: int
+    height_px: int
+    source_line: int = 0
+
+
+@dataclass
+class BackgroundDirective:
+    """Set the SVG page background color. First occurrence wins; extras ignored."""
+    color: str   # CSS color value; "none" = transparent (no rect emitted)
+    source_line: int = 0
+
+
+@dataclass
 class TextLineElem:
     """Text placed along a named element, anchored at left/center/right end."""
     text: str
@@ -250,6 +265,8 @@ ASTNode = (
     | ColorDirective
     | ShowCornerXYDirective
     | TextStyleDirective
+    | CanvasDirective
+    | BackgroundDirective
     | LineElem
     | RectElem
     | WallElem

@@ -2,7 +2,7 @@ import math
 
 from ..dsl.ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
-    ShowCornerXYDirective,
+    ShowCornerXYDirective, CanvasDirective, BackgroundDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, CircleElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
@@ -40,6 +40,9 @@ class ElementPlacer:
         self._mltodir: float = 0.0
         self._named_elements: dict[str, PlacedElement] = {}
         self._text_style: dict = {"size": 10.0, "font_family": "sans-serif"}
+        self._canvas_size_px: tuple[int, int] | None = None
+        self._background_color: str | None = None  # None = transparent
+        self._background_seen: bool = False
 
     def place_all(self, nodes: list[ASTNode]) -> list[PlacedElement]:
         for node in nodes:
@@ -63,6 +66,15 @@ class ElementPlacer:
                 self._color = node.color
             case TextStyleDirective():
                 self._handle_textstyle(node)
+            case CanvasDirective():
+                if self._canvas_size_px is None:
+                    self._canvas_size_px = (node.width_px, node.height_px)
+                # additional canvas directives are silently ignored
+            case BackgroundDirective():
+                if not self._background_seen:
+                    self._background_seen = True
+                    self._background_color = None if node.color == "none" else node.color
+                # additional background directives are silently ignored
             case LineElem():
                 self._place_line(node)
             case RectElem():

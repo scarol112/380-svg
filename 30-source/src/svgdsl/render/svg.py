@@ -289,6 +289,7 @@ def render_svg(
     elements: list[PlacedElement],
     scale: float, tx: float, ty: float,
     page_w: int = PAGE_W, page_h: int = PAGE_H,
+    bg_color: str | None = None,
 ) -> str:
     lines: list[str] = []
     lines.append(
@@ -297,6 +298,8 @@ def render_svg(
         f'viewBox="0 0 {page_w} {page_h}">'
     )
     lines.append(defs_svg())
+    if bg_color is not None:
+        lines.append(f'  <rect width="{page_w}" height="{page_h}" fill="{bg_color}"/>')
     lines.append('  <g id="drawing">')
 
     # Pass 1: geometry

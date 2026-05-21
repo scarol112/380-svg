@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from .ast import (
     ASTNode, DirectionDirective, DisplayDirective, ColorDirective,
-    ShowCornerXYDirective,
+    ShowCornerXYDirective, CanvasDirective, BackgroundDirective,
     LineElem, RectElem, WallElem, DoorElem, WindowElem,
     ArcElem, ArrowElem, CircleElem, PointElem, LabelElem,
     MoveToElem, LineToElem,
@@ -197,6 +197,10 @@ def _parse_line(tokens: list[Token], lineno: int) -> ASTNode | None:
         return _parse_textbox(rest, lineno)
     if keyword == "textappend":
         return _parse_textappend(rest, lineno)
+    if keyword == "canvas":
+        return _parse_canvas(rest, lineno)
+    if keyword == "background":
+        return _parse_background(rest, lineno)
 
     raise ParseError(f"Line {lineno}: unknown element type {keyword!r}")
 
@@ -239,6 +243,35 @@ def _parse_direction(tokens: list[Token], lineno: int) -> DirectionDirective:
         raise ParseError(f"Line {lineno}: direction requires a value")
     deg = float(tokens[0].value)
     return DirectionDirective(degrees=deg, source_line=lineno)
+
+
+def _parse_background(tokens: list[Token], lineno: int) -> BackgroundDirective:
+    if not tokens:
+        raise ParseError(f"Line {lineno}: background requires a color value or 'none'")
+    tok = tokens[0]
+    if tok.kind == "QUOTED":
+        color = tok.value
+    elif tok.kind == "WORD":
+        color = tok.value.lower()
+    else:
+        raise ParseError(f"Line {lineno}: background requires a named color, quoted CSS value, or 'none'")
+    return BackgroundDirective(color=color, source_line=lineno)
+
+
+def _parse_canvas(tokens: list[Token], lineno: int) -> CanvasDirective:
+    """canvas x,y  or  canvas x y  — pixel dimensions for the SVG output."""
+    if not tokens:
+        raise ParseError(f"Line {lineno}: canvas requires width and height in pixels")
+    if tokens[0].kind == "COORD":
+        w_str, h_str = tokens[0].value.split(",", 1)
+        w, h = int(float(w_str)), int(float(h_str))
+    elif len(tokens) >= 2 and tokens[0].kind in ("NUMBER", "MEASUREMENT") and tokens[1].kind in ("NUMBER", "MEASUREMENT"):
+        w, h = int(float(tokens[0].value)), int(float(tokens[1].value))
+    else:
+        raise ParseError(f"Line {lineno}: canvas requires a 2-element pixel size, e.g. 'canvas 800,600'")
+    if w <= 0 or h <= 0:
+        raise ParseError(f"Line {lineno}: canvas dimensions must be positive, got {w}×{h}")
+    return CanvasDirective(width_px=w, height_px=h, source_line=lineno)
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────

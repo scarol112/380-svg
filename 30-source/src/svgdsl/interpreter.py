@@ -17,7 +17,7 @@ from .model import PlacedElement
 _ALL_KEYWORDS = {
     "line", "rect", "wall", "door", "window", "arc", "arrow", "point",
     "label", "direction", "elementid", "dimensions", "showcornerxy",
-    "color", "include", "moveto", "lineto",
+    "color", "canvas", "background", "include", "moveto", "lineto",
     "textstyle", "textline", "textbreak", "textbox", "textappend",
     "if", "elif", "else", "for", "to", "step",
     "True", "False", "and", "or", "not",
@@ -112,7 +112,7 @@ _current_trace: _Trace | None = None
 def execute_dsl(
     text: str,
     source_path: Path | None = None,
-) -> list[PlacedElement]:
+) -> tuple[list[PlacedElement], tuple[int, int] | None, str | None]:
     vars_: dict[str, float | str | TupleVal] = {
         "__cursorx": 0.0, "__cursory": 0.0,
         "__cx": 0.0,      "__cy": 0.0,
@@ -147,7 +147,7 @@ def execute_dsl(
         sys.setrecursionlimit(old_limit)
     _print_trace_summary(_current_trace, source_path)
     _current_trace = None
-    return placer._elements
+    return placer._elements, placer._canvas_size_px, placer._background_color
 
 
 def _execute_text(

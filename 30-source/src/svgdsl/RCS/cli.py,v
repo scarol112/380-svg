@@ -1,10 +1,20 @@
-head	1.6;
+head	1.8;
 access;
 symbols;
 locks
-	scarol:1.6; strict;
+	scarol:1.8; strict;
 comment	@# @;
 
+
+1.8
+date	2026.05.21.20.57.10;	author scarol;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2026.05.21.16.05.44;	author scarol;	state Exp;
+branches;
+next	1.6;
 
 1.6
 date	2026.05.13.02.53.21;	author scarol;	state Exp;
@@ -42,9 +52,9 @@ desc
 @
 
 
-1.6
+1.8
 log
-@Replace all references to floorplan with svgdsl
+@Add background directive (issue #61): BackgroundDirective AST node, parser, placer storage, execute_dsl return, cli wiring, render_svg bg rect
 @
 text
 @import argparse
@@ -97,7 +107,7 @@ def main() -> None:
         text = sys.stdin.read()
 
     try:
-        elements = execute_dsl(text, source_path=source_path)
+        elements, canvas_size, bg_color = execute_dsl(text, source_path=source_path)
     except ParseError as e:
         _err(f"Error: {e}")
         sys.exit(1)
@@ -105,9 +115,14 @@ def main() -> None:
     if not elements:
         print("Warning: no elements found in input.", file=sys.stderr)
 
-    page_w, page_h = _PAPER_SIZES[args.paper]
-    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h)
-    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h)
+    if canvas_size is not None:
+        page_w, page_h = canvas_size
+        margin_px = 0.0
+    else:
+        page_w, page_h = _PAPER_SIZES[args.paper]
+        margin_px = 48.0  # 0.5-inch margin
+    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h, margin_px=margin_px)
+    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h, bg_color=bg_color)
 
     Path(args.output).write_text(svg)
     print(f"Wrote {args.output}")
@@ -115,6 +130,35 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+@
+
+
+1.7
+log
+@canvas keyword added to _ALL_KEYWORDS; execute_dsl returns (elements, canvas_size_px) (issue #60)
+@
+text
+@d51 1
+a51 1
+        elements, canvas_size = execute_dsl(text, source_path=source_path)
+d66 1
+a66 1
+    svg = render_svg(elements, scale, tx, ty, page_w=page_w, page_h=page_h)
+@
+
+
+1.6
+log
+@Replace all references to floorplan with svgdsl
+@
+text
+@d51 1
+a51 1
+        elements = execute_dsl(text, source_path=source_path)
+d59 7
+a65 2
+    page_w, page_h = _PAPER_SIZES[args.paper]
+    scale, tx, ty = compute_scale(elements, page_w=page_w, page_h=page_h)
 @
 
 

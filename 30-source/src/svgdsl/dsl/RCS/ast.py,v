@@ -1,10 +1,20 @@
-head	1.17;
+head	1.19;
 access;
 symbols;
 locks
-	scarol:1.17; strict;
+	scarol:1.19; strict;
 comment	@# @;
 
+
+1.19
+date	2026.05.21.20.57.10;	author scarol;	state Exp;
+branches;
+next	1.18;
+
+1.18
+date	2026.05.21.16.05.38;	author scarol;	state Exp;
+branches;
+next	1.17;
 
 1.17
 date	2026.05.12.18.52.12;	author scarol;	state Exp;
@@ -97,9 +107,9 @@ desc
 @
 
 
-1.17
+1.19
 log
-@*** empty log message ***
+@Add background directive (issue #61): BackgroundDirective AST node, parser, placer storage, execute_dsl return, cli wiring, render_svg bg rect
 @
 text
 @from dataclasses import dataclass, field
@@ -293,6 +303,21 @@ class TextStyleDirective:
 
 
 @@dataclass
+class CanvasDirective:
+    """Override the SVG output dimensions in pixels. First occurrence wins; extras ignored."""
+    width_px: int
+    height_px: int
+    source_line: int = 0
+
+
+@@dataclass
+class BackgroundDirective:
+    """Set the SVG page background color. First occurrence wins; extras ignored."""
+    color: str   # CSS color value; "none" = transparent (no rect emitted)
+    source_line: int = 0
+
+
+@@dataclass
 class TextLineElem:
     """Text placed along a named element, anchored at left/center/right end."""
     text: str
@@ -354,6 +379,8 @@ ASTNode = (
     | ColorDirective
     | ShowCornerXYDirective
     | TextStyleDirective
+    | CanvasDirective
+    | BackgroundDirective
     | LineElem
     | RectElem
     | WallElem
@@ -371,6 +398,26 @@ ASTNode = (
     | TextBoxElem
     | TextAppendElem
 )
+@
+
+
+1.18
+log
+@Add CanvasDirective AST node and canvas keyword parser (issue #60)
+@
+text
+@d200 7
+d269 1
+@
+
+
+1.17
+log
+@*** empty log message ***
+@
+text
+@d192 8
+d261 1
 @
 
 
